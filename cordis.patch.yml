@@ -1,0 +1,3 @@
+- insert:
+    - id: workspace-graph
+      name: dsh-workspace-graph

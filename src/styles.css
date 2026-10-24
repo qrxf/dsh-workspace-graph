@@ -1,0 +1,653 @@
+.wg-root {
+  height: 100%;
+  min-height: 380px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #080f1e;
+  color: #e6edf9;
+  font:
+    14px/1.5 -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "Microsoft YaHei",
+    sans-serif;
+  isolation: isolate;
+  --wg-line: rgba(154, 186, 229, 0.14);
+}
+.wg-root * {
+  box-sizing: border-box;
+}
+.wg-root button,
+.wg-root input,
+.wg-root select {
+  font: inherit;
+}
+.wg-root button {
+  cursor: pointer;
+  border: 1px solid var(--wg-line);
+  background: #16243b;
+  color: #dce8fa;
+  border-radius: 9px;
+  padding: 7px 12px;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+.wg-root button:hover {
+  background: #20344f;
+  border-color: #5380b2;
+}
+.wg-root button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.wg-root button:focus-visible,
+.wg-root input:focus-visible,
+.wg-root select:focus-visible {
+  outline: 2px solid #8bb7ff;
+  outline-offset: 3px;
+}
+.wg-root input,
+.wg-root select {
+  color: #e3ebf7;
+  background: #101b2e;
+  border: 1px solid var(--wg-line);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+.wg-header {
+  z-index: 5;
+  min-height: 98px;
+  padding: 23px 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid var(--wg-line);
+  background: #0c1425;
+}
+.wg-brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  white-space: nowrap;
+}
+.wg-logo {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid #365b8a;
+  border-radius: 13px;
+  color: #a9c8ff;
+  background: linear-gradient(140deg, #1f385c, #18283f);
+  font-size: 27px;
+}
+.wg-header h1 {
+  font-size: 19px;
+  margin: 0;
+  font-weight: 650;
+  letter-spacing: 1px;
+}
+.wg-header h1 span {
+  font-size: 9px;
+  letter-spacing: 2.2px;
+  display: block;
+  color: #7089b0;
+  margin-top: 2px;
+}
+.wg-header p {
+  font-size: 11px;
+  margin: 4px 0 0;
+  color: #8e9db6;
+}
+.wg-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.wg-top-actions button {
+  font-size: 12px;
+  white-space: nowrap;
+  background: #121e32;
+}
+.wg-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #7897c1;
+  background: #101c30;
+  border: 1px solid var(--wg-line);
+  border-radius: 9px;
+  padding: 0 11px;
+}
+.wg-search span {
+  font-size: 23px;
+  line-height: 1;
+}
+.wg-search input {
+  width: 200px;
+  border: 0;
+  background: none;
+  padding: 8px 0;
+  font-size: 12px;
+}
+.wg-search input::placeholder {
+  color: #6e819f;
+}
+.wg-canvas {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  background: radial-gradient(
+    ellipse at 37% 40%,
+    #10233e 0%,
+    #0b172b 40%,
+    #080f1e 85%
+  );
+}
+.wg-root .react-flow__node-bubble {
+  border: none;
+  background: none;
+  width: 144px;
+  box-shadow: none;
+}
+.wg-root .react-flow__node:focus-visible {
+  outline: 2px solid #8bb7ff;
+  border-radius: 30px;
+}
+.wg-bubble {
+  position: relative;
+  width: 144px;
+  text-align: center;
+  --bubble-color: #6aabff;
+  user-select: none;
+}
+.wg-orb {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 74px;
+  height: 74px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 22%, #283c59, #16263c 65%);
+  border: 1px solid #547194;
+  box-shadow:
+    0 0 0 7px rgba(94, 139, 196, 0.025),
+    0 8px 20px #0004;
+  transition:
+    box-shadow 0.2s,
+    border-color 0.2s;
+}
+.wg-orb-symbol {
+  font-size: 24px;
+  color: #adc9ed;
+  font-weight: 300;
+}
+.is-workspace .wg-orb {
+  width: 106px;
+  height: 106px;
+  margin-bottom: 14px;
+  border: 1px solid #6b96c7;
+  background: radial-gradient(circle at 32% 20%, #355478, #1a304f 70%);
+  box-shadow:
+    0 0 0 9px #6aabff05,
+    0 0 0 19px #6aabff03,
+    0 8px 22px #0004;
+}
+.is-workspace .wg-orb-symbol {
+  font-size: 31px;
+  line-height: 1.1;
+}
+.wg-orb-count {
+  font-size: 10px;
+  letter-spacing: 0.3px;
+  color: #97b1d1;
+}
+.wg-node-title {
+  font-size: 15px;
+  color: #e4edfb;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 2px;
+  max-width: 144px;
+}
+.is-workspace .wg-node-title {
+  font-size: 17px;
+  font-weight: 600;
+}
+.wg-node-meta {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  color: #8396b2;
+  margin-top: 5px;
+  letter-spacing: 0.6px;
+}
+.wg-node-meta i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--bubble-color);
+}
+.wg-bubble.is-selected .wg-orb {
+  border-color: #9cc7ff;
+  box-shadow:
+    0 0 0 4px #82b6ff20,
+    0 0 34px #599bff33;
+}
+.wg-bubble:hover .wg-orb {
+  border-color: #a8c6ee;
+}
+.wg-bubble.is-archived {
+  opacity: 0.55;
+}
+.wg-root .react-flow__handle {
+  opacity: 0;
+  pointer-events: none;
+}
+.wg-root .react-flow__controls {
+  box-shadow: none;
+  border: 1px solid var(--wg-line);
+  border-radius: 10px;
+  overflow: hidden;
+  bottom: 25px;
+  right: 24px;
+}
+.wg-root .react-flow__controls button {
+  border: 0;
+  border-bottom: 1px solid #25374e;
+  background: #122038;
+  border-radius: 0;
+  color: #bbcee8;
+  width: 32px;
+  height: 32px;
+  padding: 8px;
+}
+.wg-root .react-flow__controls svg {
+  fill: currentColor;
+}
+.wg-root .react-flow__attribution {
+  background: transparent;
+  color: #6983a7;
+  font-size: 9px;
+}
+.wg-root .react-flow__attribution a {
+  color: inherit;
+}
+.wg-dock {
+  position: absolute;
+  bottom: 28px;
+  left: 28px;
+  width: 410px;
+  border: 1px solid #314b6b88;
+  border-radius: 14px;
+  background: #101d33eb;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 12px 40px #0004;
+  z-index: 4;
+  padding: 0 18px 13px;
+}
+.wg-dock.is-folded {
+  width: 190px;
+  padding-bottom: 0;
+}
+.wg-dock-heading {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 0 !important;
+  border: 0 !important;
+  background: none !important;
+  text-align: left;
+  font-size: 12px !important;
+  letter-spacing: 0.7px;
+}
+.wg-dock-heading span:last-child {
+  color: #7b9ac3;
+}
+.wg-field {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 3px 0 15px;
+  font-size: 11px;
+  color: #8fa1bc;
+}
+.wg-field select {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 10px;
+  font-size: 12px;
+  background: #192940;
+}
+.wg-filter-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin: 12px 0;
+  font-size: 11px;
+  color: #8fa1bc;
+}
+.wg-filter-row > span {
+  padding-top: 5px;
+  white-space: nowrap;
+}
+.wg-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.wg-chips button {
+  font-size: 10px;
+  padding: 4px 9px;
+  border-radius: 6px;
+  color: #91a6c4;
+  background: #17273e;
+  border-color: transparent;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.wg-chips button.active {
+  background: #28486f;
+  color: #e5f0ff;
+  border-color: #416da0;
+}
+.wg-chips i {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+.wg-check {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  font-size: 11px;
+}
+.wg-check input {
+  accent-color: #7caef9;
+}
+.wg-dock-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--wg-line);
+  padding-top: 10px;
+  margin-top: 14px;
+  color: #7286a4;
+  font-size: 10px;
+}
+.wg-dock-foot button {
+  border: 0;
+  padding: 0;
+  font-size: 10px;
+  color: #9bbbe6;
+  background: none;
+}
+.wg-details {
+  position: absolute;
+  right: 24px;
+  top: 24px;
+  width: 268px;
+  max-height: calc(100% - 135px);
+  overflow: auto;
+  border: 1px solid #314b6b88;
+  border-radius: 14px;
+  background: #101c30f5;
+  backdrop-filter: blur(12px);
+  padding: 18px 20px;
+  box-shadow: 0 12px 40px #0005;
+  z-index: 5;
+}
+.wg-detail-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #8fa8c8;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+.wg-detail-heading button {
+  background: none;
+  border: 0;
+  padding: 0 4px;
+  font-size: 21px;
+  color: #8da1be;
+}
+.wg-details h2 {
+  font-size: 18px;
+  margin: 15px 0 8px;
+  overflow-wrap: anywhere;
+}
+.wg-status {
+  font-size: 11px;
+}
+.wg-details dl {
+  margin: 20px 0;
+  font-size: 11px;
+}
+.wg-details dt {
+  color: #6e87a8;
+  margin-top: 12px;
+  font-size: 10px;
+}
+.wg-details dd {
+  margin: 4px 0;
+  color: #b5c6df;
+  overflow-wrap: anywhere;
+}
+.wg-detail-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.wg-detail-actions button {
+  font-size: 12px;
+  text-align: left;
+  padding: 8px 12px;
+}
+.wg-root .wg-primary {
+  background: #315987;
+  border-color: #416d9f;
+  color: #ecf4ff;
+}
+.wg-small-note {
+  font-size: 10px;
+  line-height: 1.8;
+  color: #758cae;
+  margin: 7px 0 0;
+}
+.wg-detail-actions input {
+  width: 100%;
+  margin-bottom: 7px;
+  font-size: 12px;
+}
+.wg-alert {
+  padding: 10px 20px;
+  background: #482e25;
+  color: #ffd2b3;
+  z-index: 8;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.wg-alert span {
+  flex: 1;
+}
+.wg-alert button {
+  font-size: 11px;
+  background: #5f3b2c;
+  border-color: #ae775a;
+}
+.wg-empty {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+  width: 80%;
+  color: #92a7c7;
+}
+.wg-empty h2 {
+  color: #d1dff1;
+  font-size: 20px;
+  font-weight: 500;
+  margin: 12px 0 8px;
+}
+.wg-empty p {
+  font-size: 12px;
+}
+.wg-empty button {
+  pointer-events: auto;
+  margin-top: 10px;
+}
+.wg-empty-orb {
+  font-size: 44px;
+  color: #658bb9;
+}
+.wg-canvas-hint {
+  position: absolute;
+  top: 22px;
+  left: 28px;
+  font-size: 10px;
+  color: #5f7899;
+  pointer-events: none;
+  letter-spacing: 1px;
+}
+.wg-save-status {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #82a3c5;
+  font-size: 10px;
+  pointer-events: none;
+}
+.wg-demo-label {
+  z-index: 3;
+  position: absolute;
+  top: 111px;
+  right: 27px;
+  color: #9bafce;
+  font-size: 10px;
+  background: #192d48;
+  border: 1px solid #355174;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+.wg-undo {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 14px;
+  border: 1px solid #3e5c85;
+  border-radius: 10px;
+  background: #182b46;
+  z-index: 6;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.wg-undo button {
+  margin-left: 10px;
+  font-size: 11px;
+  padding: 2px 8px;
+}
+@media (max-width: 1050px) {
+  .wg-header {
+    padding: 18px;
+    min-height: 90px;
+  }
+  .wg-header h1 {
+    font-size: 16px;
+  }
+  .wg-search input {
+    width: 130px;
+  }
+  .wg-top-actions {
+    gap: 6px;
+  }
+  .wg-top-actions button {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+  .wg-details {
+    width: 235px;
+    right: 16px;
+  }
+  .wg-dock {
+    left: 18px;
+    bottom: 22px;
+    width: 370px;
+  }
+  .wg-canvas-hint {
+    left: 18px;
+  }
+}
+@media (max-width: 700px) {
+  .wg-header {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+  .wg-top-actions {
+    width: 100%;
+  }
+  .wg-search {
+    flex: 1;
+  }
+  .wg-search input {
+    width: 100%;
+    min-width: 50px;
+  }
+  .wg-dock {
+    width: calc(100% - 36px);
+    bottom: 20px;
+  }
+  .wg-details {
+    top: 16px;
+    max-height: 42%;
+    width: 220px;
+  }
+  .wg-canvas-hint {
+    display: none;
+  }
+  .wg-demo-label {
+    display: none;
+  }
+  .wg-root .react-flow__controls {
+    bottom: 260px;
+    right: 16px;
+  }
+  .wg-header h1 span {
+    display: inline;
+    margin-left: 10px;
+  }
+  .wg-logo {
+    height: 35px;
+    width: 35px;
+  }
+  .wg-dock-heading {
+    padding: 10px 0 !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wg-root * {
+    transition: none !important;
+  }
+}

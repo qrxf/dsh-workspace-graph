@@ -1,0 +1,128 @@
+import type {
+  Filters,
+  LayoutDocument,
+  LayoutPatch,
+  Point,
+  ViewState,
+} from "./types.ts";
+export const emptyLayout = (): LayoutDocument => ({
+  schemaVersion: 1,
+  revision: 0,
+  positions: {},
+  collapsed: [],
+  views: {},
+});
+const safeKey = (key: string) =>
+  !["__proto__", "prototype", "constructor"].includes(key) && key.length < 1000;
+const record = (v: unknown): v is Record<string, unknown> =>
+  !!v && typeof v === "object" && !Array.isArray(v);
+const point = (v: unknown): v is Point =>
+  record(v) &&
+  typeof v.x === "number" &&
+  typeof v.y === "number" &&
+  Number.isFinite(v.x) &&
+  Number.isFinite(v.y) &&
+  Math.abs(v.x) < 1e8 &&
+  Math.abs(v.y) < 1e8;
+function validFilters(v: unknown): v is Filters {
+  return (
+    record(v) &&
+    typeof v.workspace === "string" &&
+    ["all", "running", "waiting", "unread", "idle", "unknown"].includes(
+      String(v.status),
+    ) &&
+    ["all", "workspace", "session"].includes(String(v.kind)) &&
+    typeof v.archived === "boolean" &&
+    typeof v.query === "string"
+  );
+}
+function validate(v: unknown): asserts v is LayoutDocument {
+  if (
+    !record(v) ||
+    v.schemaVersion !== 1 ||
+    !Number.isSafeInteger(v.revision) ||
+    Number(v.revision) < 0 ||
+    !record(v.positions) ||
+    !Array.isArray(v.collapsed) ||
+    !record(v.views)
+  )
+    throw new Error("Invalid layout format or unsupported version");
+  for (const [key, value] of Object.entries(v.positions))
+    if (!safeKey(key) || !point(value))
+      throw new Error("Invalid layout position");
+  if (!v.collapsed.every((id) => typeof id === "string" && safeKey(id)))
+    throw new Error("Invalid layout collapse state");
+  for (const [key, value] of Object.entries(v.views)) {
+    if (!safeKey(key) || !record(value)) throw new Error("Invalid layout view");
+    if (
+      value.viewport !== undefined &&
+      (!point(value.viewport) ||
+        typeof (value.viewport as unknown as { zoom: unknown }).zoom !==
+          "number" ||
+        !Number.isFinite(
+          (value.viewport as unknown as { zoom: number }).zoom,
+        ) ||
+        (value.viewport as unknown as { zoom: number }).zoom < 0.1 ||
+        (value.viewport as unknown as { zoom: number }).zoom > 3)
+    )
+      throw new Error("Invalid layout viewport");
+    if (value.filters !== undefined && !validFilters(value.filters))
+      throw new Error("Invalid layout filters");
+  }
+}
+export class LayoutRepository {
+  storage: Pick<Storage, "getItem" | "setItem">;
+  key: string;
+  constructor(storage: Pick<Storage, "getItem" | "setItem">, key: string) {
+    this.storage = storage;
+    this.key = key;
+  }
+  load(): LayoutDocument {
+    const raw = this.storage.getItem(this.key);
+    if (raw === null) return emptyLayout();
+    let value: unknown;
+    try {
+      value = JSON.parse(raw);
+    } catch {
+      throw new Error("Invalid layout JSON");
+    }
+    validate(value);
+    return value;
+  }
+  initializePositions(positions: Record<string, Point>): LayoutDocument {
+    const current = this.load();
+    const missing = Object.fromEntries(
+      Object.entries(positions).filter(([id]) => !current.positions[id]),
+    );
+    return Object.keys(missing).length
+      ? this.savePatch({ positions: missing }, current.revision)
+      : current;
+  }
+  reset(expectedRaw: string | null): LayoutDocument {
+    if (this.storage.getItem(this.key) !== expectedRaw)
+      throw new Error(
+        "Layout conflict: another window changed the saved layout",
+      );
+    const next = emptyLayout();
+    this.storage.setItem(this.key, JSON.stringify(next));
+    return next;
+  }
+  savePatch(patch: LayoutPatch, expectedRevision: number): LayoutDocument {
+    const current = this.load();
+    if (current.revision !== expectedRevision)
+      throw new Error("Layout conflict: another window saved a newer layout");
+    const views: Record<string, ViewState> = { ...current.views };
+    for (const [scope, view] of Object.entries(patch.views ?? {}))
+      views[scope] = { ...views[scope], ...view };
+    const next: LayoutDocument = {
+      schemaVersion: 1,
+      revision: current.revision + 1,
+      positions: { ...current.positions, ...patch.positions },
+      collapsed: patch.collapsed ?? current.collapsed,
+      views,
+    };
+    validate(next);
+    this.storage.setItem(this.key, JSON.stringify(next));
+    return next;
+  }
+}
