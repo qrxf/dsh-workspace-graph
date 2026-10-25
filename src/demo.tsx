@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "@xyflow/react/dist/style.css";
 import "./styles.css";
@@ -76,8 +76,23 @@ const repository = new LayoutRepository(
   localStorage,
   "dsh-workspace-graph:demo:v1",
 );
+// ?churn=<ms> makes the demo publish a fresh catalog snapshot on that interval,
+// like the native host does while a session streams.
+const churn = Number(new URLSearchParams(location.search).get("churn")) || 0;
 function Demo() {
   const [catalog, setCatalog] = useState(demoCatalog);
+  useEffect(() => {
+    if (!churn) return;
+    const timer = setInterval(
+      () =>
+        setCatalog((c) => ({
+          ...c,
+          sessions: c.sessions.map((row) => ({ ...row })),
+        })),
+      churn,
+    );
+    return () => clearInterval(timer);
+  }, []);
   const actions: GraphActions = {
     openSession: (id) => {
       document.documentElement.dataset.opened = "session:" + id;

@@ -94,6 +94,11 @@ try {
     () => document.querySelectorAll(".react-flow__node").length === 2,
   );
   assert.equal(await page.locator('[data-id="workspace:research"]').count(), 1);
+  // Selecting a bubble re-renders the graph, so select it first and only then
+  // double-click: a double-click straight on an unselected node can lose its
+  // second click to that re-render and never reach the open handler.
+  await page.locator('[data-id="session:s4"]').click();
+  await page.waitForTimeout(200);
   await page.locator('[data-id="session:s4"]').dblclick();
   await page.waitForFunction(
     () => document.documentElement.dataset.opened === "session:s4",
@@ -108,8 +113,13 @@ try {
   );
   await page.getByRole("button", { name: "关闭详情", exact: true }).click();
   await page.getByRole("button", { name: "清除筛选", exact: true }).click();
-  await page.getByRole("button",{name:"适应画布",exact:true}).click();
-  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  await page.getByRole("button", { name: "适应画布", exact: true }).click();
+  await page.evaluate(
+    () =>
+      new Promise((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(resolve)),
+      ),
+  );
   await page.locator('[data-id="workspace:product"]').click();
   await mkdir("docs/screenshots", { recursive: true });
   await page.screenshot({
@@ -137,6 +147,54 @@ try {
         .schemaVersion === 1,
   );
   assert.equal(await other.getByRole("alert").count(), 0);
+  // The native host keeps publishing fresh catalog snapshots (a streaming
+  // session does it several times a second). A grabbed bubble must keep
+  // following the pointer across those snapshots instead of snapping back to
+  // its saved position, which is what made the graph look undraggable.
+  const live = await context.newPage();
+  live.on("pageerror", (e) => errors.push(String(e)));
+  await live.goto(baseURL + "?churn=60");
+  const held = live.locator('[data-id="workspace:product"]');
+  await held.waitFor();
+  await live.waitForTimeout(600);
+  const storedBefore = await live.evaluate(
+    (k) =>
+      JSON.parse(localStorage.getItem(k) ?? "{}").positions?.[
+        "workspace:product"
+      ],
+    key,
+  );
+  const orb = await held.locator(".wg-orb").boundingBox();
+  assert.ok(orb);
+  const start = { x: orb.x + orb.width / 2, y: orb.y + orb.height / 2 };
+  const beforeBox = await held.boundingBox();
+  await live.mouse.move(start.x, start.y);
+  await live.mouse.down();
+  await live.mouse.move(start.x + 70, start.y + 35, { steps: 10 });
+  await live.waitForTimeout(400);
+  const duringBox = await held.boundingBox();
+  assert.ok(
+    duringBox.x - beforeBox.x > 40 && duringBox.y - beforeBox.y > 20,
+    "a grabbed bubble must follow the pointer while the catalog keeps updating",
+  );
+  await live.mouse.move(start.x + 120, start.y + 60, { steps: 8 });
+  await live.mouse.up();
+  await live.waitForTimeout(600);
+  const storedAfter = await live.evaluate(
+    (k) =>
+      JSON.parse(localStorage.getItem(k) ?? "{}").positions?.[
+        "workspace:product"
+      ],
+    key,
+  );
+  assert.ok(storedAfter);
+  assert.ok(
+    !storedBefore ||
+      storedAfter.x !== storedBefore.x ||
+      storedAfter.y !== storedBefore.y,
+    "the dragged position must still be saved",
+  );
+  await live.close();
   assert.deepEqual(errors, []);
   console.log(
     "PASS browser: drag/save/reload, workspace/status/search filters, native callback identity, restore, storage errors; screenshot captured.",

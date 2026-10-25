@@ -142,6 +142,11 @@ function GraphInner({
     viewportTimer = useRef<ReturnType<typeof setTimeout>>();
   const filtersRef = useRef(filters);
   filtersRef.current = filters;
+  // Bubbles currently held by the pointer. The host keeps pushing fresh catalog
+  // snapshots, and every snapshot rebuilds the nodes from the saved layout;
+  // without this guard the grabbed bubble jumps back to its saved position
+  // mid-gesture and the graph looks undraggable.
+  const draggingIds = useRef(new Set<string>());
   const projection = useMemo(
     () => projectGraph(catalog, filters, layout, limits),
     [catalog, filters, layout, limits],
@@ -190,16 +195,20 @@ function GraphInner({
     };
   }, []);
   useEffect(() => {
-    setNodes((old) =>
-      projection.nodes.map((n) => {
-        const current = old.find((x) => x.id === n.id);
+    setNodes((old) => {
+      const current = new Map(old.map((node) => [node.id, node]));
+      return projection.nodes.map((n) => {
+        const live = current.get(n.id);
+        const held = !!live && (live.dragging || draggingIds.current.has(n.id));
         return {
+          ...live,
           ...n,
           selected: n.id === selectedId,
-          position: current?.dragging ? current.position : n.position,
+          dragging: held ? true : live?.dragging,
+          position: held && live ? live.position : n.position,
         };
-      }),
-    );
+      });
+    });
   }, [projection, selectedId]);
   useEffect(() => {
     const listener = (event: StorageEvent) => {
@@ -455,16 +464,19 @@ function GraphInner({
           onNodesChange={(changes: NodeChange<Node<BubbleData>>[]) =>
             setNodes((ns) => applyNodeChanges(changes, ns))
           }
-          onNodeDragStop={(_e, node, dragged) =>
+          onNodeDragStart={(_e, node, dragged) => {
+            for (const item of dragged?.length ? dragged : [node])
+              draggingIds.current.add(item.id);
+          }}
+          onNodeDragStop={(_e, node, dragged) => {
+            const touched = dragged?.length ? dragged : [node];
+            for (const item of touched) draggingIds.current.delete(item.id);
             save({
               positions: Object.fromEntries(
-                (dragged?.length ? dragged : [node]).map((n) => [
-                  n.id,
-                  n.position,
-                ]),
+                touched.map((n) => [n.id, n.position]),
               ),
-            })
-          }
+            });
+          }}
           onNodeClick={(_e, node) => setSelectedId(node.id)}
           onNodeDoubleClick={(_e, node) => void openNode(node)}
           onPaneClick={() => setSelectedId(undefined)}

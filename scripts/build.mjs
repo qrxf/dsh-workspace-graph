@@ -1,5 +1,16 @@
 import { build } from "esbuild";
 import { mkdir, writeFile, readFile, readdir } from "node:fs/promises";
+// CSS is inlined as text, so a Windows checkout (CRLF, core.autocrlf=true) would
+// otherwise emit a different bundle than the LF CI build.
+const cssAsLfText = {
+  name: "css-as-lf-text",
+  setup(builder) {
+    builder.onLoad({ filter: /\.css$/ }, async (args) => ({
+      contents: (await readFile(args.path, "utf8")).replace(/\r\n?/g, "\n"),
+      loader: "text",
+    }));
+  },
+};
 await mkdir("dist", { recursive: true });
 const result = await build({
   entryPoints: ["src/client.tsx"],
@@ -11,6 +22,7 @@ const result = await build({
   jsx: "transform",
   external: ["react", "react-dom", "react-dom/client", "react/jsx-runtime"],
   loader: { ".css": "text" },
+  plugins: [cssAsLfText],
   define: { "process.env.NODE_ENV": '"production"' },
   minify: true,
   legalComments: "inline",
