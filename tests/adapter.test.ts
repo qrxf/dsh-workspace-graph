@@ -1,6 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { toCatalog } from "../src/adapter.ts";
+import { projectGraph } from "../src/model.ts";
+import { defaultFilters } from "../src/types.ts";
+import { emptyLayout } from "../src/layout.ts";
 test("reads host-list membership, stable workspace ids and runtime interaction precedence without retaining sessions", () => {
   const cat = toCatalog(
     {
@@ -48,4 +51,72 @@ test("reads host-list membership, stable workspace ids and runtime interaction p
   assert.equal(cat.workspaces[0].id, "w");
   assert.deepEqual(cat.archivedSessionIds, ["z"]);
   assert.equal(cat.loading, false);
+});
+test("mainView ownership identifies current session and disconnection clears stale running facts", () => {
+  const s = {
+    ids: ["a", "b"],
+    byId: {
+      a: {
+        id: "a",
+        displayTitle: "A",
+        updatedAt: 42,
+        running: true,
+        retainedBy: { mainView: 1 },
+      },
+      b: {
+        id: "b",
+        displayTitle: "B",
+        updatedAt: 43,
+        running: true,
+        retainedBy: {},
+      },
+    },
+    phase: "ready",
+  };
+  assert.equal(
+    toCatalog({ phase: "ready" }, s, new Map()).currentSessionId,
+    "a",
+  );
+  assert.equal(
+    toCatalog({ phase: "ready" }, { ...s, phase: "error" }, new Map())
+      .sessions[0].running,
+    undefined,
+  );
+});
+test("verified current retained outside host ids stays visible, other unlisted rows do not", () => {
+  const c = toCatalog(
+    { phase: "ready", items: [] },
+    {
+      phase: "ready",
+      ids: [],
+      byId: {
+        child: {
+          id: "child",
+          title: "Child",
+          origin: "subagent",
+          updatedAt: 1,
+          running: false,
+          retainedBy: { mainView: 1 },
+        },
+        other: {
+          id: "other",
+          title: "Other",
+          origin: "subagent",
+          updatedAt: 1,
+          retainedBy: {},
+        },
+      },
+    },
+    new Map(),
+  );
+  assert.equal(c.currentSessionId, "child");
+  assert.deepEqual(
+    c.sessions.map((s) => s.id),
+    ["child"],
+  );
+  assert.ok(
+    projectGraph(c, defaultFilters, emptyLayout()).nodes.find(
+      (n) => n.id === "session:child",
+    )?.data.current,
+  );
 });

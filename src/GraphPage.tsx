@@ -30,7 +30,19 @@ import type {
 } from "./types.ts";
 import { defaultFilters } from "./types.ts";
 import { projectGraph } from "./model.ts";
+import { carryHiddenPositions } from "./hierarchy.ts";
 import { emptyLayout, LayoutRepository } from "./layout.ts";
+import { DEFAULT_THEME, deriveTheme } from "./theme.ts";
+import { ThemeControls } from "./ThemeControls.tsx";
+import { useGraphPhysics } from "./useGraphPhysics.ts";
+import {
+  recordVisit,
+  observeSessions,
+  frequencyLabels,
+  recencyLabels,
+} from "./activity.ts";
+import type { SummaryProvider } from "./summary.ts";
+import { SummaryEditor } from "./SummaryEditor.tsx";
 
 export const statusLabels: Record<Status, string> = {
   running: "运行中",
@@ -54,6 +66,9 @@ function Bubble({ data, selected }: NodeProps<Node<BubbleData>>) {
         "wg-bubble " +
         (workspace ? "is-workspace" : "is-session") +
         (selected ? " is-selected" : "") +
+        (data.collapsed === false ? " is-expanded" : "") +
+        (data.current ? " is-current" : "") +
+        (data.working ? " is-working" : "") +
         (data.archived ? " is-archived" : "")
       }
       style={{ "--bubble-color": colors[data.status] } as React.CSSProperties}
@@ -63,8 +78,27 @@ function Bubble({ data, selected }: NodeProps<Node<BubbleData>>) {
       <div className="wg-orb">
         <span className="wg-orb-symbol">{workspace ? "◈" : "✦"}</span>
         {workspace && <span className="wg-orb-count">{data.total} 个会话</span>}
+        {workspace && !!data.childWorkspaceCount && (
+          <span className="wg-orb-count">
+            {data.childWorkspaceCount} 个子工作区
+          </span>
+        )}
       </div>
       <div className="wg-node-title">{data.title}</div>
+      <div className="wg-node-badges">
+        {data.current && <span>当前</span>}
+        {data.working && <strong>▶ 工作中</strong>}
+        {data.parentWorkspaceId && <span>子工作区</span>}
+        {data.parentSessionId && <span>分支</span>}
+        {data.context && <span>来源</span>}
+      </div>
+      {!workspace && (
+        <div className="wg-activity">
+          {data.pinned ? "★ " : ""}
+          {data.recency && recencyLabels[data.recency]} ·{" "}
+          {data.frequency && frequencyLabels[data.frequency]}
+        </div>
+      )}
       <div className="wg-node-meta">
         <i />
         {workspace
@@ -76,11 +110,28 @@ function Bubble({ data, selected }: NodeProps<Node<BubbleData>>) {
             : statusLabels[data.status]}
       </div>
       <Handle type="source" position={Position.Bottom} isConnectable={false} />
+      {!workspace && (
+        <>
+          <Handle
+            id="branch-source"
+            type="source"
+            position={Position.Top}
+            isConnectable={false}
+          />
+          <Handle
+            id="branch-target"
+            type="target"
+            position={Position.Bottom}
+            isConnectable={false}
+          />
+        </>
+      )}
     </div>
   );
 }
 const nodeTypes = { bubble: React.memo(Bubble) };
 export interface GraphPageProps {
+  summaryProvider?: SummaryProvider;
   catalog: GraphCatalog;
   actions: GraphActions;
   repository: LayoutRepository;
@@ -128,12 +179,38 @@ function GraphInner({
     ...initial.layout.views.all?.filters,
   }));
   const [selectedId, setSelectedId] = useState<string>(),
+    [expanded, setExpanded] = useState<Set<string>>(() => new Set()),
     [limits, setLimits] = useState<Record<string, number>>({}),
     [dockOpen, setDockOpen] = useState(true);
   const [undo, setUndo] = useState<Record<string, Point>>();
   const [resetRaw, setResetRaw] = useState<{ raw: string | null }>();
-  const [nodes, setNodes] = useState<Node<BubbleData>[]>([]);
+  const [systemReduced, setSystemReduced] = useState(
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
+  const reduced = !!layout.settings?.reducedMotion || systemReduced;
+  const [now, setNow] = useState(Date.now);
   const flow = useReactFlow<Node<BubbleData>>();
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const fitAvailable = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !flow.getNodes().length) return;
+    const size = canvas.getBoundingClientRect(),
+      dock = canvas.querySelector(".wg-dock")?.getBoundingClientRect();
+    const left = size.width > 850 ? (dock?.width ?? 0) + 45 : 20;
+    const bottom = size.width <= 850 ? (dock?.height ?? 0) + 35 : 35;
+    const width = Math.max(180, size.width - left - 35),
+      height = Math.max(120, size.height - bottom - 40);
+    const bounds = flow.getNodesBounds(flow.getNodes());
+    const zoom = Math.max(
+      0.1,
+      Math.min(1, width / (bounds.width + 100), height / (bounds.height + 100)),
+    );
+    void flow.setViewport({
+      x: left + (width - bounds.width * zoom) / 2 - bounds.x * zoom,
+      y: 20 + (height - bounds.height * zoom) / 2 - bounds.y * zoom,
+      zoom,
+    });
+  }, [flow]);
   const alive = useRef(true),
     queue = useRef(Promise.resolve()),
     blocked = useRef(!!initial.error),
@@ -142,14 +219,9 @@ function GraphInner({
     viewportTimer = useRef<ReturnType<typeof setTimeout>>();
   const filtersRef = useRef(filters);
   filtersRef.current = filters;
-  // Bubbles currently held by the pointer. The host keeps pushing fresh catalog
-  // snapshots, and every snapshot rebuilds the nodes from the saved layout;
-  // without this guard the grabbed bubble jumps back to its saved position
-  // mid-gesture and the graph looks undraggable.
-  const draggingIds = useRef(new Set<string>());
   const projection = useMemo(
-    () => projectGraph(catalog, filters, layout, limits),
-    [catalog, filters, layout, limits],
+    () => projectGraph(catalog, filters, layout, limits, expanded, now),
+    [catalog, filters, layout, limits, expanded, now],
   );
   const setDocument = useCallback((next: LayoutDocument) => {
     layoutRef.current = next;
@@ -187,6 +259,43 @@ function GraphInner({
     },
     [repository, setDocument],
   );
+  const physics = useGraphPhysics(projection, reduced, (positions) => {
+    const previous = layoutRef.current.positions;
+    const changed = Object.entries(positions).some(
+      ([id, p]) =>
+        !previous[id] ||
+        Math.hypot(p.x - previous[id].x, p.y - previous[id].y) > 0.1,
+    );
+    if (!changed) return;
+    save({ positions: carryHiddenPositions(catalog, previous, positions) });
+  });
+  const { nodes, setNodes } = physics;
+  const edges = useMemo(
+    () =>
+      projection.edges.map((e) => ({
+        ...e,
+        type: "straight",
+        style: { stroke: "#47719a", strokeWidth: 1.25, opacity: 0.56 },
+      })),
+    [projection.edges],
+  );
+  useEffect(() => {
+    if (catalog.loading || blocked.current) return;
+    const usage = layoutRef.current.settings?.usage ?? {};
+    const ids = catalog.sessions.map((s) => s.id);
+    if (ids.some((id) => !Object.hasOwn(usage, id)))
+      save({ settings: { usage: observeSessions(usage, ids) } });
+  }, [catalog.sessions, catalog.loading, layout.settings?.usage, save]);
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 60000);
+    return () => clearInterval(timer);
+  }, []);
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setSystemReduced(media.matches);
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
   useEffect(() => {
     alive.current = true;
     return () => {
@@ -195,21 +304,10 @@ function GraphInner({
     };
   }, []);
   useEffect(() => {
-    setNodes((old) => {
-      const current = new Map(old.map((node) => [node.id, node]));
-      return projection.nodes.map((n) => {
-        const live = current.get(n.id);
-        const held = !!live && (live.dragging || draggingIds.current.has(n.id));
-        return {
-          ...live,
-          ...n,
-          selected: n.id === selectedId,
-          dragging: held ? true : live?.dragging,
-          position: held && live ? live.position : n.position,
-        };
-      });
-    });
-  }, [projection, selectedId]);
+    setNodes((old) =>
+      old.map((n) => ({ ...n, selected: n.id === selectedId })),
+    );
+  }, [selectedId, setNodes]);
   useEffect(() => {
     const listener = (event: StorageEvent) => {
       if (event.key !== repository.key) return;
@@ -235,10 +333,10 @@ function GraphInner({
     const saved = layoutRef.current.views[filters.workspace]?.viewport;
     const timer = setTimeout(() => {
       if (saved) flow.setViewport(saved);
-      else flow.fitView({ padding: 0.12, maxZoom: 1 });
+      else fitAvailable();
     }, 60);
     return () => clearTimeout(timer);
-  }, [filters.workspace, catalog.loading, flow]);
+  }, [filters.workspace, catalog.loading, flow, fitAvailable]);
   useEffect(() => {
     if (catalog.loading || blocked.current) return;
     const missing = projection.nodes.filter(
@@ -300,7 +398,14 @@ function GraphInner({
   };
   const selected = projection.nodes.find((n) => n.id === selectedId);
   const resetLayout = () => {
-    const defaults = projectGraph(catalog, filters, emptyLayout(), limits);
+    physics.forceNextSync();
+    const defaults = projectGraph(
+      catalog,
+      filters,
+      emptyLayout(),
+      limits,
+      expanded,
+    );
     const previous = Object.fromEntries(nodes.map((n) => [n.id, n.position]));
     setUndo(previous);
     save({
@@ -311,23 +416,50 @@ function GraphInner({
     setTimeout(() => flow.fitView({ padding: 0.12, maxZoom: 1 }), 70);
   };
   const openNode = (node: BubbleNode | Node<BubbleData>) =>
-    perform(() =>
-      node.data.kind === "workspace"
-        ? node.data.virtual
-          ? undefined
-          : actions.openWorkspace(node.data.entityId)
-        : node.data.archived
-          ? Promise.reject(new Error("请先恢复这个归档会话"))
-          : actions.openSession(node.data.entityId),
-    );
+    perform(async () => {
+      if (node.data.kind === "workspace") {
+        if (!node.data.virtual) await actions.openWorkspace(node.data.entityId);
+        return;
+      }
+      if (node.data.archived) throw new Error("请先恢复这个归档会话");
+      const id = node.data.entityId;
+      save({
+        settings: {
+          usage: {
+            ...layoutRef.current.settings?.usage,
+            [id]: recordVisit(layoutRef.current.settings?.usage?.[id]),
+          },
+        },
+      });
+      await queue.current;
+      if (alive.current) await actions.openSession(id);
+    });
   const hasFilters =
     filters.query ||
+    !!filters.statuses?.length ||
+    (filters.recency && filters.recency !== "all") ||
+    (filters.frequency && filters.frequency !== "all") ||
     filters.status !== "all" ||
     filters.kind !== "all" ||
     filters.workspace !== "all" ||
     filters.archived;
+  const theme = deriveTheme(layout.settings?.theme ?? DEFAULT_THEME);
   return (
-    <section className="wg-root" aria-label="工作区图谱">
+    <section
+      className={
+        "wg-root" + (layout.settings?.reducedMotion ? " wg-reduced" : "")
+      }
+      style={
+        {
+          "--wg-workspace": theme.workspace,
+          "--wg-expanded": theme.expanded,
+          "--wg-session": theme.session,
+          "--wg-session-text": theme.sessionText,
+          "--wg-accent": theme.accent,
+        } as React.CSSProperties
+      }
+      aria-label="工作区图谱"
+    >
       <header className="wg-header">
         <div className="wg-brand">
           <span className="wg-logo">◈</span>
@@ -351,9 +483,7 @@ function GraphInner({
               onChange={(e) => updateFilters({ query: e.target.value })}
             />
           </label>
-          <button onClick={() => flow.fitView({ padding: 0.12, maxZoom: 1 })}>
-            适应画布
-          </button>
+          <button onClick={fitAvailable}>适应画布</button>
           <button onClick={resetLayout}>重置布局</button>
         </div>
       </header>
@@ -452,32 +582,58 @@ function GraphInner({
         </div>
       )}
       {demo && <div className="wg-demo-label">交互演示 · 数据仅用于预览</div>}
-      <div className="wg-canvas">
+      <div
+        className="wg-canvas"
+        ref={canvasRef}
+        onKeyDown={(e) => {
+          if (e.key !== "Enter" && e.key !== " ") return;
+          const id = (e.target as HTMLElement)
+            .closest(".react-flow__node")
+            ?.getAttribute("data-id");
+          const n = nodes.find((n) => n.id === id);
+          if (n?.data.kind === "workspace") {
+            e.preventDefault();
+            setSelectedId(n.id);
+            setExpanded((old) => {
+              const next = new Set(old);
+              next.has(n.data.entityId)
+                ? next.delete(n.data.entityId)
+                : next.add(n.data.entityId);
+              return next;
+            });
+          }
+        }}
+      >
         <ReactFlow
           nodes={nodes}
-          edges={projection.edges.map((e) => ({
-            ...e,
-            type: "straight",
-            style: { stroke: "#47719a", strokeWidth: 1.25, opacity: 0.56 },
-          }))}
+          edges={edges}
           nodeTypes={nodeTypes}
           onNodesChange={(changes: NodeChange<Node<BubbleData>>[]) =>
             setNodes((ns) => applyNodeChanges(changes, ns))
           }
-          onNodeDragStart={(_e, node, dragged) => {
-            for (const item of dragged?.length ? dragged : [node])
-              draggingIds.current.add(item.id);
+          onNodeDragStart={(_e, node) => {
+            physics.drag(node.id, node.position);
           }}
-          onNodeDragStop={(_e, node, dragged) => {
-            const touched = dragged?.length ? dragged : [node];
-            for (const item of touched) draggingIds.current.delete(item.id);
-            save({
-              positions: Object.fromEntries(
-                touched.map((n) => [n.id, n.position]),
-              ),
-            });
+          onNodeDrag={(_e, node) => physics.drag(node.id, node.position)}
+          onNodeDragStop={(_event, node) => {
+            physics.drag(node.id, node.position);
+            physics.release(node.id);
           }}
-          onNodeClick={(_e, node) => setSelectedId(node.id)}
+          autoPanOnNodeFocus={false}
+          autoPanOnNodeDrag={false}
+          zoomOnDoubleClick={false}
+          nodeDragThreshold={5}
+          onNodeClick={(_e, node) => {
+            setSelectedId(node.id);
+            if (node.data.kind === "workspace")
+              setExpanded((old) => {
+                const next = new Set(old);
+                next.has(node.data.entityId)
+                  ? next.delete(node.data.entityId)
+                  : next.add(node.data.entityId);
+                return next;
+              });
+          }}
           onNodeDoubleClick={(_e, node) => void openNode(node)}
           onPaneClick={() => setSelectedId(undefined)}
           onMoveEnd={(_event, viewport) => {
@@ -494,6 +650,8 @@ function GraphInner({
           edgesReconnectable={false}
           deleteKeyCode={null}
           selectionOnDrag={false}
+          multiSelectionKeyCode={null}
+          selectionKeyCode={null}
           proOptions={{ hideAttribution: false }}
           defaultViewport={layout.views[filters.workspace]?.viewport}
         >
@@ -510,6 +668,11 @@ function GraphInner({
             <span className="wg-empty-orb">◈</span>
             <h2>正在连接工作区</h2>
             <p>读取 Harness 的工作区与会话…</p>
+          </div>
+        )}
+        {!catalog.loading && hasFilters && projection.matched === 0 && (
+          <div className="wg-no-match" role="status">
+            没有匹配的会话；工作区与当前会话仍保留。
           </div>
         )}
         {!catalog.loading && !projection.nodes.length && (
@@ -576,9 +739,46 @@ function GraphInner({
                   ).map((status) => (
                     <button
                       key={status}
-                      className={filters.status === status ? "active" : ""}
-                      aria-pressed={filters.status === status}
-                      onClick={() => updateFilters({ status })}
+                      className={
+                        (
+                          status === "all"
+                            ? !(
+                                filters.statuses ??
+                                (filters.status === "all"
+                                  ? []
+                                  : [filters.status])
+                              ).length
+                            : (filters.statuses ?? [filters.status]).includes(
+                                status,
+                              )
+                        )
+                          ? "active"
+                          : ""
+                      }
+                      aria-pressed={
+                        status === "all"
+                          ? !(
+                              filters.statuses ??
+                              (filters.status === "all" ? [] : [filters.status])
+                            ).length
+                          : (filters.statuses ?? [filters.status]).includes(
+                              status,
+                            )
+                      }
+                      onClick={() => {
+                        const current =
+                          filters.statuses ??
+                          (filters.status === "all" ? [] : [filters.status]);
+                        updateFilters({
+                          status: "all",
+                          statuses:
+                            status === "all"
+                              ? []
+                              : current.includes(status)
+                                ? current.filter((s) => s !== status)
+                                : [...current, status],
+                        });
+                      }}
                     >
                       {status !== "all" && (
                         <i style={{ background: colors[status] }} />
@@ -617,7 +817,57 @@ function GraphInner({
                   </label>
                 </div>
               </div>
+              <ThemeControls
+                color={layout.settings?.theme ?? DEFAULT_THEME}
+                reduced={!!layout.settings?.reducedMotion}
+                onColor={(theme) => save({ settings: { theme } })}
+                onReduced={(reducedMotion) =>
+                  save({ settings: { reducedMotion } })
+                }
+              />
               <div className="wg-dock-foot">
+                <label>
+                  时间{" "}
+                  <select
+                    aria-label="时间分类"
+                    value={filters.recency ?? "all"}
+                    onChange={(e) =>
+                      updateFilters({
+                        recency: e.target.value as Filters["recency"],
+                      })
+                    }
+                  >
+                    <option value="all">全部时间</option>
+                    {Object.entries(recencyLabels).map(([id, label]) => (
+                      <option value={id} key={id}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  频率{" "}
+                  <select
+                    aria-label="频率分类"
+                    value={filters.frequency ?? "all"}
+                    onChange={(e) =>
+                      updateFilters({
+                        frequency: e.target.value as Filters["frequency"],
+                      })
+                    }
+                  >
+                    <option value="all">全部频率</option>
+                    {Object.entries(frequencyLabels).map(([id, label]) => (
+                      <option value={id} key={id}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <span className="wg-small-note">
+                  常用按图谱主动打开计数；30 天内 5 次，间隔 30
+                  分钟。历史记录从本版本开始累计。
+                </span>
                 <span>
                   {projection.nodes.length} 个可见节点
                   {projection.hidden > 0
@@ -658,6 +908,25 @@ function GraphInner({
               {selected.data.archived ? " · 已归档" : ""}
             </div>
             <dl>
+              {selected.data.kind === "session" && (
+                <>
+                  <dt>分类</dt>
+                  <dd>
+                    {selected.data.recency &&
+                      recencyLabels[selected.data.recency]}{" "}
+                    ·{" "}
+                    {selected.data.frequency &&
+                      frequencyLabels[selected.data.frequency]}
+                  </dd>
+                  <dt>图谱主动打开（近 30 天）</dt>
+                  <dd>
+                    {layout.settings?.usage?.[
+                      selected.data.entityId
+                    ]?.visits.filter((t) => t >= Date.now() - 30 * 86400000)
+                      .length ?? "记录积累中"}
+                  </dd>
+                </>
+              )}
               <dt>路径</dt>
               <dd>{selected.data.path || "未记录目录"}</dd>
               <dt>标识</dt>
@@ -669,6 +938,41 @@ function GraphInner({
                 </>
               )}
             </dl>
+            {selected.data.kind === "session" && (
+              <button
+                onClick={() => {
+                  const pinned = layoutRef.current.settings?.pinned ?? [];
+                  save({
+                    settings: {
+                      pinned: pinned.includes(selected.data.entityId)
+                        ? pinned.filter((id) => id !== selected.data.entityId)
+                        : [...pinned, selected.data.entityId],
+                    },
+                  });
+                }}
+              >
+                {selected.data.pinned ? "取消置顶" : "置顶会话"}
+              </button>
+            )}
+            {selected.data.kind === "session" && (
+              <SummaryEditor
+                key={"summary:" + selected.id}
+                value={
+                  layout.settings?.manualSummaries?.[selected.data.entityId] ??
+                  ""
+                }
+                onSave={(text) =>
+                  save({
+                    settings: {
+                      manualSummaries: {
+                        ...layoutRef.current.settings?.manualSummaries,
+                        [selected.data.entityId]: text,
+                      },
+                    },
+                  })
+                }
+              />
+            )}
             {selected.data.kind === "workspace" ? (
               <WorkspaceActions
                 key={selected.id}
@@ -679,12 +983,12 @@ function GraphInner({
                 perform={perform}
                 open={() => void openNode(selected)}
                 collapse={() =>
-                  save({
-                    collapsed: selected.data.collapsed
-                      ? layout.collapsed.filter(
-                          (id) => id !== selected.data.entityId,
-                        )
-                      : [...layout.collapsed, selected.data.entityId],
+                  setExpanded((old) => {
+                    const next = new Set(old);
+                    next.has(selected.data.entityId)
+                      ? next.delete(selected.data.entityId)
+                      : next.add(selected.data.entityId);
+                    return next;
                   })
                 }
                 more={() =>
@@ -717,6 +1021,7 @@ function GraphInner({
             已重排当前视图
             <button
               onClick={() => {
+                physics.forceNextSync();
                 save({ positions: undo });
                 setUndo(undefined);
               }}

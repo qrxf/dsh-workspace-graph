@@ -1,9 +1,27 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { projectGraph, sessionStatus } from "../src/model.ts";
+import { projectGraph as project, sessionStatus } from "../src/model.ts";
 import { emptyLayout } from "../src/layout.ts";
-import { defaultFilters } from "../src/types.ts";
+import { defaultFilters as defaults } from "../src/types.ts";
 import type { GraphCatalog, SessionRow } from "../src/types.ts";
+const defaultFilters = { ...defaults, recency: "all" as const };
+const projectGraph = (
+  catalog: GraphCatalog,
+  filters: Parameters<typeof project>[1],
+  layout: Parameters<typeof project>[2],
+  limits = {},
+) =>
+  project(
+    catalog,
+    filters,
+    layout,
+    limits,
+    new Set(
+      [...catalog.workspaces.map((w) => w.id), "__ungrouped__"].filter(
+        (id) => !layout.collapsed.includes(id),
+      ),
+    ),
+  );
 const session = (id: string, extra: Partial<SessionRow> = {}): SessionRow => ({
   id,
   title: id,
@@ -72,7 +90,7 @@ test("search or status matches retain the owning parent as context", () => {
   );
   assert.deepEqual(
     g.nodes.map((n) => n.id),
-    ["workspace:w", "session:a"],
+    ["workspace:w", "session:a", "workspace:w2", "workspace:__ungrouped__"],
   );
   const running = projectGraph(
     fixture(),
@@ -81,7 +99,7 @@ test("search or status matches retain the owning parent as context", () => {
   );
   assert.deepEqual(
     running.nodes.map((n) => n.id),
-    ["workspace:w", "session:b"],
+    ["workspace:w", "session:b", "workspace:w2", "workspace:__ungrouped__"],
   );
 });
 test("filters do not alter input, saved positions or other workspace identities", () => {
@@ -101,7 +119,7 @@ test("filters do not alter input, saved positions or other workspace identities"
   assert.equal(JSON.stringify({ layout, catalog }), before);
   assert.equal(
     g.nodes.some((n) => n.id === "workspace:w2"),
-    false,
+    true,
   );
 });
 test("caps each expanded workspace and allows an explicit increase without changing existing positions", () => {
