@@ -10,7 +10,11 @@ export function toCatalog(
   const w = workspaces as WorkspaceSnapshot | undefined,
     s = sessions as SessionListState | undefined,
     status = statuses as SessionStatusSnapshot | undefined;
+  const currentSessionId = Object.values(s?.byId ?? {}).find(
+    (row) => (row.retainedBy?.mainView ?? 0) > 0,
+  )?.id;
   return {
+    currentSessionId,
     loading: w?.phase !== "ready" || s?.phase !== "ready",
     error: w?.error?.message,
     workspaces: (w?.items ?? []).map((row) => ({
@@ -20,7 +24,12 @@ export function toCatalog(
       sessionIds: row.sessionIds,
     })),
     archivedSessionIds: [...(w?.archivedSessionIds ?? [])],
-    sessions: (s?.ids ?? []).flatMap((id) => {
+    sessions: [
+      ...new Set([
+        ...(s?.ids ?? []),
+        ...(currentSessionId ? [currentSessionId] : []),
+      ]),
+    ].flatMap((id) => {
       const row = s?.byId[id];
       if (!row) return [];
       const live = status?.get(id);
@@ -29,8 +38,14 @@ export function toCatalog(
           id,
           title: row.title || row.displayTitle || "未命名会话",
           cwd: row.cwd,
+          parentId: row.parentId,
           updatedAt: row.updatedAt,
-          running: live?.running ?? row.running,
+          running:
+            s?.phase === "ready"
+              ? live
+                ? live.running
+                : row.running
+              : undefined,
           pending: !!live?.pendingInteraction,
           unread: live?.completionUnread,
           blank: row.blank,
