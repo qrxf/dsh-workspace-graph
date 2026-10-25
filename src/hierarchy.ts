@@ -57,6 +57,9 @@ export function carryHiddenPositions(
     for (const id of w.sessionIds)
       if (!parents.has("session:" + id))
         parents.set("session:" + id, "workspace:" + w.id);
+  for (const session of catalog.sessions)
+    if (!parents.has("session:" + session.id))
+      parents.set("session:" + session.id, "workspace:__ungrouped__");
   for (const [child, parent] of sessionParents(catalog.sessions))
     parents.set("session:" + child, "session:" + parent);
   const result = { ...moved };

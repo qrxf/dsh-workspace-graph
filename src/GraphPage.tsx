@@ -35,6 +35,8 @@ import { emptyLayout, LayoutRepository } from "./layout.ts";
 import { DEFAULT_THEME, deriveTheme } from "./theme.ts";
 import { ThemeControls } from "./ThemeControls.tsx";
 import { useGraphPhysics } from "./useGraphPhysics.ts";
+import { RopeEdge } from "./RopeEdge.tsx";
+import { runtimeTreePositions } from "./treeLayout.ts";
 import {
   recordVisit,
   observeSessions,
@@ -130,6 +132,7 @@ function Bubble({ data, selected }: NodeProps<Node<BubbleData>>) {
   );
 }
 const nodeTypes = { bubble: React.memo(Bubble) };
+const edgeTypes = { rope: React.memo(RopeEdge) };
 export interface GraphPageProps {
   summaryProvider?: SummaryProvider;
   catalog: GraphCatalog;
@@ -235,14 +238,14 @@ function GraphInner({
       queue.current = queue.current
         .then(async () => {
           if (!alive.current || blocked.current) return;
-          const revision = layoutRef.current.revision;
           const commit = () => {
             if (!alive.current || blocked.current) return;
+            const revision = layoutRef.current.revision;
             const next = initial
               ? repository.initializePositions(patch.positions ?? {})
               : repository.savePatch(patch, revision);
             setDocument(next);
-            setNotice("布局已保存");
+            setNotice(patch.settings ? "设置已保存" : "布局在本次运行保留");
           };
           if (navigator.locks)
             await navigator.locks.request(repository.key, commit);
@@ -274,10 +277,11 @@ function GraphInner({
     () =>
       projection.edges.map((e) => ({
         ...e,
-        type: "straight",
+        type: "rope",
+        data: physics.ropes[JSON.stringify([e.source, e.target])],
         style: { stroke: "#47719a", strokeWidth: 1.25, opacity: 0.56 },
       })),
-    [projection.edges],
+    [projection.edges, physics.ropes],
   );
   useEffect(() => {
     if (catalog.loading || blocked.current) return;
@@ -311,15 +315,10 @@ function GraphInner({
   useEffect(() => {
     const listener = (event: StorageEvent) => {
       if (event.key !== repository.key) return;
-      if (pending.current > initializing.current) {
-        blocked.current = true;
-        setError("另一个窗口修改了布局。请重新载入，再继续拖动。");
-        return;
-      }
       try {
         const next = repository.load();
         setDocument(next);
-        setNotice("布局已从另一窗口同步");
+        setNotice("设置已从另一窗口同步");
       } catch (err) {
         blocked.current = true;
         setError("无法同步布局：" + String(err));
@@ -339,15 +338,13 @@ function GraphInner({
   }, [filters.workspace, catalog.loading, flow, fitAvailable]);
   useEffect(() => {
     if (catalog.loading || blocked.current) return;
-    const missing = projection.nodes.filter(
-      (node) => !layoutRef.current.positions[node.id],
-    );
+    const missing = Object.entries(
+      runtimeTreePositions(catalog, layoutRef.current.positions),
+    ).filter(([id]) => !layoutRef.current.positions[id]);
     if (missing.length)
       save(
         {
-          positions: Object.fromEntries(
-            missing.map((node) => [node.id, node.position]),
-          ),
+          positions: Object.fromEntries(missing),
         },
         true,
       );
@@ -608,15 +605,26 @@ function GraphInner({
           nodes={nodes}
           edges={edges}
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           onNodesChange={(changes: NodeChange<Node<BubbleData>>[]) =>
             setNodes((ns) => applyNodeChanges(changes, ns))
           }
-          onNodeDragStart={(_e, node) => {
-            physics.drag(node.id, node.position);
+          onNodeDragStart={(e, node) => {
+            physics.drag(
+              node.id,
+              node.position,
+              e.ctrlKey ? "free" : "elastic",
+            );
           }}
-          onNodeDrag={(_e, node) => physics.drag(node.id, node.position)}
-          onNodeDragStop={(_event, node) => {
-            physics.drag(node.id, node.position);
+          onNodeDrag={(e, node) =>
+            physics.drag(node.id, node.position, e.ctrlKey ? "free" : "elastic")
+          }
+          onNodeDragStop={(event, node) => {
+            physics.drag(
+              node.id,
+              node.position,
+              event.ctrlKey ? "free" : "elastic",
+            );
             physics.release(node.id);
           }}
           autoPanOnNodeFocus={false}
@@ -1012,7 +1020,9 @@ function GraphInner({
             )}
           </aside>
         )}
-        <div className="wg-canvas-hint">拖动气泡整理 · 滚轮缩放 · 双击打开</div>
+        <div className="wg-canvas-hint">
+          拖动柔性牵引 · Ctrl 自由拖动 · 滚轮缩放 · 双击打开
+        </div>
         <div className="wg-save-status" role="status">
           {notice}
         </div>
@@ -1156,7 +1166,7 @@ function SessionActions({
         </>
       )}
       <p className="wg-small-note">
-        位置保存在当前浏览器。拖动不会改变会话所属。
+        位置在本次运行保留，重启恢复默认。活动会话保留显示。拖动不会改变会话所属。
       </p>
     </div>
   );

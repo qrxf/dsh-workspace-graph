@@ -26,6 +26,7 @@ export interface SessionRow {
   origin?: string;
 }
 export interface GraphCatalog {
+  currentSessionIds?: string[];
   currentSessionId?: string;
   workspaces: WorkspaceRow[];
   sessions: SessionRow[];

@@ -75,22 +75,22 @@ try {
     await page.waitForTimeout(220);
   };
   await page.goto(baseURL);
-  await count(4);
+  await count(7);
   await stable();
   assert.equal(await node("session:s1").locator(".is-current").count(), 1);
   await page.getByLabel("演示当前会话").selectOption("s4");
-  await count(4);
+  await count(7);
   assert.equal(await node("session:s1").count(), 0);
   await page.getByLabel("演示当前会话").selectOption("");
-  await count(3);
+  await count(6);
   await page.getByLabel("演示当前会话").selectOption("s1");
-  await count(4);
+  await count(7);
   mark("collapsed entry, absent current and cross-group current switch");
   await expand("product");
-  await count(6);
+  await count(8);
   await close();
   await page.getByRole("button", { name: "运行中", exact: true }).click();
-  await count(5);
+  await count(7);
   await page.getByRole("button", { name: "新结果", exact: true }).click();
   assert.equal(
     await page
@@ -99,19 +99,25 @@ try {
     "true",
   );
   await page.getByRole("button", { name: "空闲", exact: true }).click();
-  await count(6);
+  await count(8);
   await page.getByRole("button", { name: "全部", exact: true }).first().click();
-  await count(6);
+  await count(8);
   await page.getByLabel("搜索工作区和会话").fill("不存在的标题");
-  await count(4);
+  await count(7);
   assert.match(await page.locator(".wg-no-match").innerText(), /没有匹配/);
   await page.getByRole("button", { name: "清除筛选", exact: true }).click();
-  await count(6);
+  await count(8);
   mark("multi-status union, reset, unmatched current and workspace anchors");
   await stable();
-  const before = await page.evaluate(
-    (k) => JSON.parse(localStorage.getItem(k)).positions,
-    key,
+  const before = await page.locator(".react-flow__node").evaluateAll((ns) =>
+    Object.fromEntries(
+      ns.map((n) => {
+        const m = /translate\(([-\d.]+)px,\s*([-\d.]+)px\)/.exec(
+          n.style.transform,
+        );
+        return [n.dataset.id, { x: Number(m?.[1]), y: Number(m?.[2]) }];
+      }),
+    ),
   );
   const orb = await node("session:s2").locator(".wg-orb").boundingBox();
   assert.ok(orb);
@@ -126,9 +132,15 @@ try {
   await page.mouse.up();
   await leave();
   await stable();
-  const after = await page.evaluate(
-    (k) => JSON.parse(localStorage.getItem(k)).positions,
-    key,
+  const after = await page.locator(".react-flow__node").evaluateAll((ns) =>
+    Object.fromEntries(
+      ns.map((n) => {
+        const m = /translate\(([-\d.]+)px,\s*([-\d.]+)px\)/.exec(
+          n.style.transform,
+        );
+        return [n.dataset.id, { x: Number(m?.[1]), y: Number(m?.[2]) }];
+      }),
+    ),
   );
   assert.notDeepEqual(after["session:s2"], before["session:s2"]);
   assert.notDeepEqual(after["workspace:product"], before["workspace:product"]);
@@ -196,10 +208,10 @@ try {
   mark("manual summary retained in details; hover has no orbit text");
   await leave();
   await page.getByLabel("时间分类").selectOption("early");
-  await count(4);
+  await count(7);
   await page.getByLabel("时间分类").selectOption("all");
   await page.getByLabel("频率分类").selectOption("accumulating");
-  await count(6);
+  await count(8);
   await page.getByRole("button", { name: "清除筛选", exact: true }).click();
   await stable();
   await node("session:s3").dblclick();
@@ -238,7 +250,7 @@ try {
     key,
   );
   await page.reload();
-  await count(4);
+  await count(7);
   assert.deepEqual(
     await page.evaluate(
       (k) => JSON.parse(localStorage.getItem(k)).settings,

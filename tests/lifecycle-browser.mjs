@@ -77,12 +77,15 @@ try {
   await page.locator('[data-id="workspace:product"]').focus();
   await page.keyboard.press("Enter");
   await page.waitForFunction(
-    () => document.querySelectorAll(".react-flow__node").length === 6,
+    () => document.querySelectorAll(".react-flow__node").length === 8,
   );
   await page.keyboard.press("Space");
   await page.waitForFunction(
-    () => document.querySelectorAll(".react-flow__node").length === 4,
+    () => document.querySelectorAll(".react-flow__node").length === 7,
   );
+  await page.waitForTimeout(900);
+  const idle = await page.evaluate(() => window.__graphResources());
+  assert.equal(idle.frames, 0, "resting layout must stop its physics RAF");
   await page.getByLabel("关闭详情").click();
   await page.locator('[data-id="workspace:product"] .wg-orb').click();
   await page.waitForTimeout(100);
@@ -103,9 +106,12 @@ try {
     .getByRole("button", { name: "演示：重新进入图谱", exact: true })
     .click();
   await page.waitForFunction(
-    () => document.querySelectorAll(".react-flow__node").length === 4,
+    () => document.querySelectorAll(".react-flow__node").length === 7,
   );
   assert.deepEqual(errors, []);
+  await page.waitForTimeout(900);
+  const remountIdle = await page.evaluate(() => window.__graphResources());
+  assert.equal(remountIdle.frames, 0, "remounted resting layout must stop RAF");
   await mkdir("artifacts", { recursive: true });
   await writeFile(
     "artifacts/lifecycle-results.json",
@@ -115,6 +121,8 @@ try {
         beforeUnmount: before,
         afterUnmount: after,
         remountCollapsed: true,
+        idleResources: idle,
+        remountIdleResources: remountIdle,
         pageErrors: errors,
       },
       null,

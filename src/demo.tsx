@@ -213,6 +213,13 @@ function Demo() {
   return (
     <>
       <div className="wg-demo-tools">
+        <button
+          onClick={() =>
+            setCatalog((c) => ({ ...c, currentSessionIds: ["s1", "s4"] }))
+          }
+        >
+          演示：并行当前会话
+        </button>
         <label>
           演示当前会话{" "}
           <select
@@ -222,6 +229,7 @@ function Demo() {
               setCatalog((c) => ({
                 ...c,
                 currentSessionId: e.target.value || undefined,
+                currentSessionIds: e.target.value ? [e.target.value] : [],
               }))
             }
           >

@@ -90,7 +90,13 @@ test("search or status matches retain the owning parent as context", () => {
   );
   assert.deepEqual(
     g.nodes.map((n) => n.id),
-    ["workspace:w", "session:a", "workspace:w2", "workspace:__ungrouped__"],
+    [
+      "workspace:w",
+      "session:a",
+      "session:b",
+      "workspace:w2",
+      "workspace:__ungrouped__",
+    ],
   );
   const running = projectGraph(
     fixture(),

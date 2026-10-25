@@ -48,10 +48,60 @@ await writeFile(
   }),
 );
 const patch = path.join(home, "graph.patch.yml");
+// Test-only native client consumer: exercise real Session APIs and retention snapshots.
+// This fixture is outside the shipped plugin and never starts a model request.
+const probe = path.join(home, "native-probe");
+await mkdir(probe);
+await writeFile(
+  path.join(probe, "package.json"),
+  JSON.stringify({
+    name: "dsh-graph-native-probe",
+    version: "0.0.0",
+    type: "module",
+    main: "host.js",
+    exports: { ".": "./host.js", "./client": "./client.js" },
+    dsh: {
+      client: {
+        platform: "web",
+        inject: [
+          "@deepseek-ai/dsh-client-ui-workspace",
+          "@deepseek-ai/dsh-client-ui-session",
+        ],
+      },
+    },
+  }),
+);
+await writeFile(path.join(probe, "host.js"), "export function apply() {}\n");
+await writeFile(
+  path.join(probe, "client.js"),
+  `
+window.__ModuleLoader__.load({id:"dsh-graph-native-probe",factory:function(require){
+const inject = ["sessions", "uiWorkspace"];
+function apply(ctx) {
+  const held = [];
+  window.__graphNativeProbe = {
+    prepare: async () => {
+      const a = await ctx.uiWorkspace.connectWorkspace("test-a");
+      const b = await ctx.uiWorkspace.connectWorkspace("test-b");
+      for (const id of [a, b]) {
+        const reference = ctx.sessions.retain(id, { source: "mainView" });
+        held.push(reference); await reference.ready;
+      }
+      return { a, b };
+    },
+    snapshot: () => ctx.sessions.list.getSnapshot(),
+  };
+  ctx.effect(() => () => { for (const reference of held) reference.release(); delete window.__graphNativeProbe; });
+}
+return {inject,apply};}});
+`,
+);
 await writeFile(
   patch,
   "- insert:\n    - id: workspace-graph\n      name: " +
     JSON.stringify(path.join(root, "dist/host.js")) +
+    "\n    - id: native-graph-probe\n      name: " +
+    JSON.stringify(path.join(probe, "host.js")) +
     "\n",
 );
 const child = spawn(
@@ -137,12 +187,69 @@ try {
   await page.getByRole("button", { name: "工作区图谱", exact: true }).click();
   await page.getByRole("region", { name: "工作区图谱" }).waitFor();
   console.log("native: graph mounted");
+  await page.waitForFunction(() => !!window.__graphNativeProbe);
+  const parallel = await page.evaluate(() =>
+    window.__graphNativeProbe.prepare(),
+  );
+  for (const id of Object.values(parallel)) {
+    await page.locator(`[data-id="session:${id}"] .is-current`).waitFor();
+  }
+  const nativeSnapshot = await page.evaluate(() =>
+    window.__graphNativeProbe.snapshot(),
+  );
+  for (const id of Object.values(parallel))
+    assert.ok(nativeSnapshot.byId[id].retainedBy.mainView > 0);
+  console.log(
+    "native: two actual mainView retentions displayed together while collapsed",
+  );
+  const geometry = await page.locator(".wg-orb").evaluateAll((orbs) =>
+    orbs.map((el) => {
+      const b = el.getBoundingClientRect(),
+        style = getComputedStyle(el);
+      return { width: b.width, height: b.height, radius: style.borderRadius };
+    }),
+  );
+  await writeFile(
+    "artifacts/layout-interaction/native-geometry.json",
+    JSON.stringify(geometry, null, 2),
+  );
+  assert.ok(
+    geometry.every(
+      (g) => g.radius === "50%" && Math.abs(g.width - g.height) < 0.01,
+    ),
+  );
+  const endpointErrors = await page
+    .locator(".react-flow__edge-path")
+    .evaluateAll((paths) =>
+      paths.flatMap((el) => {
+        const edge = el.closest("[data-id]"),
+          [source, target] = edge.dataset.id.split("->");
+        return [source, target].map((id, i) => {
+          const orb = document
+            .querySelector(`.react-flow__node[data-id="${id}"] .wg-orb`)
+            .getBoundingClientRect();
+          const p = el.getPointAtLength(i ? el.getTotalLength() : 0),
+            screen = new DOMPoint(p.x, p.y).matrixTransform(el.getScreenCTM());
+          return Math.abs(
+            Math.hypot(
+              screen.x - orb.x - orb.width / 2,
+              screen.y - orb.y - orb.height / 2,
+            ) -
+              orb.width / 2,
+          );
+        });
+      }),
+    );
+  assert.ok(
+    endpointErrors.length > 0 && endpointErrors.every((error) => error < 2),
+  );
   await page.waitForFunction(
     () => document.querySelectorAll(".react-flow__node").length >= 2,
   );
   await page
     .locator('[data-id="workspace:test-a->workspace:test-b"]')
-    .waitFor();
+    .locator(".react-flow__edge-path")
+    .waitFor({ state: "attached" });
   assert.match(
     await page.locator('[data-id="workspace:test-b"]').innerText(),
     /子工作区/,
@@ -168,6 +275,69 @@ try {
     .getByRole("button", { name: "新建会话", exact: true })
     .click();
   await page.waitForFunction(() => !document.querySelector(".wg-root"));
+  await page.getByRole("button", { name: "工作区图谱", exact: true }).click();
+  await page.waitForFunction(
+    () =>
+      document.querySelectorAll(
+        '.react-flow__node-session .is-current, .react-flow__node[data-id^="session:"] .is-current',
+      ).length >= 2,
+  );
+  console.log(
+    "native: actual retained blank current session remains visible while collapsed",
+  );
+  await page.getByRole("button", { name: "重置布局", exact: true }).click();
+  await page.waitForTimeout(700);
+  const position = () =>
+    page.locator('[data-id="workspace:test-b"]').evaluate((el) => {
+      const m = /translate\(([-\d.]+)px,\s*([-\d.]+)px\)/.exec(
+        el.style.transform,
+      );
+      return { x: Number(m?.[1]), y: Number(m?.[2]) };
+    });
+  const defaults = await position();
+  const orb = await page
+    .locator('[data-id="workspace:test-b"] .wg-orb')
+    .boundingBox();
+  await page.keyboard.down("Control");
+  await page.mouse.move(orb.x + orb.width / 2, orb.y + orb.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(orb.x + orb.width / 2 + 110, orb.y + orb.height / 2, {
+    steps: 16,
+  });
+  await page.mouse.up();
+  await page.keyboard.up("Control");
+  await page.mouse.move(1000, 110);
+  await page.waitForTimeout(3200);
+  const moved = await position();
+  assert.ok(Math.hypot(moved.x - defaults.x, moved.y - defaults.y) > 50);
+  assert.deepEqual(
+    await page.evaluate(
+      () =>
+        JSON.parse(localStorage.getItem("dsh-workspace-graph:v1")).positions,
+    ),
+    {},
+  );
+  await page.reload();
+  await page
+    .getByRole("button", { name: "工作区图谱", exact: true })
+    .waitFor({ timeout: 30000 });
+  if (!(await page.locator(".wg-root").count()))
+    await page.getByRole("button", { name: "工作区图谱", exact: true }).click();
+  await page.locator('[data-id="workspace:test-b"]').waitFor();
+  await page.waitForTimeout(1000);
+  const restarted = await position();
+  await page.keyboard.press("Escape");
+  const dismiss = page.getByRole("button", { name: /关闭|Close/i });
+  if (await dismiss.count()) await dismiss.first().click();
+  await page.keyboard.press("Escape");
+  assert.ok(Math.hypot(restarted.x - moved.x, restarted.y - moved.y) > 10);
+  await page.getByRole("button", { name: "重置布局", exact: true }).click();
+  await page.waitForTimeout(700);
+  const reset = await position();
+  assert.ok(Math.hypot(restarted.x - reset.x, restarted.y - reset.y) < 1);
+  console.log(
+    "native: Ctrl drag and default layout after real host page restart verified",
+  );
   assert.deepEqual(errors, []);
   await mkdir("artifacts", { recursive: true });
   await page.screenshot({
@@ -175,7 +345,7 @@ try {
     fullPage: true,
   });
   console.log(
-    "PASS native DSH: dynamic client load, native workspace snapshots, rename, new-session navigation; no page errors.",
+    "PASS native DSH: dynamic client load, native workspace snapshots, rename, current-session retention, Ctrl drag, restart defaults and navigation; no page errors.",
   );
 } catch (error) {
   console.log(
