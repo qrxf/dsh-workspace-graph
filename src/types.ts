@@ -13,6 +13,8 @@ export interface WorkspaceRow {
   sessionIds: readonly string[];
 }
 export interface SessionRow {
+  parentId?: string;
+  contentVersion?: string;
   id: string;
   title: string;
   cwd?: string;
@@ -24,6 +26,7 @@ export interface SessionRow {
   origin?: string;
 }
 export interface GraphCatalog {
+  currentSessionId?: string;
   workspaces: WorkspaceRow[];
   sessions: SessionRow[];
   archivedSessionIds: string[];
@@ -31,6 +34,9 @@ export interface GraphCatalog {
   error?: string;
 }
 export interface Filters {
+  recency?: "all" | "recent" | "early" | "unknown";
+  frequency?: "all" | "frequent" | "infrequent" | "accumulating";
+  statuses?: Status[];
   workspace: string;
   status: "all" | Status;
   kind: "all" | "workspace" | "session";
@@ -42,6 +48,7 @@ export interface ViewState {
   filters?: Filters;
 }
 export interface LayoutDocument {
+  settings?: GraphSettings;
   schemaVersion: 1;
   revision: number;
   positions: Record<string, Point>;
@@ -49,11 +56,32 @@ export interface LayoutDocument {
   views: Record<string, ViewState>;
 }
 export interface LayoutPatch {
+  settings?: Partial<GraphSettings>;
   positions?: Record<string, Point>;
   collapsed?: string[];
   views?: Record<string, ViewState>;
 }
+export interface GraphSettings {
+  theme: string;
+  reducedMotion: boolean;
+  pinned?: string[];
+  usage?: Record<string, UsageHistory>;
+  manualSummaries?: Record<string, string>;
+}
+export interface UsageHistory {
+  since: number;
+  visits: number[];
+}
 export interface BubbleData extends Record<string, unknown> {
+  parentWorkspaceId?: string;
+  parentSessionId?: string;
+  childWorkspaceCount?: number;
+  context?: boolean;
+  pinned?: boolean;
+  recency?: "recent" | "early" | "unknown";
+  frequency?: "frequent" | "infrequent" | "accumulating";
+  current?: boolean;
+  working?: boolean;
   kind: "workspace" | "session";
   entityId: string;
   title: string;
@@ -75,7 +103,13 @@ export interface BubbleNode {
 }
 export interface GraphProjection {
   nodes: BubbleNode[];
-  edges: { id: string; source: string; target: string }[];
+  edges: {
+    id: string;
+    source: string;
+    target: string;
+    sourceHandle?: string;
+    targetHandle?: string;
+  }[];
   matched: number;
   total: number;
   hidden: number;
@@ -89,6 +123,7 @@ export interface GraphActions {
   renameWorkspace(id: string, title: string): Promise<void>;
 }
 export const defaultFilters: Filters = {
+  recency: "recent",
   workspace: "all",
   status: "all",
   kind: "all",

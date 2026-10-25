@@ -35,8 +35,10 @@
     "typecheck": "tsc --noEmit",
     "demo": "vite --host 127.0.0.1",
     "test:browser": "node tests/browser.mjs",
+    "test:flex": "node tests/flex-drag-browser.mjs",
     "prepack": "npm run build",
     "test:native": "node tests/native.mjs",
+    "test:performance": "node tests/performance-browser.mjs",
     "format": "prettier --write src tests scripts package.json tsconfig.json"
   },
   "engines": {

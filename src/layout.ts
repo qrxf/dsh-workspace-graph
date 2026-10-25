@@ -5,6 +5,7 @@ import type {
   Point,
   ViewState,
 } from "./types.ts";
+import { DEFAULT_THEME, normalizeColor } from "./theme.ts";
 export const emptyLayout = (): LayoutDocument => ({
   schemaVersion: 1,
   revision: 0,
@@ -28,6 +29,17 @@ function validFilters(v: unknown): v is Filters {
   return (
     record(v) &&
     typeof v.workspace === "string" &&
+    (v.recency === undefined ||
+      ["all", "recent", "early", "unknown"].includes(String(v.recency))) &&
+    (v.frequency === undefined ||
+      ["all", "frequent", "infrequent", "accumulating"].includes(
+        String(v.frequency),
+      )) &&
+    (v.statuses === undefined ||
+      (Array.isArray(v.statuses) &&
+        v.statuses.every((s) =>
+          ["running", "waiting", "unread", "idle", "unknown"].includes(s),
+        ))) &&
     ["all", "running", "waiting", "unread", "idle", "unknown"].includes(
       String(v.status),
     ) &&
@@ -87,6 +99,50 @@ export class LayoutRepository {
       throw new Error("Invalid layout JSON");
     }
     validate(value);
+    const settings: Record<string, unknown> = record(value.settings)
+      ? value.settings
+      : {};
+    const manualSummaries = Object.fromEntries(
+      Object.entries(
+        record(settings.manualSummaries) ? settings.manualSummaries : {},
+      )
+        .filter(([id, text]) => safeKey(id) && typeof text === "string")
+        .map(([id, text]) => [id, (text as string).slice(0, 4000)]),
+    );
+    const usage = Object.fromEntries(
+      Object.entries(record(settings.usage) ? settings.usage : {})
+        .filter(
+          ([id, v]) =>
+            safeKey(id) &&
+            record(v) &&
+            Number.isFinite(v.since) &&
+            Number(v.since) >= 0 &&
+            Array.isArray(v.visits) &&
+            v.visits.every(
+              (t) => typeof t === "number" && Number.isFinite(t) && t >= 0,
+            ),
+        )
+        .map(([id, v]) => [
+          id,
+          {
+            since: (v as { since: number }).since,
+            visits: (v as { visits: number[] }).visits
+              .slice(-2000)
+              .sort((a, b) => a - b),
+          },
+        ]),
+    );
+    value.settings = {
+      theme: normalizeColor(settings.theme) ?? DEFAULT_THEME,
+      reducedMotion: settings.reducedMotion === true,
+      pinned: Array.isArray(settings.pinned)
+        ? settings.pinned.filter(
+            (id): id is string => typeof id === "string" && safeKey(id),
+          )
+        : [],
+      usage,
+      manualSummaries,
+    };
     return value;
   }
   initializePositions(positions: Record<string, Point>): LayoutDocument {
@@ -120,6 +176,12 @@ export class LayoutRepository {
       positions: { ...current.positions, ...patch.positions },
       collapsed: patch.collapsed ?? current.collapsed,
       views,
+      settings: {
+        theme: DEFAULT_THEME,
+        reducedMotion: false,
+        ...current.settings,
+        ...patch.settings,
+      },
     };
     validate(next);
     this.storage.setItem(this.key, JSON.stringify(next));

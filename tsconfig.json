@@ -13,4 +13,4 @@
     "types": ["node"]
   },
   "include": ["src", "tests/**/*.ts"]
-} 
+}

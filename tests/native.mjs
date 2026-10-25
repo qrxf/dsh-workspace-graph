@@ -12,7 +12,7 @@ const home = await mkdtemp(
   path.join(root, "artifacts", "workspace-graph-dsh-"),
 );
 const projectA = path.join(home, "sample-a"),
-  projectB = path.join(home, "sample-b");
+  projectB = path.join(projectA, "Codex");
 await mkdir(projectA);
 await mkdir(projectB);
 await mkdir(path.join(home, "storages"));
@@ -104,7 +104,10 @@ try {
     });
   });
   console.log("native: host ready");
-  browser = await chromium.launch({ headless: true });
+  browser = await chromium.launch({
+    headless: true,
+    channel: process.env.BROWSER_CHANNEL || undefined,
+  });
   page = await browser.newPage({
     viewport: { width: 1440, height: 960 },
     locale: "zh-CN",
@@ -137,6 +140,14 @@ try {
   await page.waitForFunction(
     () => document.querySelectorAll(".react-flow__node").length >= 2,
   );
+  await page
+    .locator('[data-id="workspace:test-a->workspace:test-b"]')
+    .waitFor();
+  assert.match(
+    await page.locator('[data-id="workspace:test-b"]').innerText(),
+    /子工作区/,
+  );
+  console.log("native: nested workspace visible and linked to its parent");
   await page
     .getByLabel("选择工作区")
     .selectOption(
