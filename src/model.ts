@@ -8,6 +8,7 @@ import type {
   BubbleNode,
   WorkspaceRow,
 } from "./types.ts";
+import { runtimeTreePositions } from "./treeLayout.ts";
 import { recency, frequency } from "./activity.ts";
 import { workspaceParents, sessionParents } from "./hierarchy.ts";
 import type { Point } from "./types.ts";
@@ -27,12 +28,18 @@ export function projectGraph(
   now = Date.now(),
 ): GraphProjection {
   const workspaceParent = workspaceParents(catalog.workspaces);
+  const currentIds = new Set(
+    catalog.currentSessionIds ??
+      (catalog.currentSessionId ? [catalog.currentSessionId] : []),
+  );
+  const active = (s: SessionRow) =>
+    currentIds.has(s.id) || s.running === true || s.pending === true;
   const sessionParent = sessionParents(catalog.sessions);
   const allById = new Map(catalog.sessions.map((s) => [s.id, s]));
   const archived = new Set(catalog.archivedSessionIds);
   const sessions = catalog.sessions.filter(
     (s) =>
-      s.id === catalog.currentSessionId ||
+      active(s) ||
       (!s.blank &&
         s.origin !== "subagent" &&
         (filters.archived || !archived.has(s.id))),
@@ -67,62 +74,13 @@ export function projectGraph(
     for (const id of group.sessionIds)
       if (!owner.has(id)) owner.set(id, group.id);
   const groupById = new Map(groups.map((w) => [w.id, w]));
-  const workspacePositions = new Map<string, Point>();
-  const workspacePosition = (id: string): Point => {
-    const saved =
-      layout.positions["workspace:" + id] ?? workspacePositions.get(id);
-    if (saved) return saved;
-    const parentId = workspaceParent.get(id);
-    const index = groups.findIndex((w) => w.id === id);
-    let position: Point;
-    if (parentId) {
-      const parent = workspacePosition(parentId);
-      const slot = groups
-        .filter((w) => workspaceParent.get(w.id) === parentId)
-        .findIndex((w) => w.id === id);
-      position = { x: parent.x + 300, y: parent.y + 180 + slot * 240 };
-    } else
-      position = {
-        x: (index % 3) * 540 + 280,
-        y: Math.floor(index / 3) * 620 + 290,
-      };
-    workspacePositions.set(id, position);
-    return position;
-  };
-  const sessionPositions = new Map<string, Point>();
-  const sessionPosition = (s: SessionRow): Point => {
-    const saved =
-      layout.positions["session:" + s.id] ?? sessionPositions.get(s.id);
-    if (saved) return saved;
-    const parentId = sessionParent.get(s.id);
-    let position: Point;
-    if (parentId) {
-      const parent = sessionPosition(allById.get(parentId)!);
-      const slot = catalog.sessions
-        .filter((row) => sessionParent.get(row.id) === parentId)
-        .findIndex((row) => row.id === s.id);
-      const column = slot === 0 ? 0 : Math.ceil(slot / 2) * (slot % 2 ? -1 : 1);
-      position = {
-        x: parent.x + column * 150,
-        y: parent.y - 190 - Math.floor(slot / 6) * 130,
-      };
-    } else {
-      const groupId = owner.get(s.id) ?? "__ungrouped__";
-      const parent = workspacePosition(groupId);
-      const index = Math.max(
-        0,
-        groupById.get(groupId)?.sessionIds.indexOf(s.id) ?? 0,
-      );
-      const radius = 185 + Math.floor(index / 12) * 120;
-      const angle = index * 2.399963229728653 - Math.PI / 2;
-      position = {
-        x: parent.x + Math.cos(angle) * radius + 14,
-        y: parent.y + Math.sin(angle) * radius + 14,
-      };
-    }
-    sessionPositions.set(s.id, position);
-    return position;
-  };
+  const defaults = runtimeTreePositions(catalog, layout.positions);
+  const workspacePosition = (id: string): Point =>
+    layout.positions["workspace:" + id] ??
+    defaults["workspace:" + id] ?? { x: 280, y: 290 };
+  const sessionPosition = (s: SessionRow): Point =>
+    layout.positions["session:" + s.id] ??
+    defaults["session:" + s.id] ?? { x: 280, y: 290 };
   const sessionNode = (s: SessionRow, context = false): BubbleNode => ({
     id: "session:" + s.id,
     type: "bubble",
@@ -138,7 +96,7 @@ export function projectGraph(
       context,
       archived: archived.has(s.id),
       updatedAt: s.updatedAt,
-      current: s.id === catalog.currentSessionId,
+      current: currentIds.has(s.id),
       working: s.running === true,
       pinned: layout.settings?.pinned?.includes(s.id),
       recency: recency(s.updatedAt, now),
@@ -201,6 +159,7 @@ export function projectGraph(
           (child) => workspaceParent.get(child.id) === w.id,
         ).length,
         collapsed,
+        current: children.some((s) => currentIds.has(s.id)),
         working: children.some((s) => s.running === true),
       },
     });
@@ -218,9 +177,8 @@ export function projectGraph(
       collapsed || filters.kind === "workspace"
         ? []
         : candidates.slice(0, limit);
-    const resident = children.find((s) => s.id === catalog.currentSessionId);
-    if (resident && !visible.some((s) => s.id === resident.id))
-      visible.push(resident);
+    for (const resident of children.filter(active))
+      if (!visible.some((s) => s.id === resident.id)) visible.push(resident);
     visible.forEach((s) => {
       if (emitted.has(s.id)) return;
       emitted.add(s.id);

@@ -5,6 +5,87 @@ import { emptyLayout } from "../src/layout.ts";
 import { defaultFilters as defaults } from "../src/types.ts";
 import type { GraphCatalog } from "../src/types.ts";
 const defaultFilters = { ...defaults, recency: "all" as const };
+test("parallel current, running and pending sessions bypass collapse, pagination and every filter", () => {
+  const c: GraphCatalog = {
+    loading: false,
+    archivedSessionIds: ["a"],
+    currentSessionIds: ["a", "b"],
+    workspaces: ["a", "b", "c"].map((id) => ({
+      id,
+      title: id,
+      path: "/" + id,
+      sessionIds: [id],
+    })),
+    sessions: ["a", "b", "c", "d"].map((id) => ({
+      id,
+      title: id,
+      updatedAt: 1,
+      running: id === "c",
+      pending: id === "d",
+      blank: id === "a",
+      parentId: id === "d" ? "c" : undefined,
+    })),
+  };
+  const g = projectGraph(
+    c,
+    {
+      ...defaultFilters,
+      workspace: "missing",
+      query: "nothing",
+      kind: "workspace",
+      status: "idle",
+      recency: "recent",
+    },
+    emptyLayout(),
+    { a: 0 },
+  );
+  assert.deepEqual(
+    g.nodes
+      .filter((n) => n.data.kind === "session")
+      .map((n) => n.data.entityId)
+      .sort(),
+    ["a", "b", "c", "d"],
+  );
+  assert.deepEqual(
+    g.nodes
+      .filter((n) => n.data.current && n.data.kind === "session")
+      .map((n) => n.data.entityId)
+      .sort(),
+    ["a", "b"],
+  );
+  assert.deepEqual(
+    g.nodes
+      .filter((n) => n.data.current && n.data.kind === "workspace")
+      .map((n) => n.data.entityId)
+      .sort(),
+    ["a", "b"],
+  );
+  assert.equal(g.matched, 0);
+  assert.ok(
+    g.edges.every(
+      (e) =>
+        g.nodes.some((n) => n.id === e.source) &&
+        g.nodes.some((n) => n.id === e.target),
+    ),
+  );
+  const ended = projectGraph(
+    {
+      ...c,
+      currentSessionIds: [],
+      sessions: c.sessions.map((s) => ({
+        ...s,
+        pending: false,
+        running: undefined,
+      })),
+    },
+    defaultFilters,
+    emptyLayout(),
+  );
+  assert.equal(
+    ended.nodes.some((n) => n.data.kind === "session"),
+    false,
+  );
+});
 const catalog: GraphCatalog = {
   loading: false,
   archivedSessionIds: [],

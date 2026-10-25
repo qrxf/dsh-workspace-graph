@@ -83,13 +83,17 @@ function validate(v: unknown): asserts v is LayoutDocument {
   }
 }
 export class LayoutRepository {
+  private positions: Record<string, Point> = {};
+  private viewports: Record<string, ViewState> = {};
+  private revision = 0;
+  private storedRevision?: number;
   storage: Pick<Storage, "getItem" | "setItem">;
   key: string;
   constructor(storage: Pick<Storage, "getItem" | "setItem">, key: string) {
     this.storage = storage;
     this.key = key;
   }
-  load(): LayoutDocument {
+  private loadStored(): LayoutDocument {
     const raw = this.storage.getItem(this.key);
     if (raw === null) return emptyLayout();
     let value: unknown;
@@ -145,6 +149,29 @@ export class LayoutRepository {
     };
     return value;
   }
+  load(): LayoutDocument {
+    const stored = this.loadStored();
+    if (
+      this.storedRevision !== undefined &&
+      stored.revision !== this.storedRevision
+    )
+      this.revision++;
+    this.storedRevision = stored.revision;
+    const views = Object.fromEntries(
+      Object.entries(stored.views).map(([id, v]) => [
+        id,
+        { filters: v.filters },
+      ]),
+    );
+    for (const [id, view] of Object.entries(this.viewports))
+      views[id] = { ...views[id], ...view };
+    return {
+      ...stored,
+      revision: this.revision,
+      positions: this.positions,
+      views,
+    };
+  }
   initializePositions(positions: Record<string, Point>): LayoutDocument {
     const current = this.load();
     const missing = Object.fromEntries(
@@ -161,11 +188,19 @@ export class LayoutRepository {
       );
     const next = emptyLayout();
     this.storage.setItem(this.key, JSON.stringify(next));
+    this.positions = {};
+    this.viewports = {};
+    this.revision = 0;
+    this.storedRevision = 0;
     return next;
   }
   savePatch(patch: LayoutPatch, expectedRevision: number): LayoutDocument {
     const current = this.load();
-    if (current.revision !== expectedRevision)
+    const durable =
+      patch.settings !== undefined ||
+      patch.collapsed !== undefined ||
+      Object.values(patch.views ?? {}).some((v) => v.filters !== undefined);
+    if (durable && current.revision !== expectedRevision)
       throw new Error("Layout conflict: another window saved a newer layout");
     const views: Record<string, ViewState> = { ...current.views };
     for (const [scope, view] of Object.entries(patch.views ?? {}))
@@ -184,7 +219,25 @@ export class LayoutRepository {
       },
     };
     validate(next);
-    this.storage.setItem(this.key, JSON.stringify(next));
+    if (durable) {
+      const stored: LayoutDocument = {
+        ...next,
+        revision: (this.storedRevision ?? 0) + 1,
+        positions: {},
+        views: Object.fromEntries(
+          Object.entries(views).map(([id, v]) => [id, { filters: v.filters }]),
+        ),
+      };
+      this.storage.setItem(this.key, JSON.stringify(stored));
+      this.storedRevision = stored.revision;
+    }
+    this.positions = next.positions;
+    this.viewports = Object.fromEntries(
+      Object.entries(views)
+        .filter(([, v]) => v.viewport)
+        .map(([id, v]) => [id, { viewport: v.viewport }]),
+    );
+    this.revision = next.revision;
     return next;
   }
 }

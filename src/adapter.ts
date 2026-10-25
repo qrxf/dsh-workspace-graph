@@ -10,11 +10,13 @@ export function toCatalog(
   const w = workspaces as WorkspaceSnapshot | undefined,
     s = sessions as SessionListState | undefined,
     status = statuses as SessionStatusSnapshot | undefined;
-  const currentSessionId = Object.values(s?.byId ?? {}).find(
-    (row) => (row.retainedBy?.mainView ?? 0) > 0,
-  )?.id;
+  const currentSessionIds = Object.values(s?.byId ?? {})
+    .filter((row) => (row.retainedBy?.mainView ?? 0) > 0)
+    .map((row) => row.id);
+  const currentSessionId = currentSessionIds[0];
   return {
     currentSessionId,
+    currentSessionIds,
     loading: w?.phase !== "ready" || s?.phase !== "ready",
     error: w?.error?.message,
     workspaces: (w?.items ?? []).map((row) => ({
@@ -24,34 +26,31 @@ export function toCatalog(
       sessionIds: row.sessionIds,
     })),
     archivedSessionIds: [...(w?.archivedSessionIds ?? [])],
-    sessions: [
-      ...new Set([
-        ...(s?.ids ?? []),
-        ...(currentSessionId ? [currentSessionId] : []),
-      ]),
-    ].flatMap((id) => {
-      const row = s?.byId[id];
-      if (!row) return [];
-      const live = status?.get(id);
-      return [
-        {
-          id,
-          title: row.title || row.displayTitle || "未命名会话",
-          cwd: row.cwd,
-          parentId: row.parentId,
-          updatedAt: row.updatedAt,
-          running:
-            s?.phase === "ready"
-              ? live
-                ? live.running
-                : row.running
-              : undefined,
-          pending: !!live?.pendingInteraction,
-          unread: live?.completionUnread,
-          blank: row.blank,
-          origin: row.origin,
-        },
-      ];
-    }),
+    sessions: [...new Set([...(s?.ids ?? []), ...currentSessionIds])].flatMap(
+      (id) => {
+        const row = s?.byId[id];
+        if (!row) return [];
+        const live = status?.get(id);
+        return [
+          {
+            id,
+            title: row.title || row.displayTitle || "未命名会话",
+            cwd: row.cwd,
+            parentId: row.parentId,
+            updatedAt: row.updatedAt,
+            running:
+              s?.phase === "ready"
+                ? live
+                  ? live.running
+                  : row.running
+                : undefined,
+            pending: !!live?.pendingInteraction,
+            unread: live?.completionUnread,
+            blank: row.blank,
+            origin: row.origin,
+          },
+        ];
+      },
+    ),
   };
 }

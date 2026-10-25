@@ -26,15 +26,20 @@ test("merges changed positions without erasing hidden nodes or another scope vie
     hidden: { x: 9, y: 8 },
   });
   assert.equal(next.views.w.viewport?.zoom, 1);
-  assert.deepEqual(new LayoutRepository(store, "x").load(), next);
+  assert.deepEqual(new LayoutRepository(store, "x").load().positions, {});
 });
 test("stale revision refuses write and leaves a newer layout intact", () => {
   const s = memory(),
     a = new LayoutRepository(s, "x"),
     b = new LayoutRepository(s, "x");
-  a.savePatch({ positions: { a: { x: 1, y: 2 } } }, 0);
+  a.load();
+  b.load();
+  a.savePatch(
+    { positions: { a: { x: 1, y: 2 } }, settings: { theme: "#123456" } },
+    0,
+  );
   assert.throws(
-    () => b.savePatch({ positions: { b: { x: 2, y: 3 } } }, 0),
+    () => b.savePatch({ settings: { theme: "#ffffff" } }, 0),
     /conflict/i,
   );
   assert.deepEqual(a.load().positions, { a: { x: 1, y: 2 } });
@@ -77,7 +82,10 @@ test("storage access and quota failures propagate rather than claim saved", () =
     },
     "x",
   );
-  assert.throws(() => r.savePatch({}, 0), /quota/);
+  assert.throws(
+    () => r.savePatch({ settings: { theme: "#ffffff" } }, 0),
+    /quota/,
+  );
 });
 
 test("explicit reset recovers corrupted storage, but refuses to erase a newer value", () => {

@@ -4,6 +4,26 @@ import { toCatalog } from "../src/adapter.ts";
 import { projectGraph } from "../src/model.ts";
 import { defaultFilters } from "../src/types.ts";
 import { emptyLayout } from "../src/layout.ts";
+test("all mainView sessions including unlisted retained rows are preserved", () => {
+  const cat = toCatalog(
+    { phase: "ready" },
+    {
+      phase: "ready",
+      ids: ["a"],
+      byId: {
+        a: { id: "a", updatedAt: 1, retainedBy: { mainView: 1 } },
+        b: { id: "b", updatedAt: 1, retainedBy: { mainView: 2 } },
+        cached: { id: "cached", updatedAt: 1, retainedBy: {} },
+      },
+    },
+    new Map(),
+  );
+  assert.deepEqual(cat.currentSessionIds, ["a", "b"]);
+  assert.deepEqual(
+    cat.sessions.map((s) => s.id),
+    ["a", "b"],
+  );
+});
 test("reads host-list membership, stable workspace ids and runtime interaction precedence without retaining sessions", () => {
   const cat = toCatalog(
     {

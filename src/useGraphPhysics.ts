@@ -2,12 +2,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Node } from "@xyflow/react";
 import type { BubbleData, GraphProjection, Point } from "./types.ts";
 import { PhysicsWorld } from "./physics.ts";
+import type { DragMode } from "./physics.ts";
 export function useGraphPhysics(
   projection: GraphProjection,
   reduced: boolean,
   onSettled: (p: Record<string, Point>) => void,
 ) {
   const [nodes, setNodes] = useState<Node<BubbleData>[]>([]);
+  const [ropes, setRopes] = useState<
+    Record<string, { softness: number; stretch: number }>
+  >({});
   const world = useRef(new PhysicsWorld()),
     frame = useRef<number>(),
     last = useRef(0),
@@ -18,6 +22,14 @@ export function useGraphPhysics(
   settled.current = onSettled;
   const publish = useCallback(() => {
     const positions = world.current.positions();
+    setRopes(
+      Object.fromEntries(
+        world.current.links.map((l) => [
+          JSON.stringify([l.source, l.target]),
+          world.current.ropeState(l.source, l.target),
+        ]),
+      ),
+    );
     setNodes((old) =>
       old.map((n) => {
         const position = positions[n.id];
@@ -84,10 +96,10 @@ export function useGraphPhysics(
     [wake],
   );
   const drag = useCallback(
-    (id: string, p: Point) => {
+    (id: string, p: Point, mode: DragMode = "elastic") => {
       hover();
       dragged.current = id;
-      world.current.drag(id, p);
+      world.current.drag(id, p, mode);
       publish();
       wake();
     },
@@ -102,8 +114,30 @@ export function useGraphPhysics(
     },
     [wake],
   );
+  useEffect(() => {
+    const mode = (event: KeyboardEvent) => {
+      const id = dragged.current;
+      if (!id || event.key !== "Control") return;
+      const p = world.current.positions()[id];
+      if (p) drag(id, p, event.type === "keydown" ? "free" : "elastic");
+    };
+    const cancel = () => {
+      if (dragged.current) release(dragged.current);
+    };
+    window.addEventListener("keydown", mode);
+    window.addEventListener("keyup", mode);
+    window.addEventListener("blur", cancel);
+    window.addEventListener("pointercancel", cancel);
+    return () => {
+      window.removeEventListener("keydown", mode);
+      window.removeEventListener("keyup", mode);
+      window.removeEventListener("blur", cancel);
+      window.removeEventListener("pointercancel", cancel);
+    };
+  }, [drag, release]);
   return {
     nodes,
+    ropes,
     setNodes,
     drag,
     release,

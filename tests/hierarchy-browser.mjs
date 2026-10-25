@@ -19,8 +19,12 @@ const edge = (id) => page.locator(`.react-flow__edge[data-id="${id}"]`);
 try {
   await page.route("**/favicon.ico", (route) => route.fulfill({ status: 204 }));
   await page.goto(server.resolvedUrls.local[0] + "?hierarchy=1");
-  await edge("workspace:home->workspace:codex").waitFor();
-  await edge("workspace:codex->workspace:nested").waitFor();
+  await edge("workspace:home->workspace:codex")
+    .locator(".react-flow__edge-path")
+    .waitFor({ state: "attached" });
+  await edge("workspace:codex->workspace:nested")
+    .locator(".react-flow__edge-path")
+    .waitFor({ state: "attached" });
   await page.waitForTimeout(1000);
   const viewport = () =>
     page.locator(".react-flow__viewport").getAttribute("style");
@@ -41,19 +45,23 @@ try {
   await page.waitForTimeout(300);
   const source = await node("session:original").boundingBox(),
     branch = await node("session:fork").boundingBox();
-  assert.ok(branch.y < source.y);
-  const start = await edge("session:original->session:fork")
+  const endpoint = await edge("session:original->session:fork")
     .locator(".react-flow__edge-path")
     .evaluate((el) => {
       const p = el.getPointAtLength(0),
         screen = new DOMPoint(p.x, p.y).matrixTransform(el.getScreenCTM());
-      return { x: screen.x, y: screen.y };
+      const b = document
+        .querySelector('[data-id="session:original"] .wg-orb')
+        .getBoundingClientRect();
+      return Math.abs(
+        Math.hypot(
+          screen.x - b.x - b.width / 2,
+          screen.y - b.y - b.height / 2,
+        ) -
+          b.width / 2,
+      );
     });
-  assert.ok(
-    Math.abs(start.y - source.y) < 4,
-    "branch edge must start at source top",
-  );
-  assert.ok(Math.abs(start.x - source.x - source.width / 2) < 4);
+  assert.ok(endpoint < 2, "branch connects at source circle perimeter");
   await page.getByLabel("搜索工作区和会话").fill("后续方案");
   await node("session:fork").waitFor();
   await node("session:original").waitFor();
@@ -78,7 +86,7 @@ try {
       {
         checks: [
           "nested workspace edges",
-          "branch chain edges and top handle",
+          "branch chain edges and circle perimeter",
           "older source retained under recent/search filters",
           "parent scope includes descendants",
           "stable expansion viewport",
@@ -91,7 +99,7 @@ try {
     ),
   );
   console.log(
-    "PASS nested workspace hierarchy, source-top branch edges, filtering and navigation",
+    "PASS nested workspace hierarchy, circular branch edges, filtering and navigation",
   );
 } finally {
   await browser.close();

@@ -163,26 +163,29 @@ test("releasing a drag grows the contact volume until bubbles fully separate", (
   const w = new PhysicsWorld();
   w.sync([node("a", 0, 0), node("b", 0, 0)], [{ source: "a", target: "b" }]);
   w.beginDrag("a");
-  assert.ok(w.contactScale < 1 && w.contactScale > 0.8);
+  assert.equal(w.contactScale, 1.075);
   w.release("a");
   w.step(1 / 60);
-  assert.ok(w.contactScale > 0.8 && w.contactScale < 1);
+  assert.ok(w.contactScale > 1.075 && w.contactScale < 1.25);
   const early = Math.hypot(
     w.bodies.get("a")!.x - w.bodies.get("b")!.x,
     w.bodies.get("a")!.y - w.bodies.get("b")!.y,
   );
   let frames = 0;
   while (w.active && frames++ < 1200) w.step(1 / 60);
-  assert.equal(w.contactScale, 1);
+  assert.equal(w.contactScale, 1.25);
   const late = Math.hypot(
     w.bodies.get("a")!.x - w.bodies.get("b")!.x,
     w.bodies.get("a")!.y - w.bodies.get("b")!.y,
   );
   assert.ok(
-    early < 20,
-    "the soft volume still allows overlap right after release",
+    early >= (37 + 37 + 2) * 1.075 - 0.1,
+    "drag contacts must separate rather than allow deep overlap",
   );
-  assert.ok(late >= 37 + 37 + 2 - 0.1, "the bubbles end up fully separated");
+  assert.ok(
+    late >= (37 + 37 + 2) * 1.25 - 0.1,
+    "the bubbles end up fully separated",
+  );
 });
 
 test("same-group shallow overlaps settle to complete separation", () => {
@@ -208,8 +211,8 @@ test("same-group deep overlaps ease apart to complete separation and go to sleep
   const distance = () => Math.hypot(a.x - b.x, a.y - b.y);
   assert.ok(distance() > 0, "deep overlap must push back");
   assert.ok(
-    distance() < (a.radius + b.radius) / 2,
-    "separation should be gradual",
+    distance() >= (a.radius + b.radius + 2) * 1.25 - 0.1,
+    "collision projection must resolve penetration even while pinned",
   );
   assert.ok(settle(w) < 240);
   assert.ok(distance() >= 37 + 37 + 2 - 0.1);
@@ -219,12 +222,12 @@ test("same-group deep overlaps ease apart to complete separation and go to sleep
 test("external collision moves a component together and preserves its internal layout", () => {
   const w = new PhysicsWorld();
   w.sync(
-    [node("a", 0, 0, "workspace"), node("b", 100, 10), node("outside", 20, 0)],
+    [node("a", 0, 0, "workspace"), node("b", 200, 10), node("outside", 20, 0)],
     [{ source: "a", target: "b" }],
   );
   settle(w);
   const p = w.positions();
-  assert.ok(Math.abs(p.b.x - p.a.x - 100) < 0.01);
+  assert.ok(Math.abs(p.b.x - p.a.x - 200) < 0.01);
   assert.ok(Math.abs(p.b.y - p.a.y - 10) < 0.01);
   const outside = w.bodies.get("outside")!;
   for (const id of ["a", "b"]) {
@@ -236,7 +239,7 @@ test("external collision moves a component together and preserves its internal l
   }
 });
 
-test("new children open at the live workspace centre and reach their saved offsets", () => {
+test("new children open outside the live workspace circle and reach their saved offsets", () => {
   const w = new PhysicsWorld();
   const root = node("a", 100, 100, "workspace");
   w.sync([root], []);
@@ -244,7 +247,9 @@ test("new children open at the live workspace centre and reach their saved offse
   w.sync([root, node("b", 250, 100)], [{ source: "a", target: "b" }]);
   const a = w.bodies.get("a")!,
     b = w.bodies.get("b")!;
-  assert.ok(Math.hypot(a.x - b.x, a.y - b.y) < 0.01);
+  assert.ok(
+    Math.hypot(a.x - b.x, a.y - b.y) >= (a.radius + b.radius + 2) * 1.25 - 0.1,
+  );
   w.step(1 / 60);
   assert.ok(Math.hypot(a.x - b.x, a.y - b.y) > 0);
   assert.ok(settle(w) < 90);
@@ -293,8 +298,8 @@ test("a new branch opens from its new source even when the branch is listed firs
     source = w.bodies.get("source")!,
     branch = w.bodies.get("branch")!;
   assert.equal(branch.x, source.x);
-  assert.equal(branch.y, source.y);
-  assert.equal(source.y, parent.y);
+  assert.ok(branch.y < source.y);
+  assert.ok(source.y < parent.y);
   w.step(1 / 60);
   assert.ok(branch.y < source.y);
   assert.ok(settle(w) < 120);

@@ -1,4 +1,6 @@
 import type { BubbleNode, Point } from "./types.ts";
+import { bubbleGeometry } from "./geometry.ts";
+export type DragMode = "elastic" | "free";
 export interface Body {
   id: string;
   x: number;
@@ -8,53 +10,74 @@ export interface Body {
   radius: number;
   offset: Point;
   pin?: Point;
-  opening?: { parent: string; dx: number; dy: number; elapsed: number };
+  opening?: {
+    parent: string;
+    dx: number;
+    dy: number;
+    elapsed: number;
+    start: number;
+  };
 }
-type Link = { source: string; target: string };
-type Follower = Point & { rate: number };
-const LIMIT = 100000;
-const SOFT_CONTACT = 0.86;
-const CONTACT_RAMP = 1.2;
-const CONTACT_GAP = 2;
-const FOLLOW_RATE = 10;
-const FOLLOW_RATE_CHILD = 7;
-const clamp = (n: number) => Math.max(-LIMIT + 200, Math.min(LIMIT - 200, n));
+type Link = {
+  source: string;
+  target: string;
+  restLength: number;
+  restVector: Point;
+  stiffness: number;
+};
+type LinkInput = { source: string; target: string };
+const DRAG_CONTACT = 0.86 * 1.25,
+  FULL_CONTACT = 1.25,
+  HARDEN_TIME = 1.2;
+const clamp = (n: number) => Math.max(-99800, Math.min(99800, n));
+const key = (a: string, b: string) => JSON.stringify([a, b]);
 export class PhysicsWorld {
   bodies = new Map<string, Body>();
   links: Link[] = [];
   active = false;
   reduced = false;
-  contactScale = 1;
+  contactScale = FULL_CONTACT;
   private dragging?: string;
-  private followers = new Map<string, Follower>();
-  private groupIndex = new Map<string, number>();
+  private mode: DragMode = "elastic";
+  private idle = 0;
+  private hardening = HARDEN_TIME;
   private quiet = 0;
+  private recovery?: { id: string; point: Point; elapsed: number };
   private inputs = new Map<string, Point>();
   private groups: Body[][] = [];
-  private ordered: Body[] = [];
+  private groupIndex = new Map<string, number>();
+  private ordered: {
+    link: Link;
+    from: string;
+    to: string;
+    sign: number;
+    rate: number;
+  }[] = [];
+  private originals = new Map<string, Point>();
   sync(
     nodes: readonly BubbleNode[],
-    links: readonly Link[],
+    links: readonly LinkInput[],
     forcePositions = false,
   ) {
-    const ids = new Set(nodes.map((n) => n.id));
-    const previousIds = new Set(this.bodies.keys());
-    const nodeById = new Map(nodes.map((n) => [n.id, n]));
-    const parents = new Map(links.map((l) => [l.target, l.source]));
-    let changed = this.bodies.size !== ids.size;
-    for (const id of this.bodies.keys())
+    const previous = new Set(this.bodies.keys()),
+      ids = new Set(nodes.map((n) => n.id));
+    const byId = new Map(nodes.map((n) => [n.id, n]));
+    const parent = new Map(links.map((l) => [l.target, l.source]));
+    let changed = previous.size !== ids.size;
+    for (const id of previous)
       if (!ids.has(id)) {
         this.bodies.delete(id);
         this.inputs.delete(id);
         changed = true;
       }
+    const externallyChanged = new Set<string>();
     for (const node of nodes) {
-      const offset = { x: 72, y: node.data.kind === "workspace" ? 53 : 37 };
+      const { offset, radius } = bubbleGeometry(node.data.kind);
       const x = clamp(node.position.x) + offset.x,
         y = clamp(node.position.y) + offset.y;
-      const old = this.bodies.get(node.id);
-      const input = this.inputs.get(node.id);
-      const externalChange =
+      const old = this.bodies.get(node.id),
+        input = this.inputs.get(node.id);
+      const external =
         forcePositions ||
         !input ||
         Math.hypot(input.x - node.position.x, input.y - node.position.y) > 0.1;
@@ -66,105 +89,115 @@ export class PhysicsWorld {
           y,
           vx: 0,
           vy: 0,
-          radius: node.data.kind === "workspace" ? 53 : 37,
+          radius,
           offset,
         });
         changed = true;
       } else if (
-        externalChange &&
+        external &&
         !old.pin &&
         Math.hypot(old.x - x, old.y - y) > 0.1
       ) {
-        old.x = x;
-        old.y = y;
-        old.vx = old.vy = 0;
+        Object.assign(old, { x, y, vx: 0, vy: 0 });
         delete old.opening;
         changed = true;
+        externallyChanged.add(node.id);
       }
     }
-    const next = links.filter((l) => ids.has(l.source) && ids.has(l.target));
-    if (JSON.stringify(next) !== JSON.stringify(this.links)) changed = true;
-    this.links = next;
-    // Parents must update before children, including forks listed before sources.
-    this.ordered = [];
+    const oldLinks = new Map(
+      this.links.map((l) => [key(l.source, l.target), l]),
+    );
+    this.links = links
+      .filter((l) => ids.has(l.source) && ids.has(l.target))
+      .map((l) => {
+        const old = oldLinks.get(key(l.source, l.target));
+        if (
+          old &&
+          !forcePositions &&
+          !externallyChanged.has(l.source) &&
+          !externallyChanged.has(l.target)
+        )
+          return old;
+        const a = this.bodies.get(l.source)!,
+          b = this.bodies.get(l.target)!;
+        return {
+          ...l,
+          restLength: Math.hypot(b.x - a.x, b.y - a.y),
+          restVector: { x: b.x - a.x, y: b.y - a.y },
+          stiffness: 1,
+        };
+      });
+    if (
+      this.links.length !== oldLinks.size ||
+      this.links.some((l) => !oldLinks.has(key(l.source, l.target)))
+    )
+      changed = true;
+    // Opening starts outside the parent's visible circle, ordered parent before child.
     const visited = new Set<string>();
-    const visit = (id: string) => {
+    const open = (id: string) => {
       if (visited.has(id)) return;
       visited.add(id);
-      const parentId = parents.get(id);
-      if (parentId && ids.has(parentId)) visit(parentId);
-      const body = this.bodies.get(id)!;
-      this.ordered.push(body);
-      if (
-        previousIds.has(id) ||
-        !previousIds.size ||
-        this.reduced ||
-        forcePositions
-      )
+      const pid = parent.get(id);
+      if (pid && ids.has(pid)) open(pid);
+      if (previous.has(id) || !previous.size || this.reduced || forcePositions)
         return;
-      const parent = parentId ? this.bodies.get(parentId) : undefined;
-      const parentNode = parentId ? nodeById.get(parentId) : undefined;
-      if (!parent || !parentNode) return;
-      body.opening = {
-        parent: parent.id,
-        dx: body.x - parentNode.position.x - parent.offset.x,
-        dy: body.y - parentNode.position.y - parent.offset.y,
-        elapsed: 0,
-      };
-      body.x = parent.x;
-      body.y = parent.y;
+      const body = this.bodies.get(id)!,
+        p = pid ? this.bodies.get(pid) : undefined,
+        pn = pid ? byId.get(pid) : undefined;
+      if (!p || !pn) return;
+      const dx = body.x - pn.position.x - p.offset.x,
+        dy = body.y - pn.position.y - p.offset.y;
+      const distance = Math.hypot(dx, dy),
+        start = Math.min(
+          1,
+          ((p.radius + body.radius + 2) * FULL_CONTACT) / (distance || 1),
+        );
+      body.opening = { parent: p.id, dx, dy, elapsed: 0, start };
+      body.x = p.x + dx * start;
+      body.y = p.y + dy * start;
     };
-    for (const id of ids) visit(id);
-    // Connected members share external contacts; internal contacts relax softly.
-    const owners = new Map([...ids].map((id) => [id, id]));
-    const find = (id: string): string => {
-      const parent = owners.get(id)!;
-      if (parent === id) return id;
-      const root = find(parent);
-      owners.set(id, root);
-      return root;
-    };
-    for (const link of next) owners.set(find(link.target), find(link.source));
-    const groups = new Map<string, Body[]>();
-    for (const body of this.bodies.values()) {
-      const id = find(body.id);
-      if (!groups.has(id)) groups.set(id, []);
-      groups.get(id)!.push(body);
-    }
-    this.groups = [...groups.values()];
-    this.groupIndex = new Map();
-    this.groups.forEach((group, index) => {
-      for (const body of group) this.groupIndex.set(body.id, index);
-    });
-    if (this.dragging) {
-      const dragged = this.bodies.get(this.dragging);
-      if (!dragged) {
-        this.dragging = undefined;
-        this.followers.clear();
-        this.contactScale = 1;
-      } else {
-        const group = this.groups[this.groupIndex.get(this.dragging) ?? -1] ?? [
-          dragged,
-        ];
-        const members = new Set(group.map((body) => body.id));
-        const descendants = this.descendantIds(this.dragging);
-        for (const id of this.followers.keys())
-          if (!members.has(id)) this.followers.delete(id);
-        for (const member of group)
-          if (
-            member !== dragged &&
-            !member.pin &&
-            !this.followers.has(member.id)
-          )
-            this.followers.set(member.id, {
-              x: member.x - dragged.x,
-              y: member.y - dragged.y,
-              rate: descendants.has(member.id)
-                ? FOLLOW_RATE_CHILD
-                : FOLLOW_RATE,
-            });
+    for (const id of ids) open(id);
+    const neighbours = new Map<string, string[]>();
+    for (const l of this.links) {
+      for (const [a, b] of [
+        [l.source, l.target],
+        [l.target, l.source],
+      ]) {
+        if (!neighbours.has(a)) neighbours.set(a, []);
+        neighbours.get(a)!.push(b);
       }
     }
+    this.groups = [];
+    this.groupIndex.clear();
+    for (const id of ids)
+      if (!this.groupIndex.has(id)) {
+        const index = this.groups.length,
+          group: Body[] = [],
+          queue = [id];
+        this.groupIndex.set(id, index);
+        for (let i = 0; i < queue.length; i++) {
+          const at = queue[i];
+          group.push(this.bodies.get(at)!);
+          for (const other of neighbours.get(at) ?? [])
+            if (!this.groupIndex.has(other)) {
+              this.groupIndex.set(other, index);
+              queue.push(other);
+            }
+        }
+        this.groups.push(group);
+      }
+    if (this.dragging && !ids.has(this.dragging)) {
+      this.dragging = undefined;
+      this.mode = "elastic";
+      this.hardening = 0;
+    }
+    if (this.recovery && !ids.has(this.recovery.id)) this.recovery = undefined;
+    if (forcePositions) {
+      this.recovery = undefined;
+      this.hardening = HARDEN_TIME;
+      this.originals.clear();
+    }
+    this.orderLinks();
     if (changed) this.wake();
     return changed;
   }
@@ -180,71 +213,112 @@ export class PhysicsWorld {
     b.y = b.pin.y;
     b.vx = b.vy = 0;
     delete b.opening;
+    this.orderLinks();
     this.wake();
   }
   unpin(id: string) {
     const b = this.bodies.get(id);
     if (b?.pin) {
       delete b.pin;
+      this.orderLinks();
       this.wake();
     }
   }
-  beginDrag(id: string) {
-    const dragged = this.bodies.get(id);
-    if (!dragged) return;
-    this.dragging = id;
-    this.contactScale = SOFT_CONTACT;
-    this.followers.clear();
-    const group = this.groups[this.groupIndex.get(id) ?? -1] ?? [dragged];
-    const descendants = this.descendantIds(id);
-    for (const member of group) {
-      if (member === dragged || member.pin) continue;
-      this.followers.set(member.id, {
-        x: member.x - dragged.x,
-        y: member.y - dragged.y,
-        rate: descendants.has(member.id) ? FOLLOW_RATE_CHILD : FOLLOW_RATE,
-      });
+  private capture() {
+    this.originals.clear();
+    for (const l of this.links) {
+      const a = this.bodies.get(l.source)!,
+        b = this.bodies.get(l.target)!;
+      l.restVector = { x: b.x - a.x, y: b.y - a.y };
+      l.restLength = Math.hypot(l.restVector.x, l.restVector.y);
+      this.originals.set(key(l.source, l.target), { ...l.restVector });
     }
-    for (const body of this.bodies.values()) body.vx = body.vy = 0;
+  }
+  beginDrag(id: string, mode: DragMode = "elastic") {
+    if (!this.bodies.has(id)) return;
+    this.dragging = id;
+    this.mode = mode;
+    this.recovery = undefined;
+    this.idle = 0;
+    this.hardening = 0;
+    this.contactScale = DRAG_CONTACT;
+    this.capture();
+    this.orderLinks();
+    for (const b of this.bodies.values()) b.vx = b.vy = 0;
     this.wake();
   }
-  private descendantIds(id: string) {
-    const children = new Map<string, string[]>();
-    for (const link of this.links) {
-      if (!children.has(link.source)) children.set(link.source, []);
-      children.get(link.source)!.push(link.target);
-    }
-    const result = new Set<string>();
-    const stack = [id];
-    while (stack.length) {
-      for (const child of children.get(stack.pop()!) ?? []) {
-        if (child === id || result.has(child)) continue;
-        result.add(child);
-        stack.push(child);
-      }
-    }
-    return result;
-  }
-  drag(id: string, point: Point) {
+  drag(id: string, point: Point, mode: DragMode = "elastic") {
     const b = this.bodies.get(id);
     if (!b) return;
-    if (this.dragging !== id) this.beginDrag(id);
+    if (this.dragging !== id) this.beginDrag(id, mode);
+    else if (this.mode !== mode) {
+      this.mode = mode;
+      this.capture();
+      this.orderLinks();
+    }
     const x = clamp(point.x) + b.offset.x,
-      y = clamp(point.y) + b.offset.y;
-    b.pin = { x, y };
-    b.x = x;
-    b.y = y;
-    b.vx = b.vy = 0;
+      y = clamp(point.y) + b.offset.y,
+      dx = x - b.x,
+      dy = y - b.y;
+    if (Math.hypot(dx, dy) > 0.05) {
+      this.idle = 0;
+      this.hardening = 0;
+      this.contactScale = DRAG_CONTACT;
+    }
     delete b.opening;
+    // Subdivide the input path, resolving contacts even when the final pointer has passed a neighbour.
+    const steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / 18)),
+      start = { x: b.x, y: b.y };
+    for (let i = 1; i <= steps; i++) {
+      b.x = start.x + (dx * i) / steps;
+      b.y = start.y + (dy * i) / steps;
+      b.pin = { x: b.x, y: b.y };
+      this.contacts(true);
+    }
+    b.vx = b.vy = 0;
     this.wake();
   }
   release(id: string) {
     if (this.dragging === id) {
+      const b = this.bodies.get(id);
+      if (b && this.mode === "elastic") {
+        this.recovery = { id, point: { x: b.x, y: b.y }, elapsed: 0 };
+        const group = this.groupIndex.get(id);
+        for (const l of this.links)
+          if (this.groupIndex.get(l.source) === group) {
+            const a = this.bodies.get(l.source)!,
+              child = this.bodies.get(l.target)!,
+              old = this.originals.get(key(l.source, l.target)) ?? l.restVector;
+            l.restVector = {
+              x: old.x * 0.8 + (child.x - a.x) * 0.2,
+              y: old.y * 0.8 + (child.y - a.y) * 0.2,
+            };
+            l.restLength = Math.hypot(l.restVector.x, l.restVector.y);
+          }
+      } else {
+        this.capture();
+        if (b) this.recovery = { id, point: { x: b.x, y: b.y }, elapsed: 0 };
+      }
       this.dragging = undefined;
-      this.followers.clear();
+      this.idle = 0;
     }
     this.unpin(id);
+    this.orderLinks();
     this.wake();
+  }
+  ropeState(source: string, target: string) {
+    const l = this.links.find(
+        (l) => l.source === source && l.target === target,
+      ),
+      a = this.bodies.get(source),
+      b = this.bodies.get(target);
+    return {
+      softness: 1 - this.hardening / HARDEN_TIME,
+      stretch:
+        l && a && b
+          ? Math.max(0, Math.hypot(b.x - a.x, b.y - a.y) - l.restLength)
+          : 0,
+    };
   }
   positions(): Record<string, Point> {
     return Object.fromEntries(
@@ -254,56 +328,103 @@ export class PhysicsWorld {
       ]),
     );
   }
-  private relaxInternalContacts(h: number) {
-    // During a drag the soft volume permits overlap; after release the shared
-    // contact scale grows back to full size and pushes every pair apart.
-    const strength = 1 - Math.exp(-14 * h);
-    let penetration = 0;
-    for (const group of this.groups) {
-      if (group.length < 2) continue;
-      const cellSize = Math.max(...group.map((b) => b.radius)) * 2;
-      const cells = new Map<string, number[]>();
-      const coordinates = group.map((b, index) => {
-        const x = Math.floor(b.x / cellSize),
-          y = Math.floor(b.y / cellSize);
-        const key = x + ":" + y;
-        if (!cells.has(key)) cells.set(key, []);
-        cells.get(key)!.push(index);
-        return { x, y };
-      });
-      for (let i = 0; i < group.length; i++) {
-        const a = group[i],
-          cell = coordinates[i];
-        if (a.opening) continue;
-        for (let x = cell.x - 1; x <= cell.x + 1; x++)
-          for (let y = cell.y - 1; y <= cell.y + 1; y++)
-            for (const j of cells.get(x + ":" + y) ?? []) {
-              if (j <= i) continue;
-              const b = group[j];
-              if (b.opening || (a.pin && b.pin)) continue;
-              const dx = b.x - a.x,
-                dy = b.y - a.y;
-              const min =
-                (a.radius + b.radius + CONTACT_GAP) * this.contactScale;
-              if (dx * dx + dy * dy >= min * min) continue;
-              const distance = Math.hypot(dx, dy);
-              penetration = Math.max(penetration, min - distance);
-              const nx =
-                distance > 1e-6 ? dx / distance : Math.cos((i + j) * 2.39996);
-              const ny =
-                distance > 1e-6 ? dy / distance : Math.sin((i + j) * 2.39996);
-              const correction =
-                (min - distance) * strength * (a.pin || b.pin ? 1 : 0.5);
-              if (!a.pin) {
-                a.x -= nx * correction;
-                a.y -= ny * correction;
-              }
-              if (!b.pin) {
-                b.x += nx * correction;
-                b.y += ny * correction;
-              }
-            }
+  private orderLinks() {
+    this.ordered = [];
+    const visited = new Set<string>(),
+      start =
+        this.dragging ??
+        this.recovery?.id ??
+        [...this.bodies.values()].find((b) => b.pin)?.id;
+    const roots = [...(start ? [start] : []), ...this.bodies.keys()];
+    const adj = new Map<string, Link[]>();
+    for (const l of this.links)
+      for (const id of [l.source, l.target]) {
+        if (!adj.has(id)) adj.set(id, []);
+        adj.get(id)!.push(l);
       }
+    for (const root of roots)
+      if (!visited.has(root)) {
+        const queue = [root];
+        visited.add(root);
+        for (let i = 0; i < queue.length; i++)
+          for (const link of adj.get(queue[i]) ?? []) {
+            const from = queue[i],
+              to = link.source === from ? link.target : link.source;
+            if (visited.has(to)) continue;
+            visited.add(to);
+            queue.push(to);
+            this.ordered.push({
+              link,
+              from,
+              to,
+              sign: link.source === from ? 1 : -1,
+              rate: link.source === from ? 7 : 10,
+            });
+          }
+      }
+  }
+  private contacts(duringDrag = false) {
+    const bodies = [...this.bodies.values()],
+      size = 2 * 53 * FULL_CONTACT + 8,
+      cells = new Map<string, Body[]>();
+    for (const b of bodies) {
+      const k = Math.floor(b.x / size) + ":" + Math.floor(b.y / size);
+      if (!cells.has(k)) cells.set(k, []);
+      cells.get(k)!.push(b);
+    }
+    const pinnedGroups = new Set<number>();
+    if (this.mode !== "free")
+      for (const b of bodies)
+        if (b.pin || b.id === this.recovery?.id)
+          pinnedGroups.add(this.groupIndex.get(b.id)!);
+    let penetration = 0;
+    for (let i = 0; i < bodies.length; i++) {
+      const a = bodies[i],
+        cx = Math.floor(a.x / size),
+        cy = Math.floor(a.y / size);
+      for (let x = cx - 1; x <= cx + 1; x++)
+        for (let y = cy - 1; y <= cy + 1; y++)
+          for (const b of cells.get(x + ":" + y) ?? []) {
+            if (a.id >= b.id || (a.pin && b.pin)) continue;
+            const ga = this.groupIndex.get(a.id)!,
+              gb = this.groupIndex.get(b.id)!;
+            const dx = b.x - a.x,
+              dy = b.y - a.y,
+              d = Math.hypot(dx, dy),
+              min =
+                (a.radius + b.radius + (ga === gb ? 2 : 4)) * this.contactScale;
+            if (d >= min) continue;
+            const overlap = min - d;
+            penetration = Math.max(penetration, overlap);
+            const nx = d > 1e-6 ? dx / d : Math.cos(i * 2.39996),
+              ny = d > 1e-6 ? dy / d : Math.sin(i * 2.39996);
+            const grouped = ga !== gb && this.mode !== "free";
+            const fixedA = grouped
+              ? pinnedGroups.has(ga)
+              : !!a.pin || a.id === this.recovery?.id;
+            const fixedB = grouped
+              ? pinnedGroups.has(gb)
+              : !!b.pin || b.id === this.recovery?.id;
+            if (fixedA && fixedB) continue;
+            const share = fixedA || fixedB ? 1 : 0.5;
+            const move = (body: Body, group: number, sign: number) => {
+              for (const m of grouped ? this.groups[group] : [body]) {
+                m.x += nx * overlap * share * sign;
+                m.y += ny * overlap * share * sign;
+                if (
+                  !duringDrag &&
+                  !this.reduced &&
+                  !this.dragging &&
+                  overlap > 2
+                ) {
+                  m.vx += nx * sign * Math.min(8, overlap * 0.1);
+                  m.vy += ny * sign * Math.min(8, overlap * 0.1);
+                }
+              }
+            };
+            if (!fixedA) move(a, ga, -1);
+            if (!fixedB) move(b, gb, 1);
+          }
     }
     return penetration;
   }
@@ -312,200 +433,138 @@ export class PhysicsWorld {
     const dt = Math.min(Math.max(seconds, 0), 1 / 30),
       steps = Math.max(1, Math.ceil(dt * 120)),
       h = dt / steps;
-    if (!this.dragging) {
-      if (this.reduced) this.contactScale = 1;
-      else if (this.contactScale < 1)
-        this.contactScale = Math.min(
-          1,
-          this.contactScale + (dt * (1 - SOFT_CONTACT)) / CONTACT_RAMP,
-        );
-    }
-    const bodies = this.ordered;
-    let internalPenetration = 0;
-    const before = new Map(bodies.map((b) => [b.id, { x: b.x, y: b.y }]));
-    const degrees = new Map<string, number>();
-    for (const l of this.links) {
-      degrees.set(l.source, (degrees.get(l.source) ?? 0) + 1);
-      degrees.set(l.target, (degrees.get(l.target) ?? 0) + 1);
-    }
+    const before = this.positions();
+    this.idle += dt;
+    if (this.reduced) this.hardening = HARDEN_TIME;
+    else if (!this.dragging || this.idle > 0.12)
+      this.hardening = Math.min(HARDEN_TIME, this.hardening + dt);
+    this.contactScale =
+      DRAG_CONTACT +
+      (FULL_CONTACT - DRAG_CONTACT) * (this.hardening / HARDEN_TIME);
+    if (this.recovery) this.recovery.elapsed += dt;
     for (let step = 0; step < steps; step++) {
-      const dragged = this.dragging
-        ? this.bodies.get(this.dragging)
-        : undefined;
-      if (dragged?.pin) {
-        dragged.x = dragged.pin.x;
-        dragged.y = dragged.pin.y;
-        dragged.vx = dragged.vy = 0;
-      }
-      for (const b of bodies) {
+      for (const b of this.bodies.values()) {
         if (b.pin) {
           b.x = b.pin.x;
           b.y = b.pin.y;
           b.vx = b.vy = 0;
           continue;
         }
-        if (this.dragging) {
-          const follower = this.followers.get(b.id);
-          if (dragged && follower) {
-            const k = 1 - Math.exp(-follower.rate * h);
-            b.x += (dragged.x + follower.x - b.x) * k;
-            b.y += (dragged.y + follower.y - b.y) * k;
-          }
-          b.vx = b.vy = 0;
-          continue;
-        }
         if (this.reduced) b.vx = b.vy = 0;
-        b.vx *= Math.exp(-10 * h);
-        b.vy *= Math.exp(-10 * h);
+        b.vx *= Math.exp(-12 * h);
+        b.vy *= Math.exp(-12 * h);
         b.x += b.vx * h;
         b.y += b.vy * h;
+        if (b.id === this.recovery?.id) {
+          b.x = this.recovery.point.x;
+          b.y = this.recovery.point.y;
+          b.vx = b.vy = 0;
+        }
       }
-      if (!this.dragging) {
-        for (const l of this.links) {
-          const a = this.bodies.get(l.source)!,
-            b = this.bodies.get(l.target)!;
-          if (a.opening || b.opening) continue;
-          let dx = b.x - a.x,
-            dy = b.y - a.y;
-          const d = Math.hypot(dx, dy),
-            rest =
-              280 +
-              Math.max(
-                0,
-                Math.sqrt(
-                  Math.max(degrees.get(a.id) ?? 0, degrees.get(b.id) ?? 0),
-                ) - 2,
-              ) *
-                90;
+      const shaping =
+        this.mode !== "free" && (!!this.dragging || !!this.recovery);
+      for (const row of this.ordered) {
+        const { link, from, to, sign, rate } = row,
+          a = this.bodies.get(from)!,
+          b = this.bodies.get(to)!;
+        if (this.mode === "free" && (this.dragging || this.recovery)) continue;
+        if (a.opening || b.opening) continue;
+        const d = Math.hypot(b.x - a.x, b.y - a.y);
+        if (!shaping) {
+          // Slack at rest: only very stretched ropes pull. No invisible attraction to old screen coordinates.
+          const rest = Math.max(280, link.restLength);
           if (d <= rest || !d) continue;
-          const pull =
-            Math.min(d - rest, 1800) *
-            (1 - Math.exp(-(this.reduced ? 18 : 5) * h));
-          dx = (dx / d) * pull;
-          dy = (dy / d) * pull;
-          const factor = !a.pin && !b.pin ? 0.5 : 1;
+          const k = ((d - rest) / d) * (1 - Math.exp(-5 * h)),
+            dx = (b.x - a.x) * k,
+            dy = (b.y - a.y) * k;
           if (!a.pin) {
-            a.x += dx * (b.pin ? 1 : factor);
-            a.y += dy * (b.pin ? 1 : factor);
+            a.x += dx * 0.5;
+            a.y += dy * 0.5;
           }
           if (!b.pin) {
-            b.x -= dx * (a.pin ? 1 : factor);
-            b.y -= dy * (a.pin ? 1 : factor);
+            b.x -= dx * 0.5;
+            b.y -= dy * 0.5;
           }
+          continue;
         }
-        for (const b of bodies) {
-          const opening = b.opening;
-          if (!opening) continue;
-          const parent = this.bodies.get(opening.parent);
-          if (!parent) {
+        if (
+          this.dragging &&
+          this.groupIndex.get(from) !== this.groupIndex.get(this.dragging)
+        )
+          continue;
+        if (b.pin || b.id === this.recovery?.id) continue;
+        link.stiffness = 0.3 + (0.7 * this.hardening) / HARDEN_TIME;
+        const k =
+          1 -
+          Math.exp(-(this.reduced ? 35 : rate * (0.55 + link.stiffness)) * h);
+        b.x += (a.x + link.restVector.x * sign - b.x) * k;
+        b.y += (a.y + link.restVector.y * sign - b.y) * k;
+      }
+      for (const b of this.bodies.values())
+        if (b.opening) {
+          const o = b.opening,
+            p = this.bodies.get(o.parent);
+          if (!p) {
             delete b.opening;
             continue;
           }
-          opening.elapsed += h;
-          const progress = this.reduced
-            ? 1
-            : Math.min(1, opening.elapsed / 0.24);
-          const eased = 1 - (1 - progress) ** 3;
-          b.x = parent.x + opening.dx * eased;
-          b.y = parent.y + opening.dy * eased;
-          if (progress === 1) delete b.opening;
+          o.elapsed += h;
+          const t = Math.min(1, o.elapsed / 0.24),
+            e = o.start + (1 - o.start) * (1 - (1 - t) ** 3);
+          b.x = p.x + o.dx * e;
+          b.y = p.y + o.dy * e;
+          if (t === 1) delete b.opening;
         }
-        internalPenetration = this.relaxInternalContacts(h);
-      } else {
-        internalPenetration = 0;
-      }
-      for (let pass = 0; pass < 3; pass++) {
-        const bounds = this.groups.map((group) => ({
-          left: Math.min(...group.map((b) => b.x - b.radius)),
-          right: Math.max(...group.map((b) => b.x + b.radius)),
-          top: Math.min(...group.map((b) => b.y - b.radius)),
-          bottom: Math.max(...group.map((b) => b.y + b.radius)),
-          pinned: group.some((b) => !!b.pin),
-        }));
-        for (let i = 0; i < this.groups.length; i++)
-          for (let j = i + 1; j < this.groups.length; j++) {
-            const a = bounds[i],
-              b = bounds[j];
-            if (
-              (a.pinned && b.pinned) ||
-              a.right + 4 < b.left ||
-              b.right + 4 < a.left ||
-              a.bottom + 4 < b.top ||
-              b.bottom + 4 < a.top
-            )
-              continue;
-            let overlap = 0,
-              nx = 0,
-              ny = 0;
-            for (const first of this.groups[i])
-              for (const second of this.groups[j]) {
-                const dx = second.x - first.x,
-                  dy = second.y - first.y;
-                const min =
-                  (first.radius + second.radius + 4) * this.contactScale;
-                if (Math.abs(dx) >= min || Math.abs(dy) >= min) continue;
-                const distance = Math.hypot(dx, dy);
-                if (min - distance <= overlap) continue;
-                overlap = min - distance;
-                nx =
-                  distance > 1e-6 ? dx / distance : Math.cos((i + j) * 2.39996);
-                ny =
-                  distance > 1e-6 ? dy / distance : Math.sin((i + j) * 2.39996);
-              }
-            if (!overlap) continue;
-            const share = a.pinned || b.pinned ? 1 : 0.5;
-            const impulse =
-              !pass &&
-              !this.reduced &&
-              !this.dragging &&
-              this.contactScale >= 1 &&
-              overlap > 2
-                ? Math.min(8, overlap * 0.15)
-                : 0;
-            const move = (index: number, direction: number) => {
-              const box = bounds[index];
-              if (box.pinned) return;
-              const dx = direction * nx * overlap * share,
-                dy = direction * ny * overlap * share;
-              for (const member of this.groups[index]) {
-                member.x += dx;
-                member.y += dy;
-                member.vx += direction * nx * impulse;
-                member.vy += direction * ny * impulse;
-              }
-              box.left += dx;
-              box.right += dx;
-              box.top += dy;
-              box.bottom += dy;
-            };
-            move(i, -1);
-            move(j, 1);
-          }
-      }
-      for (const b of bodies)
+      let penetration = 0;
+      for (let pass = 0; pass < 4; pass++)
+        penetration = Math.max(penetration, this.contacts());
+      // A crowded star may require more room than its initial rope lengths allow.
+      // Let contacts establish a feasible slack length instead of pulling forever.
+      if (!shaping && !this.dragging && penetration > 0.1)
+        for (const l of this.links) {
+          const a = this.bodies.get(l.source)!,
+            b = this.bodies.get(l.target)!;
+          l.restLength = Math.max(
+            l.restLength,
+            Math.hypot(b.x - a.x, b.y - a.y),
+          );
+        }
+      for (const b of this.bodies.values())
         if (!b.pin) {
           b.x = clamp(b.x - b.offset.x) + b.offset.x;
           b.y = clamp(b.y - b.offset.y) + b.offset.y;
         }
     }
+    if (this.recovery && (this.reduced || this.recovery.elapsed > 2.4)) {
+      this.capture();
+      this.recovery = undefined;
+      this.mode = "elastic";
+      this.orderLinks();
+    }
     const displacement = Math.max(
       0,
-      ...bodies.map((b) =>
-        Math.hypot(b.x - before.get(b.id)!.x, b.y - before.get(b.id)!.y),
+      ...[...this.bodies.values()].map((b) =>
+        Math.hypot(
+          b.x - b.offset.x - before[b.id].x,
+          b.y - b.offset.y - before[b.id].y,
+        ),
       ),
     );
-    const speed = Math.max(0, ...bodies.map((b) => Math.hypot(b.vx, b.vy)));
+    const speed = Math.max(
+      0,
+      ...[...this.bodies.values()].map((b) => Math.hypot(b.vx, b.vy)),
+    );
     this.quiet =
-      (this.dragging ||
-        (this.contactScale >= 1 && !bodies.some((b) => b.opening))) &&
-      internalPenetration < 0.1 &&
+      this.hardening >= HARDEN_TIME &&
+      !this.recovery &&
+      ![...this.bodies.values()].some((b) => b.opening) &&
       displacement < 0.035 &&
       speed < 0.2
         ? this.quiet + dt
         : 0;
     if (this.quiet > 0.22) {
       this.active = false;
-      for (const b of bodies) b.vx = b.vy = 0;
+      for (const b of this.bodies.values()) b.vx = b.vy = 0;
     }
     return this.active;
   }

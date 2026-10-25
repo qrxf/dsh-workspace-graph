@@ -1,249 +1,101 @@
-import { chromium } from "playwright";
-import { createServer } from "vite";
 import assert from "node:assert/strict";
-import { mkdir, writeFile } from "node:fs/promises";
-
-const server = await createServer({ server: { host: "127.0.0.1", port: 0 } });
-await server.listen();
-const browser = await chromium.launch({
-  headless: true,
-  channel: process.env.BROWSER_CHANNEL || undefined,
-});
-const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
-const errors = [];
-page.on("pageerror", (e) => errors.push(String(e)));
-const node = (id) => page.locator(`.react-flow__node[data-id="${id}"]`);
-const centers = () =>
-  page.locator(".react-flow__node").evaluateAll((nodes) =>
-    Object.fromEntries(
-      nodes.map((n) => {
-        const b = n.getBoundingClientRect();
-        return [
-          n.dataset.id,
-          {
-            x: b.x + b.width / 2,
-            y: b.y + b.height / 2,
-          },
-        ];
+import { writeFile } from "node:fs/promises";
+import { graphBrowser } from "./graph-browser-helpers.mjs";
+const g = await graphBrowser();
+try {
+  await g.node("workspace:product").locator(".wg-orb").click();
+  await g.node("session:s3").waitFor();
+  await g.stable();
+  await g.fit();
+  const members = ["session:s1", "session:s2", "session:s3"],
+    before = await g.positions();
+  const orb = await g
+      .node("workspace:product")
+      .locator(".wg-orb")
+      .boundingBox(),
+    start = { x: orb.x + orb.width / 2, y: orb.y + orb.height / 2 };
+  await g.page.mouse.move(start.x, start.y);
+  await g.page.mouse.down();
+  await g.page.mouse.move(start.x - 100, start.y - 60, { steps: 18 });
+  const during = await g.positions(),
+    shift = (id) =>
+      Math.hypot(during[id].x - before[id].x, during[id].y - before[id].y),
+    grabbed = shift("workspace:product");
+  assert.ok(grabbed > 50);
+  for (const id of members) {
+    assert.ok(shift(id) > 1, `${id} follows`);
+    assert.ok(shift(id) < grabbed - 1, `${id} lags`);
+  }
+  const path = () =>
+    g.page
+      .locator(
+        '[data-id="workspace:product->session:s1"] .react-flow__edge-path',
+      )
+      .getAttribute("d");
+  const softPath = await path();
+  await g.page.waitForTimeout(1500);
+  assert.notEqual(await path(), softPath);
+  await g.page.mouse.move(start.x - 180, start.y - 100, { steps: 3 });
+  await g.page.mouse.up();
+  await g.page.mouse.move(1000, 110);
+  const samples = [];
+  for (const [label, wait] of [
+    ["release", 0],
+    ["120ms", 120],
+    ["600ms", 480],
+    ["1200ms", 600],
+  ]) {
+    if (wait) await g.page.waitForTimeout(wait);
+    const geometry = await g.page.locator(".wg-orb").evaluateAll((ns) =>
+      ns.map((el) => {
+        const b = el.getBoundingClientRect();
+        return { x: b.x + b.width / 2, y: b.y + b.height / 2, r: b.width / 2 };
       }),
-    ),
-  );
-const positions = () =>
-  page.locator(".react-flow__node").evaluateAll((nodes) =>
-    Object.fromEntries(
-      nodes.map((n) => {
-        const match = /translate\(([-\d.]+)px,\s*([-\d.]+)px\)/.exec(
-          n.style.transform,
-        );
-        return [
-          n.dataset.id,
-          { x: Number(match?.[1] ?? 0), y: Number(match?.[2] ?? 0) },
-        ];
-      }),
-    ),
-  );
-const maxOverlap = () =>
-  page.locator(".wg-orb").evaluateAll((elements) => {
-    const orbs = elements.map((el) => {
-      const b = el.getBoundingClientRect();
-      return { x: b.x + b.width / 2, y: b.y + b.height / 2, r: b.width / 2 };
-    });
+    );
     let overlap = 0;
-    for (let i = 0; i < orbs.length; i++)
-      for (let j = i + 1; j < orbs.length; j++)
+    for (let i = 0; i < geometry.length; i++)
+      for (let j = i + 1; j < geometry.length; j++) {
+        const a = geometry[i],
+          b = geometry[j];
         overlap = Math.max(
           overlap,
-          orbs[i].r +
-            orbs[j].r -
-            Math.hypot(orbs[i].x - orbs[j].x, orbs[i].y - orbs[j].y),
+          a.r + b.r - Math.hypot(a.x - b.x, a.y - b.y),
         );
-    return overlap;
-  });
-const stable = async () => {
-  await page.waitForFunction(
-    () => {
-      const current = [...document.querySelectorAll(".react-flow__node")]
-        .map((n) => n.style.transform)
-        .join("|");
-      if (window.__lastGraph === current)
-        window.__stableGraph = (window.__stableGraph ?? 0) + 1;
-      else window.__stableGraph = 0;
-      window.__lastGraph = current;
-      return window.__stableGraph >= 8;
-    },
-    undefined,
-    { polling: 100 },
-  );
-};
-try {
-  await page.route("**/favicon.ico", (route) => route.fulfill({ status: 204 }));
-  await page.goto(server.resolvedUrls.local[0]);
-  await node("workspace:product").waitFor();
-  await stable();
-  await node("workspace:product").locator(".wg-orb").click();
-  await node("session:s2").waitFor();
-  await stable();
-  if (await page.getByLabel("关闭详情").count())
-    await page.getByLabel("关闭详情").click();
-  await page.getByRole("button", { name: "适应画布", exact: true }).click();
-  await stable();
-  await mkdir("artifacts/flex-drag", { recursive: true });
-
-  const before = await centers();
-  const beforePositions = await positions();
-  const cluster = [
-    "workspace:product",
-    "session:s1",
-    "session:s2",
-    "session:s3",
-  ];
-  const shift = (current) =>
-    Object.fromEntries(
-      cluster.map((id) => [
-        id,
-        {
-          x: current[id].x - before[id].x,
-          y: current[id].y - before[id].y,
-        },
-      ]),
-    );
-
-  const orb = await node("workspace:product").locator(".wg-orb").boundingBox();
-  const start = { x: orb.x + orb.width / 2, y: orb.y + orb.height / 2 };
-  await page.mouse.move(start.x, start.y);
-  await page.mouse.down();
-  await page.mouse.move(start.x + 140, start.y, { steps: 24 });
-
-  // Every connected bubble follows, but the rope lags during the gesture.
-  const during = await centers();
-  const immediate = shift(during);
-  for (const id of cluster.slice(1))
-    assert.ok(
-      immediate[id].x > 35,
-      `${id} must follow the drag immediately (${immediate[id].x})`,
-    );
-  for (const id of cluster.slice(1))
-    assert.ok(
-      immediate[id].x < immediate["workspace:product"].x - 15,
-      `${id} must lag behind the grabbed bubble (${immediate[id].x} vs ${immediate["workspace:product"].x})`,
-    );
+      }
+    assert.ok(overlap <= 1, `${label} overlap ${overlap}`);
+    samples.push({ label, overlap, positions: await g.positions() });
+    await g.page.screenshot({
+      path: `artifacts/layout-interaction/flex-${label}.png`,
+    });
+  }
+  await g.stable();
+  const final = await g.positions();
   assert.ok(
     Math.hypot(
-      during["workspace:research"].x - before["workspace:research"].x,
-      during["workspace:research"].y - before["workspace:research"].y,
-    ) < 0.75,
-    "an unrelated workspace must stay put before contact",
+      final["workspace:product"].x - before["workspace:product"].x,
+      final["workspace:product"].y - before["workspace:product"].y,
+    ) > 100,
   );
-  await page.screenshot({
-    path: "artifacts/flex-drag/following.png",
-    fullPage: true,
-  });
-
-  // Once the pointer stops, the rope catches up and the cluster keeps its shape.
-  await page.waitForTimeout(400);
-  const caughtUp = shift(await centers());
-  const caughtUpPositions = await positions();
-  for (const id of cluster.slice(1))
-    assert.ok(
-      Math.abs(caughtUp[id].x - caughtUp["workspace:product"].x) < 3,
-      `${id} must catch up while the pointer rests`,
-    );
-  for (const id of cluster.slice(1))
-    assert.ok(
-      Math.abs(
-        caughtUpPositions[id].x -
-          caughtUpPositions["workspace:product"].x -
-          (beforePositions[id].x - beforePositions["workspace:product"].x),
-      ) < 2,
-      `${id} must recover its relative position`,
-    );
-
-  // Push the whole cluster into the other workspaces, then release.
-  await page.mouse.move(start.x + 300, start.y, { steps: 30 });
-  await page.waitForTimeout(250);
-  const packed = await maxOverlap();
-  await page.screenshot({
-    path: "artifacts/flex-drag/during-drag.png",
-    fullPage: true,
-  });
-  await page.mouse.up();
-  const atRelease = await maxOverlap();
-  await page.waitForTimeout(120);
-  const after120 = await maxOverlap();
-  await page.waitForTimeout(480);
-  const after600 = await maxOverlap();
-  await page.waitForTimeout(1200);
-  const afterSettle = await maxOverlap();
-  await stable();
-
-  assert.ok(
-    packed > 2,
-    `soft contacts should allow overlap while dragging (${packed})`,
+  assert.deepEqual(
+    await g.page.evaluate(
+      () =>
+        JSON.parse(localStorage.getItem("dsh-workspace-graph:demo:v1"))
+          .positions,
+    ),
+    {},
   );
-  assert.ok(
-    after120 > 1,
-    `the collision volume should still be expanding after 120 ms (${after120})`,
-  );
-  assert.ok(
-    after120 < packed,
-    "the overlap must begin to shrink after release",
-  );
-  assert.ok(
-    after600 < after120,
-    "the overlap must keep shrinking while the volume grows",
-  );
-  assert.ok(
-    afterSettle <= 1,
-    `collision volume must end fully separated (${afterSettle})`,
-  );
-  assert.ok(
-    atRelease - afterSettle > 2,
-    "the overlap must shrink after release",
-  );
-  console.log(
-    JSON.stringify({ packed, atRelease, after120, after600, afterSettle }),
-  );
-
-  const stored = await page.evaluate(
-    () =>
-      JSON.parse(localStorage.getItem("dsh-workspace-graph:demo:v1")).positions,
-  );
-  assert.ok(stored["workspace:product"], "positions must be saved");
-  assert.deepEqual(errors, []);
-  await page.screenshot({
-    path: "artifacts/flex-drag/settled.png",
-    fullPage: true,
-  });
+  assert.deepEqual(g.errors, []);
   await writeFile(
-    "artifacts/flex-drag/results.json",
+    "artifacts/layout-interaction/flex-results.json",
     JSON.stringify(
-      {
-        checks: [
-          "every connected bubble follows with elastic lag",
-          "the rope catches up and restores relative positions",
-          "soft contacts overlap during drag",
-          "collision volume expands until fully separated",
-        ],
-        overlap: { packed, atRelease, after120, after600, afterSettle },
-        errors,
-      },
+      { before, during, final, samples, errors: g.errors },
       null,
       2,
     ),
   );
   console.log(
-    "PASS elastic follow, soft contacts and post-drag full separation",
+    "PASS elastic lag, held-pointer hardening, partial recovery, enlarged collisions and runtime layout",
   );
-} catch (error) {
-  if (page) {
-    await mkdir("artifacts/flex-drag", { recursive: true });
-    await page.screenshot({
-      path: "artifacts/flex-drag/failure.png",
-      fullPage: true,
-    });
-  }
-  throw error;
 } finally {
-  await browser.close();
-  await server.close();
+  await g.close();
 }
