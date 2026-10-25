@@ -1,6 +1,6 @@
 # 工作区图谱 · Workspace Atlas
 
-DeepSeek Harness 原生插件，用可拖动的气泡管理工作区与会话。左下角选择工作区和筛选条件，右侧查看详情并执行原生操作。
+DeepSeek Harness 原生插件，用可拖动的气泡管理工作区与会话。可以选择工作区和筛选条件，和查看详情并执行原生操作。
 
 ![工作区图谱演示](docs/screenshots/workspace-atlas.png)
 
