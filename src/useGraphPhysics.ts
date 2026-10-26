@@ -19,7 +19,16 @@ export function useGraphPhysics(
     dragged = useRef<string>(),
     hovered = useRef<string>();
   const forcePositions = useRef(false);
+  const savedPositions = useRef(new WeakSet<Point>());
   settled.current = onSettled;
+  const savePositions = useCallback(() => {
+    const positions = world.current.positions();
+    // LayoutRepository keeps these point objects. Recognize our own snapshots
+    // even if the async save returns after physics has advanced another frame.
+    for (const position of Object.values(positions))
+      savedPositions.current.add(position);
+    settled.current(positions);
+  }, []);
   const publish = useCallback(() => {
     const positions = world.current.positions();
     setRopes(
@@ -50,11 +59,11 @@ export function useGraphPhysics(
       if (world.current.active) frame.current = requestAnimationFrame(tick);
       else {
         frame.current = undefined;
-        settled.current(world.current.positions());
+        savePositions();
       }
     };
     frame.current = requestAnimationFrame(tick);
-  }, [publish]);
+  }, [publish, savePositions]);
   useEffect(() => {
     world.current.reduced = reduced;
   }, [reduced]);
@@ -63,6 +72,7 @@ export function useGraphPhysics(
       projection.nodes,
       projection.edges,
       forcePositions.current,
+      savedPositions.current,
     );
     forcePositions.current = false;
     const positions = world.current.positions();
@@ -109,10 +119,10 @@ export function useGraphPhysics(
     (id: string) => {
       world.current.release(id);
       dragged.current = undefined;
-      settled.current(world.current.positions());
+      savePositions();
       wake();
     },
-    [wake],
+    [savePositions, wake],
   );
   useEffect(() => {
     const mode = (event: KeyboardEvent) => {
