@@ -1,6 +1,6 @@
 {
   "name": "dsh-workspace-graph",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Draggable workspace and session graph for DeepSeek Harness / 可拖拽的工作区图谱",
   "type": "module",
   "license": "MIT",

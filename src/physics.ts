@@ -58,6 +58,7 @@ export class PhysicsWorld {
     nodes: readonly BubbleNode[],
     links: readonly LinkInput[],
     forcePositions = false,
+    savedPositions?: WeakSet<Point>,
   ) {
     const previous = new Set(this.bodies.keys()),
       ids = new Set(nodes.map((n) => n.id));
@@ -79,8 +80,10 @@ export class PhysicsWorld {
         input = this.inputs.get(node.id);
       const external =
         forcePositions ||
-        !input ||
-        Math.hypot(input.x - node.position.x, input.y - node.position.y) > 0.1;
+        (!savedPositions?.has(node.position) &&
+          (!input ||
+            Math.hypot(input.x - node.position.x, input.y - node.position.y) >
+              0.1));
       this.inputs.set(node.id, { ...node.position });
       if (!old) {
         this.bodies.set(node.id, {

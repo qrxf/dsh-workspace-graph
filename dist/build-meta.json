@@ -2,5 +2,5 @@
   "targetDSH": "0.2.1-rc.2",
   "react": "external",
   "graph": "@xyflow/react 12.12.0",
-  "bytes": 270416
+  "bytes": 270537
 }
