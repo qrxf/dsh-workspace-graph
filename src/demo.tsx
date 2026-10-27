@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "@xyflow/react/dist/style.css";
 import "./styles.css";
@@ -144,7 +144,7 @@ const initialCatalog: GraphCatalog = new URLSearchParams(location.search).has(
   "hierarchy",
 )
   ? hierarchyCatalog
-  : [10, 50, 100].includes(density)
+  : [10, 50, 100, 1000, 5000].includes(density)
     ? {
         loading: false,
         currentSessionId: "density-0",
@@ -169,7 +169,19 @@ const initialCatalog: GraphCatalog = new URLSearchParams(location.search).has(
       }
     : demoCatalog;
 function Demo() {
-  const [catalog, setCatalog] = useState(initialCatalog);
+  const [catalog, setCatalog] = useState(() =>
+    new URLSearchParams(location.search).has("loading")
+      ? { ...initialCatalog, loading: true }
+      : initialCatalog,
+  );
+  useEffect(() => {
+    if (!new URLSearchParams(location.search).has("loading")) return;
+    const timer = setTimeout(
+      () => setCatalog((c) => ({ ...c, loading: false })),
+      300,
+    );
+    return () => clearTimeout(timer);
+  }, []);
   const [visible, setVisible] = useState(true);
   const actions: GraphActions = {
     openSession: (id) => {

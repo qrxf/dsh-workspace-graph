@@ -16,6 +16,7 @@ try {
   await page.goto(server.resolvedUrls.local[0] + "?nodes=100");
   await page.locator('[data-id="workspace:density"]').waitFor();
   await page.waitForTimeout(700);
+  await page.getByRole("button", { name: "适应画布", exact: true }).click();
   const viewport = () =>
     page.locator(".react-flow__viewport").getAttribute("style");
   const before = await viewport();

@@ -18,4 +18,6 @@ jobs:
       - run: git diff --exit-code -- dist
       - run: npx playwright install --with-deps chromium
       - run: npm run test:browser
+      - run: npm run test:interactions
+      - run: npm run test:catalog
       - run: npm pack --ignore-scripts --dry-run

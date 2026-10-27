@@ -26,6 +26,7 @@ export function projectGraph(
   limits: Record<string, number> = {},
   expanded: ReadonlySet<string> = new Set(),
   now = Date.now(),
+  revealId?: string,
 ): GraphProjection {
   const workspaceParent = workspaceParents(catalog.workspaces);
   const currentIds = new Set(
@@ -62,7 +63,8 @@ export function projectGraph(
       virtual: true,
     });
   const nodes: BubbleNode[] = [],
-    edges: GraphProjection["edges"] = [];
+    edges: GraphProjection["edges"] = [],
+    matches: BubbleNode[] = [];
   const query = filters.query.trim().toLocaleLowerCase();
   const statuses =
     filters.statuses ?? (filters.status === "all" ? [] : [filters.status]);
@@ -118,7 +120,16 @@ export function projectGraph(
       .filter(
         (s) =>
           inScope &&
-          (groupMatch || s.title.toLocaleLowerCase().includes(query)) &&
+          (groupMatch ||
+            (
+              s.title +
+              " " +
+              (s.cwd ?? "") +
+              " " +
+              (layout.settings?.manualSummaries?.[s.id] ?? "")
+            )
+              .toLocaleLowerCase()
+              .includes(query)) &&
           (!statuses.length || statuses.includes(sessionStatus(s))) &&
           (!filters.recency ||
             filters.recency === "all" ||
@@ -171,18 +182,25 @@ export function projectGraph(
         target: rootId,
       });
     matched += candidates.length;
-    for (const s of candidates) matchingIds.add(s.id);
+    for (const s of candidates) {
+      matchingIds.add(s.id);
+      matches.push(sessionNode(s));
+    }
     const limit = limits[w.id] ?? 20;
     const visible =
       collapsed || filters.kind === "workspace"
         ? []
         : candidates.slice(0, limit);
-    for (const resident of children.filter(active))
+    for (const resident of children.filter(
+      (s) => active(s) || s.id === revealId,
+    ))
       if (!visible.some((s) => s.id === resident.id)) visible.push(resident);
     visible.forEach((s) => {
       if (emitted.has(s.id)) return;
       emitted.add(s.id);
-      nodes.push(sessionNode(s));
+      const node = sessionNode(s);
+      node.data.outsideFilters = !matchingIds.has(s.id);
+      nodes.push(node);
     });
   });
   // A filtered/paginated branch still needs its actual source, never a replacement workspace edge.
@@ -209,6 +227,7 @@ export function projectGraph(
     });
   }
   return {
+    matches,
     nodes,
     edges,
     matched,

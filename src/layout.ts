@@ -194,6 +194,51 @@ export class LayoutRepository {
     this.storedRevision = 0;
     return next;
   }
+  previewBackup(raw: string): LayoutDocument {
+    if (raw.length > 5 * 1024 * 1024) throw new Error("备份超过 5 MB");
+    return new LayoutRepository(
+      { getItem: () => raw, setItem() {} },
+      this.key,
+    ).loadStored();
+  }
+  importBackup(raw: string, expectedRaw: string | null): LayoutDocument {
+    const imported = this.previewBackup(raw);
+    if (this.storage.getItem(this.key) !== expectedRaw)
+      throw new Error(
+        "Layout conflict: another window changed the saved layout",
+      );
+    // Write first: quota/permission failures must leave the runtime untouched.
+    let previousRevision = this.storedRevision ?? 0;
+    try {
+      previousRevision = Math.max(previousRevision, this.loadStored().revision);
+    } catch {
+      /* Explicit import can recover malformed existing storage. */
+    }
+    const storedRevision = previousRevision + 1;
+    this.storage.setItem(
+      this.key,
+      JSON.stringify({
+        ...imported,
+        revision: storedRevision,
+        positions: {},
+        views: Object.fromEntries(
+          Object.entries(imported.views).map(([id, v]) => [
+            id,
+            { filters: v.filters },
+          ]),
+        ),
+      }),
+    );
+    this.positions = imported.positions;
+    this.viewports = Object.fromEntries(
+      Object.entries(imported.views)
+        .filter(([, v]) => v.viewport)
+        .map(([id, v]) => [id, { viewport: v.viewport }]),
+    );
+    this.storedRevision = storedRevision;
+    this.revision++;
+    return this.load();
+  }
   savePatch(patch: LayoutPatch, expectedRevision: number): LayoutDocument {
     const current = this.load();
     const durable =

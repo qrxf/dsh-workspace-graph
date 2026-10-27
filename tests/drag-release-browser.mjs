@@ -42,84 +42,118 @@ try {
     };
     window.cancelAnimationFrame = (id) => frames.delete(id);
     const results = [];
-    for (const hz of [30, 60, 120]) {
-      let physics, updateProjection, pendingSave;
-      const saves = [];
-      const initial = {
-        nodes: [0, 220, 440].map((x, i) => ({
-          id: String(i),
-          type: "bubble",
-          position: { x, y: 0 },
-          data: {
-            kind: "session",
-            entityId: String(i),
-            title: String(i),
-            status: "idle",
-          },
-        })),
-        edges: [
-          { id: "01", source: "0", target: "1" },
-          { id: "12", source: "1", target: "2" },
-        ],
-      };
-      function Harness() {
-        const [projection, setProjection] = React.useState(initial);
-        updateProjection = setProjection;
-        physics = useGraphPhysics(projection, false, (positions) => {
-          saves.push(positions);
-          // GraphPage saves through a promise queue and navigator.locks. Model
-          // the save completing after the next RAF, while physics has advanced.
-          pendingSave = positions;
-        });
-        return null;
-      }
-      const root = createRoot(document.getElementById("root"));
-      flushSync(() => root.render(React.createElement(Harness)));
-      let now = performance.now();
-      const step = () => {
-        const saved = pendingSave;
-        pendingSave = undefined;
-        const pending = [...frames.values()];
-        frames.clear();
-        now += 1000 / hz;
-        flushSync(() => pending.forEach((callback) => callback(now)));
-        if (saved)
-          flushSync(() =>
-            updateProjection((old) => ({
-              ...old,
-              nodes: old.nodes.map((node) => ({
-                ...node,
-                position: saved[node.id],
+    for (const shape of ["line", "ring"])
+      for (const hz of [30, 60, 120]) {
+        let physics, updateProjection, pendingSave;
+        const saves = [];
+        const initial = {
+          nodes: (shape === "line"
+            ? [0, 220, 440]
+            : Array.from({ length: 21 }, (_, i) => i)
+          ).map((x, i) => ({
+            id: String(i),
+            type: "bubble",
+            position:
+              shape === "line" || i === 0
+                ? { x: shape === "line" ? x : 0, y: 0 }
+                : {
+                    x: Math.cos(((i - 1) * Math.PI) / 10) * 320,
+                    y: 16 + Math.sin(((i - 1) * Math.PI) / 10) * 320,
+                  },
+            data: {
+              kind: shape === "ring" && i === 0 ? "workspace" : "session",
+              entityId: String(i),
+              title: String(i),
+              status: "idle",
+            },
+          })),
+          edges:
+            shape === "ring"
+              ? Array.from({ length: 20 }, (_, i) => ({
+                  id: "0-" + (i + 1),
+                  source: "0",
+                  target: String(i + 1),
+                }))
+              : [
+                  { id: "01", source: "0", target: "1" },
+                  { id: "12", source: "1", target: "2" },
+                ],
+        };
+        function Harness() {
+          const [projection, setProjection] = React.useState(initial);
+          updateProjection = setProjection;
+          physics = useGraphPhysics(projection, false, (positions) => {
+            saves.push(positions);
+            // GraphPage saves through a promise queue and navigator.locks. Model
+            // the save completing after the next RAF, while physics has advanced.
+            pendingSave = positions;
+          });
+          return null;
+        }
+        const root = createRoot(document.getElementById("root"));
+        flushSync(() => root.render(React.createElement(Harness)));
+        let now = performance.now();
+        const step = () => {
+          const saved = pendingSave;
+          pendingSave = undefined;
+          const pending = [...frames.values()];
+          frames.clear();
+          now += 1000 / hz;
+          flushSync(() => pending.forEach((callback) => callback(now)));
+          if (saved)
+            flushSync(() =>
+              updateProjection((old) => ({
+                ...old,
+                nodes: old.nodes.map((node) => ({
+                  ...node,
+                  position: saved[node.id],
+                })),
               })),
-            })),
+            );
+        };
+        flushSync(() => {
+          physics.drag("0", { x: 0, y: 0 });
+          physics.drag(
+            "0",
+            shape === "ring" ? { x: 2000, y: 200 } : { x: -300, y: 120 },
           );
-      };
-      flushSync(() => {
-        physics.drag("0", { x: 0, y: 0 });
-        physics.drag("0", { x: -300, y: 120 });
-      });
-      step();
-      flushSync(() => physics.release("0"));
-      const release = physics.world.positions();
-      const savesAtRelease = saves.length;
-      for (let i = 0; i < hz / 2; i++) step();
-      const after = physics.world.positions();
-      let count = 0;
-      while ((frames.size || pendingSave) && count++ < hz * 10) step();
-      const final = physics.world.positions();
-      results.push({
-        hz,
-        savesAtRelease,
-        release,
-        after,
-        final,
-        saves: saves.length,
-        saved: saves.at(-1),
-        active: physics.world.active,
-        frames: frames.size,
-      });
-      flushSync(() => root.unmount());
-    }
+        });
+        step();
+        flushSync(() => physics.release("0"));
+        const release = physics.world.positions();
+        const savesAtRelease = saves.length;
+        for (let i = 0; i < hz / 2; i++) step();
+        const after = physics.world.positions();
+        let count = 0;
+        while ((frames.size || pendingSave) && count++ < hz * 10) step();
+        const final = physics.world.positions();
+        const hub = physics.world.bodies.get("0"),
+          children = [...physics.world.bodies.values()].filter(
+            (b) => b.id !== "0",
+          );
+        results.push({
+          shape,
+          hubOffset:
+            shape === "ring"
+              ? Math.hypot(
+                  hub.x -
+                    children.reduce((s, b) => s + b.x, 0) / children.length,
+                  hub.y -
+                    children.reduce((s, b) => s + b.y, 0) / children.length,
+                )
+              : 0,
+          hz,
+          savesAtRelease,
+          release,
+          after,
+          final,
+          saves: saves.length,
+          saved: saves.at(-1),
+          active: physics.world.active,
+          frames: frames.size,
+        });
+        flushSync(() => root.unmount());
+      }
     return results;
   });
   await mkdir("artifacts/layout-interaction", { recursive: true });
@@ -128,17 +162,31 @@ try {
     JSON.stringify(results, null, 2),
   );
   for (const r of results) {
-    assert.ok(
-      r.after["1"].x < r.release["1"].x - 20,
-      `${r.hz}Hz: neighbours must keep following after an abrupt release`,
-    );
+    if (r.shape === "line")
+      assert.ok(
+        r.after["1"].x < r.release["1"].x - 20,
+        `${r.hz}Hz: neighbours must keep following after an abrupt release`,
+      );
+    else {
+      assert.ok(
+        Math.hypot(
+          r.after["1"].x - r.release["1"].x,
+          r.after["1"].y - r.release["1"].y,
+        ) > 30,
+        "ring keeps following after immediate release",
+      );
+      assert.ok(
+        r.hubOffset < 320 * 0.35,
+        "hub stays near the recovered ring center",
+      );
+    }
     assert.equal(
       r.savesAtRelease,
       1,
       "preserve a drop snapshot for panel remounts",
     );
     assert.ok(
-      Math.abs(r.final["0"].x + 300) < 1,
+      Math.abs(r.final["0"].x - (r.shape === "ring" ? 2000 : -300)) < 1,
       "grabbed bubble stays at its drop point",
     );
     assert.equal(r.saves, 2, "also save once the physics actually settles");
@@ -152,7 +200,7 @@ try {
   }
   assert.deepEqual(errors, []);
   console.log(
-    "PASS abrupt release keeps neighbours moving, final layout feedback and idle RAF at 30/60/120Hz",
+    "PASS line and dense-ring abrupt release, delayed layout feedback, central hub recovery and idle RAF at 30/60/120Hz",
   );
 } finally {
   await browser?.close();

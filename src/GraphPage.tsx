@@ -28,7 +28,7 @@ import type {
   Point,
   Status,
 } from "./types.ts";
-import { defaultFilters } from "./types.ts";
+import { clearedFilters, defaultFilters } from "./types.ts";
 import { projectGraph } from "./model.ts";
 import { carryHiddenPositions } from "./hierarchy.ts";
 import { emptyLayout, LayoutRepository } from "./layout.ts";
@@ -36,6 +36,7 @@ import { DEFAULT_THEME, deriveTheme } from "./theme.ts";
 import { ThemeControls } from "./ThemeControls.tsx";
 import { useGraphPhysics } from "./useGraphPhysics.ts";
 import { RopeEdge } from "./RopeEdge.tsx";
+import { bubbleGeometry } from "./geometry.ts";
 import { runtimeTreePositions } from "./treeLayout.ts";
 import {
   recordVisit,
@@ -45,6 +46,8 @@ import {
 } from "./activity.ts";
 import type { SummaryProvider } from "./summary.ts";
 import { SummaryEditor } from "./SummaryEditor.tsx";
+import { BackupControls } from "./BackupControls.tsx";
+import { NavigationPanel } from "./NavigationPanel.tsx";
 
 export const statusLabels: Record<Status, string> = {
   running: "运行中",
@@ -67,6 +70,8 @@ function Bubble({ data, selected }: NodeProps<Node<BubbleData>>) {
       className={
         "wg-bubble " +
         (workspace ? "is-workspace" : "is-session") +
+        " is-status-" +
+        data.status +
         (selected ? " is-selected" : "") +
         (data.collapsed === false ? " is-expanded" : "") +
         (data.current ? " is-current" : "") +
@@ -93,6 +98,13 @@ function Bubble({ data, selected }: NodeProps<Node<BubbleData>>) {
         {data.parentWorkspaceId && <span>子工作区</span>}
         {data.parentSessionId && <span>分支</span>}
         {data.context && <span>来源</span>}
+        {data.outsideFilters && (
+          <span>
+            {data.current || data.working || data.status === "waiting"
+              ? "筛选外活动"
+              : "临时定位"}
+          </span>
+        )}
       </div>
       {!workspace && (
         <div className="wg-activity">
@@ -186,6 +198,11 @@ function GraphInner({
     [limits, setLimits] = useState<Record<string, number>>({}),
     [dockOpen, setDockOpen] = useState(true);
   const [undo, setUndo] = useState<Record<string, Point>>();
+  const [revealId, setRevealId] = useState<string>();
+  const [listView, setListView] = useState(false);
+  const [attention, setAttention] = useState<Status>();
+  const [compact, setCompact] = useState(false);
+  const returnViewport = useRef<ReturnType<typeof flow.getViewport>>();
   const [resetRaw, setResetRaw] = useState<{ raw: string | null }>();
   const [systemReduced, setSystemReduced] = useState(
     () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
@@ -194,6 +211,7 @@ function GraphInner({
   const [now, setNow] = useState(Date.now);
   const flow = useReactFlow<Node<BubbleData>>();
   const canvasRef = useRef<HTMLDivElement>(null);
+  const initialViewHandled = useRef(false);
   const fitAvailable = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas || !flow.getNodes().length) return;
@@ -219,12 +237,46 @@ function GraphInner({
     blocked = useRef(!!initial.error),
     pending = useRef(0),
     initializing = useRef(0),
+    queryTimer = useRef<ReturnType<typeof setTimeout>>(),
     viewportTimer = useRef<ReturnType<typeof setTimeout>>();
   const filtersRef = useRef(filters);
   filtersRef.current = filters;
   const projection = useMemo(
-    () => projectGraph(catalog, filters, layout, limits, expanded, now),
-    [catalog, filters, layout, limits, expanded, now],
+    () =>
+      projectGraph(catalog, filters, layout, limits, expanded, now, revealId),
+    [catalog, filters, layout, limits, expanded, now, revealId],
+  );
+  const allRows = useMemo(
+    () =>
+      projectGraph(
+        catalog,
+        clearedFilters,
+        {
+          ...emptyLayout(),
+          settings: layout.settings,
+        },
+        {},
+        new Set(),
+        now,
+      ).matches,
+    [catalog, layout.settings, now],
+  );
+  const attentionCounts = useMemo(
+    () =>
+      Object.fromEntries(
+        (["waiting", "running", "unread"] as Status[]).map((s) => [
+          s,
+          allRows.filter((n) => n.data.status === s).length,
+        ]),
+      ),
+    [allRows],
+  );
+  const navigationRows = useMemo(
+    () =>
+      attention
+        ? allRows.filter((n) => n.data.status === attention)
+        : projection.matches,
+    [attention, allRows, projection.matches],
   );
   const setDocument = useCallback((next: LayoutDocument) => {
     layoutRef.current = next;
@@ -273,6 +325,25 @@ function GraphInner({
     save({ positions: carryHiddenPositions(catalog, previous, positions) });
   });
   const { nodes, setNodes } = physics;
+  const pendingFocus = useRef<string>();
+  useEffect(() => {
+    const node = nodes.find((n) => n.id === pendingFocus.current);
+    if (!node) return;
+    pendingFocus.current = undefined;
+    void flow.fitView({ nodes: [node], padding: 0.8, maxZoom: 1 });
+  }, [nodes, flow]);
+  const locate = (id: string) => {
+    returnViewport.current ??= flow.getViewport();
+    pendingFocus.current = "session:" + id;
+    setRevealId(id);
+    setSelectedId("session:" + id);
+    // An already revealed node does not cause a projection update.
+    const node = nodes.find((n) => n.id === "session:" + id);
+    if (node) {
+      pendingFocus.current = undefined;
+      void flow.fitView({ nodes: [node], padding: 0.8, maxZoom: 1 });
+    }
+  };
   const edges = useMemo(
     () =>
       projection.edges.map((e) => ({
@@ -305,6 +376,7 @@ function GraphInner({
     return () => {
       alive.current = false;
       clearTimeout(viewportTimer.current);
+      clearTimeout(queryTimer.current);
     };
   }, []);
   useEffect(() => {
@@ -332,7 +404,23 @@ function GraphInner({
     const saved = layoutRef.current.views[filters.workspace]?.viewport;
     const timer = setTimeout(() => {
       if (saved) flow.setViewport(saved);
-      else fitAvailable();
+      else {
+        const currentId =
+          catalog.currentSessionId ?? catalog.currentSessionIds?.[0];
+        const current =
+          !initialViewHandled.current && currentId
+            ? flow.getNodes().find((n) => n.id === "session:" + currentId)
+            : undefined;
+        if (current) {
+          const { offset } = bubbleGeometry("session");
+          void flow.setCenter(
+            current.position.x + offset.x,
+            current.position.y + offset.y,
+            { zoom: 1 },
+          );
+        } else fitAvailable();
+      }
+      initialViewHandled.current = true;
     }, 60);
     return () => clearTimeout(timer);
   }, [filters.workspace, catalog.loading, flow, fitAvailable]);
@@ -376,7 +464,21 @@ function GraphInner({
   const updateFilters = (patch: Partial<Filters>) => {
     const next = { ...filtersRef.current, ...patch };
     setFilters(next);
-    save({ views: { all: { filters: next } } });
+    if (patch.query === undefined) save({ views: { all: { filters: next } } });
+  };
+  useEffect(() => {
+    queryTimer.current = setTimeout(
+      () => save({ views: { all: { filters: filtersRef.current } } }),
+      250,
+    );
+    return () => clearTimeout(queryTimer.current);
+  }, [filters.query, save]);
+  const resetFilters = (defaults: Filters) => {
+    setRevealId(undefined);
+    setAttention(undefined);
+    setSelectedId(undefined);
+    setFilters({ ...defaults });
+    save({ views: { all: { filters: { ...defaults } } } });
   };
   const chooseScope = (scope: string) => {
     clearTimeout(viewportTimer.current);
@@ -471,13 +573,67 @@ function GraphInner({
           </div>
         </div>
         <div className="wg-top-actions">
+          <button
+            aria-pressed={listView}
+            onClick={() => setListView(!listView)}
+          >
+            {listView ? "图谱视图" : "列表视图"}
+          </button>
+          <BackupControls
+            repository={repository}
+            snapshot={() => ({
+              ...layoutRef.current,
+              views: {
+                ...layoutRef.current.views,
+                all: {
+                  ...layoutRef.current.views.all,
+                  filters: filtersRef.current,
+                },
+              },
+              positions: {
+                ...layoutRef.current.positions,
+                ...Object.fromEntries(nodes.map((n) => [n.id, n.position])),
+              },
+            })}
+            prepareImport={async () => {
+              clearTimeout(queryTimer.current);
+              save({ views: { all: { filters: filtersRef.current } } });
+              await queue.current;
+              return repository.storage.getItem(repository.key);
+            }}
+            onError={setError}
+            onImport={async (raw, expected) => {
+              await queue.current;
+              const commit = () => {
+                const next = repository.importBackup(raw, expected);
+                physics.forceNextSync();
+                blocked.current = false;
+                setDocument(next);
+                setError("");
+                setFilters({ ...defaultFilters, ...next.views.all?.filters });
+                setRevealId(undefined);
+                setSelectedId(undefined);
+                setNotice("备份已导入");
+                const viewport =
+                  next.views[next.views.all?.filters?.workspace ?? "all"]
+                    ?.viewport;
+                if (viewport) void flow.setViewport(viewport);
+              };
+              if (navigator.locks)
+                await navigator.locks.request(repository.key, commit);
+              else commit();
+            }}
+          />
           <label className="wg-search">
             <span>⌕</span>
             <input
               aria-label="搜索工作区和会话"
               placeholder="搜索工作区或会话…"
               value={filters.query}
-              onChange={(e) => updateFilters({ query: e.target.value })}
+              onChange={(e) => {
+                setAttention(undefined);
+                updateFilters({ query: e.target.value });
+              }}
             />
           </label>
           <button onClick={fitAvailable}>适应画布</button>
@@ -501,7 +657,7 @@ function GraphInner({
                   }
                 }}
               >
-                重置本地布局
+                清除全部本地数据
               </button>
               <button
                 onClick={() => {
@@ -558,7 +714,9 @@ function GraphInner({
       )}
       {resetRaw && (
         <div className="wg-alert" role="alert">
-          <span>这会清除当前浏览器的图谱位置和筛选。可先导出备份。</span>
+          <span>
+            这会清除全部图谱本地数据，包括手动概括、置顶、主题、使用记录、筛选和布局。请先导出备份。
+          </span>
           <button
             onClick={() => {
               try {
@@ -573,14 +731,19 @@ function GraphInner({
               }
             }}
           >
-            确认重置
+            确认清除全部数据
           </button>
           <button onClick={() => setResetRaw(undefined)}>取消</button>
         </div>
       )}
       {demo && <div className="wg-demo-label">交互演示 · 数据仅用于预览</div>}
       <div
-        className="wg-canvas"
+        className={
+          "wg-canvas" +
+          (compact ? " wg-compact" : "") +
+          (listView ? " wg-list-view" : "") +
+          (selected ? " wg-has-details" : "")
+        }
         ref={canvasRef}
         onKeyDown={(e) => {
           if (e.key !== "Enter" && e.key !== " ") return;
@@ -645,6 +808,7 @@ function GraphInner({
           onNodeDoubleClick={(_e, node) => void openNode(node)}
           onPaneClick={() => setSelectedId(undefined)}
           onMoveEnd={(_event, viewport) => {
+            setCompact(viewport.zoom < 0.55);
             clearTimeout(viewportTimer.current);
             const scope = filtersRef.current.workspace;
             viewportTimer.current = setTimeout(
@@ -662,6 +826,7 @@ function GraphInner({
           selectionKeyCode={null}
           proOptions={{ hideAttribution: false }}
           defaultViewport={layout.views[filters.workspace]?.viewport}
+          onViewportChange={(viewport) => setCompact(viewport.zoom < 0.55)}
         >
           <Background
             variant={BackgroundVariant.Dots}
@@ -671,6 +836,50 @@ function GraphInner({
           />
           <Controls position="bottom-right" showInteractive={false} />
         </ReactFlow>
+        <div className="wg-attention" aria-label="全局会话状态">
+          {(["waiting", "running", "unread"] as Status[]).map((status) => (
+            <button
+              key={status}
+              aria-pressed={attention === status}
+              onClick={() =>
+                setAttention(attention === status ? undefined : status)
+              }
+            >
+              {statusLabels[status]} {attentionCounts[status] ?? 0}
+            </button>
+          ))}
+          {attention && (
+            <button onClick={() => setAttention(undefined)}>
+              返回全部会话
+            </button>
+          )}
+          {returnViewport.current && (
+            <button
+              onClick={() => {
+                void flow.setViewport(returnViewport.current!);
+                returnViewport.current = undefined;
+                setRevealId(undefined);
+                setSelectedId(undefined);
+              }}
+            >
+              返回定位前视角
+            </button>
+          )}
+        </div>
+        {(listView || filters.query.trim() || attention) && (
+          <NavigationPanel
+            key={attention ?? filters.query}
+            rows={navigationRows}
+            title={
+              attention
+                ? "全局" + statusLabels[attention]
+                : filters.query.trim()
+                  ? "搜索结果"
+                  : "匹配会话"
+            }
+            onLocate={locate}
+          />
+        )}
         {catalog.loading && (
           <div className="wg-empty" role="status">
             <span className="wg-empty-orb">◈</span>
@@ -695,8 +904,7 @@ function GraphInner({
             {hasFilters && (
               <button
                 onClick={() => {
-                  setFilters(defaultFilters);
-                  save({ views: { all: { filters: defaultFilters } } });
+                  resetFilters(clearedFilters);
                 }}
               >
                 清除筛选
@@ -884,11 +1092,19 @@ function GraphInner({
                 </span>
                 <button
                   onClick={() => {
-                    setFilters(defaultFilters);
-                    save({ views: { all: { filters: defaultFilters } } });
+                    resetFilters(clearedFilters);
                   }}
                 >
                   清除筛选
+                </button>
+                <button
+                  onClick={() => {
+                    setExpanded(new Set());
+                    setLimits({});
+                    resetFilters(defaultFilters);
+                  }}
+                >
+                  恢复默认视图
                 </button>
               </div>
             </>

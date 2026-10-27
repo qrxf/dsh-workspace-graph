@@ -74,6 +74,7 @@ export interface UsageHistory {
   visits: number[];
 }
 export interface BubbleData extends Record<string, unknown> {
+  outsideFilters?: boolean;
   parentWorkspaceId?: string;
   parentSessionId?: string;
   childWorkspaceCount?: number;
@@ -103,6 +104,7 @@ export interface BubbleNode {
   data: BubbleData;
 }
 export interface GraphProjection {
+  matches: BubbleNode[];
   nodes: BubbleNode[];
   edges: {
     id: string;
@@ -130,4 +132,10 @@ export const defaultFilters: Filters = {
   kind: "all",
   archived: false,
   query: "",
+};
+export const clearedFilters: Filters = {
+  ...defaultFilters,
+  recency: "all",
+  frequency: "all",
+  statuses: [],
 };

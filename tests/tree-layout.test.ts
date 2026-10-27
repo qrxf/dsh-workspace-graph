@@ -1,6 +1,20 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { defaultTreePositions } from "../src/treeLayout.ts";
+
+test("catalog defaults reuse immutable results and new catalog snapshots invalidate the cache", () => {
+  const c = {
+    loading: false,
+    archivedSessionIds: [],
+    workspaces: [{ id: "w", title: "W", path: "/w", sessionIds: [] }],
+    sessions: [],
+  };
+  const first = defaultTreePositions(c);
+  assert.equal(defaultTreePositions(c), first);
+  assert.ok(Object.isFrozen(first));
+  assert.ok(Object.isFrozen(first["workspace:w"]));
+  assert.notEqual(defaultTreePositions({ ...c }), first);
+});
 import { bubbleGeometry } from "../src/geometry.ts";
 import type { GraphCatalog } from "../src/types.ts";
 import { projectGraph } from "../src/model.ts";
