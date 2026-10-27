@@ -39,6 +39,8 @@
     "prepack": "npm run build",
     "test:native": "node tests/native.mjs",
     "test:performance": "node tests/performance-browser.mjs",
+    "test:catalog": "node tests/catalog-performance.mjs",
+    "test:interactions": "node scripts/test-interactions.mjs",
     "format": "prettier --write src tests scripts package.json tsconfig.json"
   },
   "engines": {

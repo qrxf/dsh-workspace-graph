@@ -129,7 +129,7 @@ try {
               log.replace(/token=[^\s]+/g, "token=[redacted]"),
           ),
         ),
-      60000,
+      Number(process.env.DSH_BOOT_TIMEOUT_MS) || 60000,
     );
     const onData = (data) => {
       log += data.toString();

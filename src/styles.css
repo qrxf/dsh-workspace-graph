@@ -160,12 +160,14 @@
 }
 .wg-bubble {
   position: relative;
+  isolation: isolate;
   width: 144px;
   text-align: center;
   --bubble-color: #6aabff;
   user-select: none;
 }
 .wg-orb {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -676,10 +678,44 @@
   outline: 3px solid #fff;
   outline-offset: 6px;
 }
+.wg-root .wg-bubble {
+  --wg-glow-color: var(--bubble-color);
+}
+.wg-root .wg-bubble.is-current {
+  --wg-glow-color: #a8ccff;
+}
+/* A separate layer keeps the glow behind the orb, leaving text and edges crisp. */
+.wg-root
+  .wg-bubble:is(
+    .is-current,
+    .is-status-running,
+    .is-status-waiting,
+    .is-status-unread
+  )
+  .wg-orb::before {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.78;
+  box-shadow:
+    0 0 10px 2px color-mix(in srgb, var(--wg-glow-color) 48%, transparent),
+    0 0 26px 7px color-mix(in srgb, var(--wg-glow-color) 22%, transparent);
+}
+.wg-root .wg-bubble.is-current .wg-orb::before {
+  inset: -8px;
+  box-shadow:
+    0 0 12px 3px color-mix(in srgb, var(--wg-glow-color) 58%, transparent),
+    0 0 30px 8px color-mix(in srgb, var(--wg-glow-color) 26%, transparent);
+}
+.wg-root .wg-bubble:is(.is-status-running, .is-status-waiting) .wg-orb::before {
+  animation: wg-glow-breathe 3.6s ease-in-out infinite;
+}
 .wg-root .is-working .wg-orb {
   border: 3px dashed #ffdd85;
   box-shadow: 0 0 0 3px #ffdd8520;
-  animation: wg-breathe 2.6s ease-in-out infinite;
 }
 .wg-node-badges {
   display: flex;
@@ -879,9 +915,13 @@
 .wg-dock-foot .wg-small-note {
   flex-basis: 100%;
 }
-@keyframes wg-breathe {
+@keyframes wg-glow-breathe {
+  0%,
+  100% {
+    opacity: 0.58;
+  }
   50% {
-    box-shadow: 0 0 0 7px #ffdd8540;
+    opacity: 0.92;
   }
 }
 .wg-reduced *,
@@ -893,5 +933,157 @@
   .wg-root *,
   .wg-root *::before {
     animation: none !important;
+  }
+}
+.wg-backup {
+  position: relative;
+}
+.wg-backup-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(360px, 85vw);
+  max-height: 70vh;
+  overflow: auto;
+  padding: 16px;
+  background: #101c30;
+  border: 1px solid #486b93;
+  border-radius: 12px;
+  box-shadow: 0 12px 40px #0008;
+  z-index: 12;
+  white-space: normal;
+}
+.wg-backup-panel p {
+  margin: 0 0 12px;
+}
+.wg-backup-file {
+  display: block;
+  margin-top: 16px;
+}
+.wg-backup-file input {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+}
+.wg-attention {
+  position: absolute;
+  top: 12px;
+  left: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: calc(100% - 48px);
+  z-index: 4;
+}
+.wg-attention button[aria-pressed="true"] {
+  border-color: #8bb7ff;
+  background: #263e5d;
+}
+.wg-navigation {
+  position: absolute;
+  top: 64px;
+  right: 24px;
+  width: 310px;
+  max-height: calc(100% - 145px);
+  overflow: auto;
+  padding: 14px;
+  border: 1px solid #486b9388;
+  border-radius: 12px;
+  background: #101c30f5;
+  z-index: 4;
+}
+.wg-has-details .wg-navigation {
+  right: 310px;
+}
+.wg-navigation h2 {
+  margin: 0 0 12px;
+  font-size: 15px;
+}
+.wg-navigation h2 span {
+  font-size: 12px;
+  color: #9eb3cd;
+}
+.wg-result-list {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.wg-result-list button {
+  text-align: left;
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  overflow-wrap: anywhere;
+}
+.wg-result-list span,
+.wg-result-list small {
+  font-size: 12px;
+  color: #a9bdd6;
+}
+.wg-list-view .wg-navigation {
+  left: 24px;
+  right: 24px;
+  width: auto;
+  bottom: 80px;
+  max-height: none;
+}
+.wg-list-view.wg-has-details .wg-navigation {
+  right: 310px;
+}
+.wg-list-view .wg-result-list {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+.wg-list-view .wg-dock {
+  display: none;
+}
+.wg-list-view .react-flow {
+  visibility: hidden;
+}
+.wg-compact .wg-activity,
+.wg-compact .wg-orb-count,
+.wg-compact .wg-node-badges {
+  display: none;
+}
+.wg-compact .wg-node-title {
+  font-size: 16px;
+}
+.wg-top-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+@media (max-width: 850px) {
+  .wg-attention {
+    left: 12px;
+    top: 8px;
+  }
+  .wg-attention button {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  .wg-navigation,
+  .wg-has-details .wg-navigation {
+    top: 86px;
+    right: 12px;
+    width: min(310px, calc(100% - 24px));
+    max-height: 40%;
+  }
+  .wg-list-view .wg-navigation,
+  .wg-list-view.wg-has-details .wg-navigation {
+    left: 12px;
+    right: 12px;
+    bottom: 40px;
+    width: auto;
+    max-height: none;
+  }
+  .wg-list-view.wg-has-details .wg-navigation {
+    bottom: 52%;
+  }
+  .wg-list-view.wg-has-details .wg-details {
+    top: 50%;
+    bottom: 40px;
+    max-height: none;
+    left: 12px;
+    right: 12px;
+    width: auto;
   }
 }

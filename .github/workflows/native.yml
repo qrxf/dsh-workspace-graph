@@ -1,0 +1,30 @@
+name: Native release verification
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: read
+jobs:
+  native:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm install --prefix artifacts/native-cli --no-save @deepseek-ai/dsh@0.2.1-rc.2
+      - name: Verify isolated native host
+        run: |
+          export DSH_CLI="$PWD/artifacts/native-cli/node_modules/@deepseek-ai/dsh/lib/bin.js"
+          export DSH_BOOT_TIMEOUT_MS=180000
+          npm run test:native
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: native-diagnostics
+          path: artifacts/*.png

@@ -23,6 +23,7 @@ try {
       await page.goto(server.resolvedUrls.local[0] + "?nodes=" + count);
       await page.locator('[data-id="workspace:density"]').waitFor();
       await page.waitForTimeout(600);
+      await page.getByRole("button", { name: "适应画布", exact: true }).click();
       await page.evaluate(() => {
         window.__expansionFrames = [];
         let last, start;

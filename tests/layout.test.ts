@@ -111,3 +111,91 @@ test("initial positions merge into the latest revision without overwriting anoth
     next.revision,
   );
 });
+
+test("backup import restores settings and runtime layout, with atomic conflict and format guards", () => {
+  const s = memory(),
+    r = new LayoutRepository(s, "x");
+  const saved = r.savePatch(
+    {
+      settings: {
+        theme: "#123456",
+        pinned: ["s"],
+        manualSummaries: { s: "keep" },
+      },
+      positions: { s: { x: 10, y: 20 } },
+      views: { all: { viewport: { x: 2, y: 3, zoom: 0.7 } } },
+    },
+    0,
+  );
+  const backup = JSON.stringify(saved);
+  const before = s.getItem("x");
+  assert.equal(r.previewBackup(backup).settings?.manualSummaries?.s, "keep");
+  assert.equal(s.getItem("x"), before);
+  assert.throws(
+    () => r.importBackup('{"schemaVersion":99}', before),
+    /layout/i,
+  );
+  assert.equal(s.getItem("x"), before);
+  assert.throws(() => r.importBackup(backup, "stale"), /conflict/i);
+  const imported = r.importBackup(backup, before);
+  assert.deepEqual(imported.positions.s, { x: 10, y: 20 });
+  assert.equal(imported.views.all.viewport?.zoom, 0.7);
+  assert.equal(
+    new LayoutRepository(s, "x").load().settings?.manualSummaries?.s,
+    "keep",
+  );
+  assert.deepEqual(new LayoutRepository(s, "x").load().positions, {});
+});
+
+test("failed backup write preserves runtime state and corrupt storage can be explicitly recovered", () => {
+  let raw: string | null = "{broken",
+    quota = false;
+  const r = new LayoutRepository(
+    {
+      getItem: () => raw,
+      setItem: (_k, v) => {
+        if (quota) throw new Error("quota");
+        raw = v;
+      },
+    },
+    "x",
+  );
+  const backup = JSON.stringify({
+    schemaVersion: 1,
+    revision: 0,
+    positions: { s: { x: 1, y: 2 } },
+    views: {},
+    collapsed: [],
+  });
+  r.importBackup(backup, raw);
+  const before = r.load();
+  quota = true;
+  assert.throws(() => r.importBackup(backup, raw), /quota/);
+  assert.deepEqual(r.load(), before);
+});
+
+test("import always advances the latest persisted revision and rejects a stale window afterwards", () => {
+  const s = memory(),
+    a = new LayoutRepository(s, "x"),
+    b = new LayoutRepository(s, "x");
+  a.load();
+  b.load();
+  const before = b.savePatch(
+    { settings: { manualSummaries: { s: "old" } } },
+    0,
+  );
+  const backup = JSON.stringify({
+    ...before,
+    settings: { ...before.settings, manualSummaries: { s: "imported" } },
+  });
+  a.importBackup(backup, s.getItem("x"));
+  assert.throws(
+    () =>
+      b.savePatch(
+        { settings: { manualSummaries: { s: "stale overwrite" } } },
+        before.revision,
+      ),
+    /conflict/i,
+  );
+  assert.equal(a.load().settings?.manualSummaries?.s, "imported");
+});
