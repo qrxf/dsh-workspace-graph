@@ -58,6 +58,7 @@
   padding: 8px 10px;
 }
 .wg-header {
+  flex-shrink: 0;
   z-index: 5;
   min-height: 98px;
   padding: 23px 30px;
@@ -167,6 +168,7 @@
   user-select: none;
 }
 .wg-orb {
+  isolation: isolate;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -523,9 +525,9 @@
   color: #658bb9;
 }
 .wg-canvas-hint {
-  position: absolute;
-  top: 22px;
-  left: 28px;
+  order: 1;
+  flex-basis: 100%;
+  text-align: left;
   font-size: 10px;
   color: #5f7899;
   pointer-events: none;
@@ -699,16 +701,18 @@
   z-index: -1;
   border-radius: 50%;
   pointer-events: none;
-  opacity: 0.78;
+  opacity: 1;
   box-shadow:
-    0 0 10px 2px color-mix(in srgb, var(--wg-glow-color) 48%, transparent),
-    0 0 26px 7px color-mix(in srgb, var(--wg-glow-color) 22%, transparent);
+    0 0 0 2px color-mix(in srgb, var(--wg-glow-color) 70%, transparent),
+    0 0 18px 6px color-mix(in srgb, var(--wg-glow-color) 68%, transparent),
+    0 0 40px 14px color-mix(in srgb, var(--wg-glow-color) 36%, transparent);
 }
 .wg-root .wg-bubble.is-current .wg-orb::before {
   inset: -8px;
   box-shadow:
-    0 0 12px 3px color-mix(in srgb, var(--wg-glow-color) 58%, transparent),
-    0 0 30px 8px color-mix(in srgb, var(--wg-glow-color) 26%, transparent);
+    0 0 0 2px color-mix(in srgb, var(--wg-glow-color) 85%, transparent),
+    0 0 22px 8px color-mix(in srgb, var(--wg-glow-color) 78%, transparent),
+    0 0 48px 18px color-mix(in srgb, var(--wg-glow-color) 42%, transparent);
 }
 .wg-root .wg-bubble:is(.is-status-running, .is-status-waiting) .wg-orb::before {
   animation: wg-glow-breathe 3.6s ease-in-out infinite;
@@ -918,10 +922,10 @@
 @keyframes wg-glow-breathe {
   0%,
   100% {
-    opacity: 0.58;
+    opacity: 0.82;
   }
   50% {
-    opacity: 0.92;
+    opacity: 1;
   }
 }
 .wg-reduced *,
@@ -966,6 +970,7 @@
   margin-top: 8px;
 }
 .wg-attention {
+  pointer-events: none;
   position: absolute;
   top: 12px;
   left: 24px;
@@ -975,13 +980,16 @@
   max-width: calc(100% - 48px);
   z-index: 4;
 }
+.wg-attention button {
+  pointer-events: auto;
+}
 .wg-attention button[aria-pressed="true"] {
   border-color: #8bb7ff;
   background: #263e5d;
 }
 .wg-navigation {
   position: absolute;
-  top: 64px;
+  top: 96px;
   right: 24px;
   width: 310px;
   max-height: calc(100% - 145px);

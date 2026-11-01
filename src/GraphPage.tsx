@@ -837,6 +837,10 @@ function GraphInner({
           <Controls position="bottom-right" showInteractive={false} />
         </ReactFlow>
         <div className="wg-attention" aria-label="全局会话状态">
+          <div className="wg-canvas-hint">
+            拖动柔性牵引 · Ctrl 自由拖动 · 滚轮缩放 · 双击打开
+          </div>
+
           {(["waiting", "running", "unread"] as Status[]).map((status) => (
             <button
               key={status}
@@ -1236,9 +1240,6 @@ function GraphInner({
             )}
           </aside>
         )}
-        <div className="wg-canvas-hint">
-          拖动柔性牵引 · Ctrl 自由拖动 · 滚轮缩放 · 双击打开
-        </div>
         <div className="wg-save-status" role="status">
           {notice}
         </div>

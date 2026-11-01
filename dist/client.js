@@ -21,1095 +21,1103 @@ window.__ModuleLoader__.load({id:"dsh-workspace-graph",factory:function(require)
 `,`
 +`).split(`
 `)),d=l.reduce((u,f)=>u.concat(...f),[]);return[l,d]}return[[],[]]},[e]);return(0,T.useEffect)(()=>{let c=t?.target??yc,l=t?.actInsideInputWithModifier??!0;if(e!==null){let d=p=>{if(r.current=p.ctrlKey||p.metaKey||p.shiftKey||p.altKey,(!r.current||r.current&&!l)&&Hr(p))return!1;let g=wc(p.code,a);if(s.current.add(p[g]),xc(i,s.current,!1)){let x=p.composedPath?.()?.[0]||p.target,y=x?.nodeName==="BUTTON"||x?.nodeName==="A";t.preventDefault!==!1&&(r.current||!y)&&p.preventDefault(),o(!0)}},u=p=>{let h=wc(p.code,a);xc(i,s.current,!0)?(o(!1),s.current.clear()):s.current.delete(p[h]),p.key==="Meta"&&s.current.clear(),r.current=!1},f=()=>{s.current.clear(),o(!1)};return c?.addEventListener("keydown",d),c?.addEventListener("keyup",u),window.addEventListener("blur",f),window.addEventListener("contextmenu",f),()=>{c?.removeEventListener("keydown",d),c?.removeEventListener("keyup",u),window.removeEventListener("blur",f),window.removeEventListener("contextmenu",f)}}},[e,o]),n}function xc(e,t,n){return e.filter(o=>n||o.length===t.size).some(o=>o.every(r=>t.has(r)))}function wc(e,t){return t.includes(e)?"code":"key"}var pg=()=>{let e=de();return(0,T.useMemo)(()=>({zoomIn:async t=>{let{panZoom:n}=e.getState();return n?n.scaleBy(1.2,t):!1},zoomOut:async t=>{let{panZoom:n}=e.getState();return n?n.scaleBy(1/1.2,t):!1},zoomTo:async(t,n)=>{let{panZoom:o}=e.getState();return o?o.scaleTo(t,n):!1},getZoom:()=>e.getState().transform[2],setViewport:async(t,n)=>{let{transform:[o,r,s],panZoom:i}=e.getState();return i?(await i.setViewport({x:t.x??o,y:t.y??r,zoom:t.zoom??s},n),!0):!1},getViewport:()=>{let[t,n,o]=e.getState().transform;return{x:t,y:n,zoom:o}},setCenter:async(t,n,o)=>e.getState().setCenter(t,n,o),fitBounds:async(t,n)=>{let{width:o,height:r,minZoom:s,maxZoom:i,panZoom:a}=e.getState(),c=Dn(t,o,r,s,i,n?.padding??.1);return a?(await a.setViewport(c,{duration:n?.duration,ease:n?.ease,interpolate:n?.interpolate}),!0):!1},screenToFlowPosition:(t,n={})=>{let{transform:o,snapGrid:r,snapToGrid:s,domNode:i}=e.getState();if(!i)return t;let{x:a,y:c}=i.getBoundingClientRect(),l={x:t.x-a,y:t.y-c},d=n.snapGrid??r,u=n.snapToGrid??s;return Gt(l,o,u,d)},flowToScreenPosition:t=>{let{transform:n,domNode:o}=e.getState();if(!o)return t;let{x:r,y:s}=o.getBoundingClientRect(),i=At(t,n);return{x:i.x+r,y:i.y+s}}}),[])};function Rc(e,t){let n=[],o=new Map,r=[];for(let s of e)if(s.type==="add"){r.push(s);continue}else if(s.type==="remove"||s.type==="replace")o.set(s.id,[s]);else{let i=o.get(s.id);i?i.push(s):o.set(s.id,[s])}for(let s of t){let i=o.get(s.id);if(!i){n.push(s);continue}if(i[0].type==="remove")continue;if(i[0].type==="replace"){n.push({...i[0].item});continue}let a={...s};for(let c of i)gg(c,a);n.push(a)}return r.length&&r.forEach(s=>{s.index!==void 0?n.splice(s.index,0,{...s.item}):n.push({...s.item})}),n}function gg(e,t){switch(e.type){case"select":{t.selected=e.selected;break}case"position":{typeof e.position<"u"&&(t.position=e.position),typeof e.dragging<"u"&&(t.dragging=e.dragging);break}case"dimensions":{typeof e.dimensions<"u"&&(t.measured={...e.dimensions},e.setAttributes&&((e.setAttributes===!0||e.setAttributes==="width")&&(t.width=e.dimensions.width),(e.setAttributes===!0||e.setAttributes==="height")&&(t.height=e.dimensions.height))),typeof e.resizing=="boolean"&&(t.resizing=e.resizing);break}}}function Kr(e,t){return Rc(e,t)}function hg(e,t){return Rc(e,t)}function Ot(e,t){return{id:e,type:"select",selected:t}}function Kt(e,t=new Set,n=!1){let o=[];for(let[r,s]of e){let i=t.has(r);!(s.selected===void 0&&!i)&&s.selected!==i&&(n&&(s.selected=i),o.push(Ot(s.id,i)))}return o}function bc({items:e=[],lookup:t}){let n=[],o=new Map(e.map(r=>[r.id,r]));for(let[r,s]of e.entries()){let i=t.get(s.id),a=i?.internals?.userNode??i;a!==void 0&&a!==s&&n.push({id:s.id,item:s,type:"replace"}),a===void 0&&n.push({item:s,type:"add",index:r})}for(let[r]of t)o.get(r)===void 0&&n.push({id:r,type:"remove"});return n}function vc(e){return{id:e.id,type:"remove"}}var mg=Ar("React Flow","https://reactflow.dev/");function yg(e,t,n={}){return za(e,t,{...n,onError:n.onError??mg})}var kc=e=>va(e),xg=e=>Nr(e);function Wc(e){return(0,T.forwardRef)(e)}var qc=typeof window<"u"?T.useLayoutEffect:T.useEffect;function _c(e){let[t,n]=(0,T.useState)(BigInt(0)),[o]=(0,T.useState)(()=>wg(()=>n(r=>r+BigInt(1))));return qc(()=>{let r=o.get();r.length&&(e(r),o.reset())},[t]),o}function wg(e){let t=[];return{get:()=>t,reset:()=>{t=[]},push:n=>{t.push(n),e()}}}var Xc=(0,T.createContext)(null);function bg({children:e}){let t=de(),n=(0,T.useCallback)(a=>{let{nodes:c=[],setNodes:l,hasDefaultNodes:d,onNodesChange:u,nodeLookup:f,fitViewQueued:p,onNodesChangeMiddlewareMap:h}=t.getState(),g=c;for(let y of a)g=typeof y=="function"?y(g):y;let x=bc({items:g,lookup:f});for(let y of h.values())x=y(x);d&&l(g),x.length>0?u?.(x):p&&window.requestAnimationFrame(()=>{let{fitViewQueued:y,nodes:v,setNodes:m}=t.getState();y&&m(v)})},[]),o=_c(n),r=(0,T.useCallback)(a=>{let{edges:c=[],setEdges:l,hasDefaultEdges:d,onEdgesChange:u,edgeLookup:f}=t.getState(),p=c;for(let h of a)p=typeof h=="function"?h(p):h;d?l(p):u&&u(bc({items:p,lookup:f}))},[]),s=_c(r),i=(0,T.useMemo)(()=>({nodeQueue:o,edgeQueue:s}),[]);return(0,O.jsx)(Xc.Provider,{value:i,children:e})}function vg(){let e=(0,T.useContext)(Xc);if(!e)throw new Error("useBatchContext must be used within a BatchProvider");return e}var kg=e=>!!e.panZoom;function Ln(){let e=pg(),t=de(),n=vg(),o=ae(kg),r=(0,T.useMemo)(()=>{let s=u=>t.getState().nodeLookup.get(u),i=u=>{n.nodeQueue.push(u)},a=u=>{n.edgeQueue.push(u)},c=u=>{let{nodeLookup:f,nodeOrigin:p}=t.getState(),h=kc(u)?u:f.get(u.id),g=h.parentId?Or(h.position,h.measured,h.parentId,f,p):h.position,x={...h,position:g,width:h.measured?.width??h.width,height:h.measured?.height??h.height};return Yt(x)},l=(u,f,p={replace:!1})=>{i(h=>h.map(g=>{if(g.id===u){let x=typeof f=="function"?f(g):f;return p.replace&&kc(x)?x:{...g,...x}}return g}))},d=(u,f,p={replace:!1})=>{a(h=>h.map(g=>{if(g.id===u){let x=typeof f=="function"?f(g):f;return p.replace&&xg(x)?x:{...g,...x}}return g}))};return{getNodes:()=>t.getState().nodes.map(u=>({...u})),getNode:u=>s(u)?.internals.userNode,getInternalNode:s,getEdges:()=>{let{edges:u=[]}=t.getState();return u.map(f=>({...f}))},getEdge:u=>t.getState().edgeLookup.get(u),setNodes:i,setEdges:a,addNodes:u=>{let f=Array.isArray(u)?u:[u];n.nodeQueue.push(p=>[...p,...f])},addEdges:u=>{let f=Array.isArray(u)?u:[u];n.edgeQueue.push(p=>[...p,...f])},toObject:()=>{let{nodes:u=[],edges:f=[],transform:p}=t.getState(),[h,g,x]=p;return{nodes:u.map(y=>({...y})),edges:f.map(y=>({...y})),viewport:{x:h,y:g,zoom:x}}},deleteElements:async({nodes:u=[],edges:f=[]})=>{let{nodes:p,edges:h,onNodesDelete:g,onEdgesDelete:x,triggerNodeChanges:y,triggerEdgeChanges:v,onDelete:m,onBeforeDelete:w}=t.getState(),{nodes:S,edges:E}=await Sa({nodesToRemove:u,edgesToRemove:f,nodes:p,edges:h,onBeforeDelete:w}),C=E.length>0,z=S.length>0;if(C){let P=E.map(vc);x?.(E),v(P)}if(z){let P=S.map(vc);g?.(S),y(P)}return(z||C)&&m?.({nodes:S,edges:E}),{deletedNodes:S,deletedEdges:E}},getIntersectingNodes:(u,f=!0,p)=>{let h=zr(u),g=h?u:c(u),x=p!==void 0;return g?(p||t.getState().nodes).filter(y=>{let v=t.getState().nodeLookup.get(y.id);if(v&&!h&&(y.id===u.id||!v.internals.positionAbsolute))return!1;let m=Yt(x?y:v),w=An(m,g);return f&&w>0||w>=m.width*m.height||w>=g.width*g.height}):[]},isNodeIntersecting:(u,f,p=!0)=>{let g=zr(u)?u:c(u);if(!g)return!1;let x=An(g,f);return p&&x>0||x>=f.width*f.height||x>=g.width*g.height},updateNode:l,updateNodeData:(u,f,p={replace:!1})=>{l(u,h=>{let g=typeof f=="function"?f(h):f;return p.replace?{...h,data:g}:{...h,data:{...h.data,...g}}},p)},updateEdge:d,updateEdgeData:(u,f,p={replace:!1})=>{d(u,h=>{let g=typeof f=="function"?f(h):f;return p.replace?{...h,data:g}:{...h,data:{...h.data,...g}}},p)},getNodesBounds:u=>{let{nodeLookup:f,nodeOrigin:p}=t.getState();return Mr(u,{nodeLookup:f,nodeOrigin:p})},getHandleConnections:({type:u,id:f,nodeId:p})=>Array.from(t.getState().connectionLookup.get(`${p}-${u}${f?`-${f}`:""}`)?.values()??[]),getNodeConnections:({type:u,handleId:f,nodeId:p})=>Array.from(t.getState().connectionLookup.get(`${p}${u?f?`-${u}-${f}`:`-${u}`:""}`)?.values()??[]),fitView:async u=>{let f=t.getState().fitViewResolver??Ca();return t.setState({fitViewQueued:!0,fitViewOptions:u,fitViewResolver:f}),n.nodeQueue.push(p=>[...p]),f.promise}}},[]);return(0,T.useMemo)(()=>({...r,...e,viewportInitialized:o}),[o])}var Sc=e=>e.selected,_g=typeof window<"u"?window:void 0;function Sg({deleteKeyCode:e,multiSelectionKeyCode:t}){let n=de(),{deleteElements:o}=Ln(),r=Tn(e,{actInsideInputWithModifier:!1}),s=Tn(t,{target:_g});(0,T.useEffect)(()=>{if(r){let{edges:i,nodes:a}=n.getState();o({nodes:a.filter(Sc),edges:i.filter(Sc)}),n.setState({nodesSelectionActive:!1})}},[r]),(0,T.useEffect)(()=>{n.setState({multiSelectionActive:s})},[s])}function Eg(e){let t=de();(0,T.useEffect)(()=>{let n=()=>{if(!e.current||!(e.current.checkVisibility?.()??!0))return!1;let o=Io(e.current);(o.height===0||o.width===0)&&t.getState().onError?.("004",Oe.error004()),t.setState({width:o.width||500,height:o.height||500})};if(e.current){n(),window.addEventListener("resize",n);let o=new ResizeObserver(()=>n());return o.observe(e.current),()=>{window.removeEventListener("resize",n),o&&e.current&&o.unobserve(e.current)}}},[])}var qo={position:"absolute",width:"100%",height:"100%",top:0,left:0},Ng=e=>({userSelectionActive:e.userSelectionActive,lib:e.lib,connectionInProgress:e.connection.inProgress});function Cg({onPaneContextMenu:e,zoomOnScroll:t=!0,zoomOnPinch:n=!0,panOnScroll:o=!1,panActivationKeyPressed:r,panOnScrollSpeed:s=.5,panOnScrollMode:i=Je.Free,zoomOnDoubleClick:a=!0,panOnDrag:c=!0,defaultViewport:l,translateExtent:d,minZoom:u,maxZoom:f,zoomActivationKeyCode:p,preventScrolling:h=!0,children:g,noWheelClassName:x,noPanClassName:y,onViewportChange:v,isControlledViewport:m,paneClickDistance:w,selectionOnDrag:S}){let E=de(),C=(0,T.useRef)(null),{userSelectionActive:z,lib:P,connectionInProgress:V}=ae(Ng,ue),L=Tn(p),F=(0,T.useRef)();Eg(C);let H=(0,T.useCallback)(b=>{v?.({x:b[0],y:b[1],zoom:b[2]}),m||E.setState({transform:b})},[v,m]);return(0,T.useEffect)(()=>{if(C.current){F.current=Ga({domNode:C.current,minZoom:u,maxZoom:f,translateExtent:d,viewport:l,onDraggingChange:I=>E.setState(D=>D.paneDragging===I?D:{paneDragging:I}),onPanZoomStart:(I,D)=>{let{onViewportChangeStart:A,onMoveStart:R}=E.getState();R?.(I,D),A?.(D)},onPanZoom:(I,D)=>{let{onViewportChange:A,onMove:R}=E.getState();R?.(I,D),A?.(D)},onPanZoomEnd:(I,D)=>{let{onViewportChangeEnd:A,onMoveEnd:R}=E.getState();R?.(I,D),A?.(D)}});let{x:b,y:N,zoom:k}=F.current.getViewport();return E.setState({panZoom:F.current,transform:[b,N,k],domNode:C.current.closest(".react-flow")}),()=>{F.current?.destroy()}}},[]),(0,T.useEffect)(()=>{F.current?.update({onPaneContextMenu:e,zoomOnScroll:t,zoomOnPinch:n,panOnScroll:o,panActivationKeyPressed:r,panOnScrollSpeed:s,panOnScrollMode:i,zoomOnDoubleClick:a,panOnDrag:c,zoomActivationKeyPressed:L,preventScrolling:h,noPanClassName:y,userSelectionActive:z,noWheelClassName:x,lib:P,onTransformChange:H,connectionInProgress:V,selectionOnDrag:S,paneClickDistance:w})},[e,t,n,o,r,s,i,a,c,L,h,y,z,x,P,H,V,S,w]),(0,O.jsx)("div",{className:"react-flow__renderer",ref:C,style:qo,children:g})}var Mg=e=>({userSelectionActive:e.userSelectionActive,userSelectionRect:e.userSelectionRect});function Ig(){let{userSelectionActive:e,userSelectionRect:t}=ae(Mg,ue);return e&&t?(0,O.jsx)("div",{className:"react-flow__selection react-flow__container",style:{width:t.width,height:t.height,transform:`translate(${t.x}px, ${t.y}px)`}}):null}var Gr=(e,t)=>n=>{n.target===t.current&&e?.(n)},Pg=e=>({userSelectionActive:e.userSelectionActive,elementsSelectable:e.elementsSelectable,dragging:e.paneDragging,panBy:e.panBy,autoPanSpeed:e.autoPanSpeed});function zg({isSelecting:e,selectionKeyPressed:t,selectionMode:n=Pt.Full,panOnDrag:o,autoPanOnSelection:r,paneClickDistance:s,selectionOnDrag:i,onSelectionStart:a,onSelectionEnd:c,onPaneClick:l,onPaneContextMenu:d,onPaneScroll:u,onPaneMouseEnter:f,onPaneMouseMove:p,onPaneMouseLeave:h,children:g}){let x=(0,T.useRef)(0),y=de(),{userSelectionActive:v,elementsSelectable:m,dragging:w,panBy:S,autoPanSpeed:E}=ae(Pg,ue),C=m&&(e||v),z=(0,T.useRef)(null),P=(0,T.useRef)(),V=(0,T.useRef)(new Set),L=(0,T.useRef)(new Set),F=(0,T.useRef)(!1),H=(0,T.useRef)(!1),b=(0,T.useRef)({x:0,y:0}),N=(0,T.useRef)(!1),k=$=>{if(H.current||F.current||y.getState().connection.inProgress){H.current=!1,F.current=!1;return}l?.($),y.getState().resetSelectedElements(),y.setState({nodesSelectionActive:!1})},I=$=>{if(Array.isArray(o)&&o?.includes(2)){$.preventDefault();return}d?.($)},D=u?$=>u($):void 0,A=$=>{H.current&&($.stopPropagation(),H.current=!1)},R=$=>{if($.pointerType==="touch"&&o!==!1&&!t)return;let{domNode:q,transform:J}=y.getState();if(P.current=q?.getBoundingClientRect(),!P.current)return;let te=$.target===z.current;if(!te&&!!$.target.closest(".nokey")||!e||!(i&&te||t)||$.button!==0||!$.isPrimary)return;$.target?.setPointerCapture?.($.pointerId),H.current=!1;let{x:oe,y:ie}=$e($.nativeEvent,P.current),se=Gt({x:oe,y:ie},J);y.setState({userSelectionRect:{width:0,height:0,startX:se.x,startY:se.y,x:oe,y:ie}}),te||($.stopPropagation(),$.preventDefault())};function B($,q){let{userSelectionRect:J}=y.getState();if(!J)return;let{transform:te,nodeLookup:G,edgeLookup:j,connectionLookup:oe,triggerNodeChanges:ie,triggerEdgeChanges:se,defaultEdgeOptions:ge}=y.getState(),be={x:J.startX,y:J.startY},{x:fe,y:Ne}=At(be,te),Be={startX:be.x,startY:be.y,x:$<fe?$:fe,y:q<Ne?q:Ne,width:Math.abs($-fe),height:Math.abs(q-Ne)},yt=V.current,ze=L.current;V.current=new Set(Eo(G,Be,te,n===Pt.Partial,!0).map(he=>he.id)),L.current=new Set;let le=ge?.selectable??!0;for(let he of V.current){let ke=oe.get(he);if(ke)for(let{edgeId:De}of ke.values()){let Te=j.get(De);Te&&(Te.selectable??le)&&L.current.add(De)}}if(!Tr(yt,V.current)){let he=Kt(G,V.current,!0);ie(he)}if(!Tr(ze,L.current)){let he=Kt(j,L.current);se(he)}y.setState({userSelectionRect:Be,userSelectionActive:!0,nodesSelectionActive:!1})}function X(){if(!r||!P.current)return;let[$,q]=No(b.current,P.current,E);S({x:$,y:q}).then(J=>{if(!H.current||!J){x.current=requestAnimationFrame(X);return}let{x:te,y:G}=b.current;B(te,G),x.current=requestAnimationFrame(X)})}let Q=()=>{cancelAnimationFrame(x.current),x.current=0,N.current=!1};(0,T.useEffect)(()=>()=>Q(),[]);let Z=$=>{let{userSelectionRect:q,transform:J,resetSelectedElements:te}=y.getState();if(!P.current||!q)return;let{x:G,y:j}=$e($.nativeEvent,P.current);b.current={x:G,y:j};let oe=At({x:q.startX,y:q.startY},J);if(!H.current){let ie=t?0:s;if(Math.hypot(G-oe.x,j-oe.y)<=ie)return;te(),a?.($)}H.current=!0,N.current||(X(),N.current=!0),B(G,j)},K=$=>{if(!C){$.target===z.current&&y.getState().connection.inProgress&&(F.current=!0);return}$.button===0&&($.target?.releasePointerCapture?.($.pointerId),!v&&$.target===z.current&&y.getState().userSelectionRect&&k?.($),y.setState({userSelectionActive:!1,userSelectionRect:null}),H.current&&(c?.($),y.setState({nodesSelectionActive:V.current.size>0})),Q())},ne=$=>{$.target?.releasePointerCapture?.($.pointerId),Q()},Y=o===!0||Array.isArray(o)&&o.includes(0);return(0,O.jsxs)("div",{className:me(["react-flow__pane",{draggable:Y,dragging:w,selection:e}]),onClick:C?void 0:Gr(k,z),onContextMenu:Gr(I,z),onWheel:Gr(D,z),onPointerEnter:C?void 0:f,onPointerMove:C?Z:p,onPointerUp:K,onPointerCancel:C?ne:void 0,onPointerDownCapture:C?R:void 0,onClickCapture:C?A:void 0,onPointerLeave:h,ref:z,style:qo,children:[g,(0,O.jsx)(Ig,{})]})}function jr({id:e,store:t,unselect:n=!1,nodeRef:o}){let{addSelectedNodes:r,unselectNodesAndEdges:s,multiSelectionActive:i,nodeLookup:a,onError:c}=t.getState(),l=a.get(e);if(!l){c?.("012",Oe.error012(e));return}t.setState({nodesSelectionActive:!1}),l.selected?(n||l.selected&&i)&&(s({nodes:[l],edges:[]}),requestAnimationFrame(()=>o?.current?.blur())):r([e])}function Yc({nodeRef:e,disabled:t=!1,noDragClassName:n,handleSelector:o,nodeId:r,isSelectable:s,nodeClickDistance:i}){let a=de(),[c,l]=(0,T.useState)(!1),d=(0,T.useRef)();return(0,T.useEffect)(()=>{if(!t)return d.current=Va({getStoreItems:()=>a.getState(),onNodeMouseDown:u=>{jr({id:u,store:a,nodeRef:e})},onDragStart:()=>{l(!0)},onDragStop:()=>{l(!1)}}),()=>{d.current?.destroy(),d.current=void 0}},[t,a,e]),(0,T.useEffect)(()=>{t||!e.current||!d.current||d.current.update({noDragClassName:n,handleSelector:o,domNode:e.current,isSelectable:s,nodeId:r,nodeClickDistance:i})},[n,o,t,s,e,r,i]),c}var Ag=e=>t=>t.selected&&(t.draggable||e&&typeof t.draggable>"u");function Zc(){let e=de();return(0,T.useCallback)(n=>{let{nodeExtent:o,snapToGrid:r,snapGrid:s,nodesDraggable:i,onError:a,updateNodePositions:c,nodeLookup:l,nodeOrigin:d}=e.getState(),u=new Map,f=Ag(i),p=r?s[0]:5,h=r?s[1]:5,g=n.direction.x*p*n.factor,x=n.direction.y*h*n.factor;for(let[,y]of l){if(!f(y))continue;let v={x:y.internals.positionAbsolute.x+g,y:y.internals.positionAbsolute.y+x};r&&(v=Zt(v,s));let{position:m,positionAbsolute:w}=Ir({nodeId:y.id,nextPosition:v,nodeLookup:l,nodeExtent:o,nodeOrigin:d,onError:a});y.position=m,y.internals.positionAbsolute=w,u.set(y.id,y)}c(u)},[])}var Qr=(0,T.createContext)(null),Dg=Qr.Provider;Qr.Consumer;var Gc=()=>(0,T.useContext)(Qr),Og=e=>({connectOnClick:e.connectOnClick,noPanClassName:e.noPanClassName,rfId:e.rfId}),Uc=(0,T.createContext)(null);function Tg({children:e}){let t=ae(Og,ue);return(0,O.jsx)(Uc.Provider,{value:t,children:e})}function Lg(){let e=(0,T.useContext)(Uc);if(!e)throw new Error("useHandleConfig must be used within a HandleConfigProvider");return e}var $g={connectingFrom:!1,connectingTo:!1,clickConnecting:!1,isPossibleEndHandle:!0,connectionInProcess:!1,clickConnectionInProcess:!1,valid:!1},Hg=(e,t,n)=>o=>{let{connectionClickStartHandle:r,connectionMode:s,connection:i}=o,{fromHandle:a,toHandle:c,isValid:l}=i;if(!a&&!r)return $g;let d=c?.nodeId===e&&c?.id===t&&c?.type===n;return{connectingFrom:a?.nodeId===e&&a?.id===t&&a?.type===n,connectingTo:d,clickConnecting:r?.nodeId===e&&r?.id===t&&r?.type===n,isPossibleEndHandle:s===ut.Strict?a?.type!==n:e!==a?.nodeId||t!==a?.id,connectionInProcess:!!a,clickConnectionInProcess:!!r,valid:d&&l}};function Bg({type:e="source",position:t=U.Top,isValidConnection:n,isConnectable:o=!0,isConnectableStart:r=!0,isConnectableEnd:s=!0,id:i,onConnect:a,children:c,className:l,onMouseDown:d,onTouchStart:u,...f},p){let h=i||null,g=e==="target",x=de(),y=Gc(),{connectOnClick:v,noPanClassName:m,rfId:w}=Lg(),{connectingFrom:S,connectingTo:E,clickConnecting:C,isPossibleEndHandle:z,connectionInProcess:P,clickConnectionInProcess:V,valid:L}=ae(Hg(y,h,e),ue);y||x.getState().onError?.("010",Oe.error010());let F=N=>{let{defaultEdgeOptions:k,onConnect:I,hasDefaultEdges:D}=x.getState(),A={...k,...N};if(D){let{edges:R,setEdges:B,onError:X}=x.getState();B(yg(A,R,{onError:X}))}I?.(A),a?.(A)},H=N=>{if(!y)return;let k=Br(N.nativeEvent);if(r&&(k&&N.button===0||!k)){let I=x.getState();Lo.onPointerDown(N.nativeEvent,{handleDomNode:N.currentTarget,autoPanOnConnect:I.autoPanOnConnect,connectionMode:I.connectionMode,connectionRadius:I.connectionRadius,domNode:I.domNode,nodeLookup:I.nodeLookup,lib:I.lib,isTarget:g,handleId:h,nodeId:y,flowId:I.rfId,panBy:I.panBy,cancelConnection:I.cancelConnection,onConnectStart:I.onConnectStart,onConnectEnd:(...D)=>x.getState().onConnectEnd?.(...D),updateConnection:I.updateConnection,onConnect:F,isValidConnection:n||((...D)=>x.getState().isValidConnection?.(...D)??!0),getTransform:()=>x.getState().transform,getFromHandle:()=>x.getState().connection.fromHandle,autoPanSpeed:I.autoPanSpeed,dragThreshold:I.connectionDragThreshold})}k?d?.(N):u?.(N)},b=N=>{let{onClickConnectStart:k,onClickConnectEnd:I,connectionClickStartHandle:D,connectionMode:A,isValidConnection:R,lib:B,rfId:X,nodeLookup:Q,connection:Z}=x.getState();if(!y||!D&&!r)return;if(!D){k?.(N.nativeEvent,{nodeId:y,handleId:h,handleType:e}),x.setState({connectionClickStartHandle:{nodeId:y,type:e,id:h}});return}let K=$r(N.target),ne=n||R,{connection:Y,isValid:$}=Lo.isValid(N.nativeEvent,{handle:{nodeId:y,id:h,type:e},connectionMode:A,fromNodeId:D.nodeId,fromHandleId:D.id||null,fromType:D.type,isValidConnection:ne,flowId:X,doc:K,lib:B,nodeLookup:Q});$&&Y&&F(Y);let q=structuredClone(Z);delete q.inProgress,q.toPosition=q.toHandle?q.toHandle.position:null,I?.(N,q),x.setState({connectionClickStartHandle:null})};return(0,O.jsx)("div",{"data-handleid":h,"data-nodeid":y,"data-handlepos":t,"data-id":`${w}-${y}-${h}-${e}`,className:me(["react-flow__handle",`react-flow__handle-${t}`,"nodrag",m,l,{source:!g,target:g,connectable:o,connectablestart:r,connectableend:s,clickconnecting:C,connectingfrom:S,connectingto:E,valid:L,connectionindicator:o&&(!P||z)&&(P||V?s:r)}]),onMouseDown:H,onTouchStart:H,onClick:v?b:void 0,ref:p,...f,children:c})}var et=(0,T.memo)(Wc(Bg));function Vg({data:e,isConnectable:t,sourcePosition:n=U.Bottom}){return(0,O.jsxs)(O.Fragment,{children:[e?.label,(0,O.jsx)(et,{type:"source",position:n,isConnectable:t})]})}function Fg({data:e,isConnectable:t,targetPosition:n=U.Top,sourcePosition:o=U.Bottom}){return(0,O.jsxs)(O.Fragment,{children:[(0,O.jsx)(et,{type:"target",position:n,isConnectable:t}),e?.label,(0,O.jsx)(et,{type:"source",position:o,isConnectable:t})]})}function Rg(){return null}function Wg({data:e,isConnectable:t,targetPosition:n=U.Top}){return(0,O.jsxs)(O.Fragment,{children:[(0,O.jsx)(et,{type:"target",position:n,isConnectable:t}),e?.label]})}var Fo={ArrowUp:{x:0,y:-1},ArrowDown:{x:0,y:1},ArrowLeft:{x:-1,y:0},ArrowRight:{x:1,y:0}},Ec={input:Vg,default:Fg,output:Wg,group:Rg};function qg(e){return e.internals.handleBounds===void 0?{width:e.width??e.initialWidth??e.style?.width,height:e.height??e.initialHeight??e.style?.height}:{width:e.width??e.style?.width,height:e.height??e.style?.height}}var Xg=e=>{let{width:t,height:n,x:o,y:r}=Xt(e.nodeLookup,{filter:s=>!!s.selected});return{width:Le(t)?t:null,height:Le(n)?n:null,userSelectionActive:e.userSelectionActive,transformString:`translate(${e.transform[0]}px,${e.transform[1]}px) scale(${e.transform[2]}) translate(${o}px,${r}px)`}};function Yg({onSelectionContextMenu:e,noPanClassName:t,disableKeyboardA11y:n}){let o=de(),{width:r,height:s,transformString:i,userSelectionActive:a}=ae(Xg,ue),c=Zc(),l=(0,T.useRef)(null);(0,T.useEffect)(()=>{n||l.current?.focus({preventScroll:!0})},[n]);let d=!a&&r!==null&&s!==null;if(Yc({nodeRef:l,disabled:!d}),!d)return null;let u=e?p=>{let h=o.getState().nodes.filter(g=>g.selected);e(p,h)}:void 0,f=p=>{Object.prototype.hasOwnProperty.call(Fo,p.key)&&(p.preventDefault(),c({direction:Fo[p.key],factor:p.shiftKey?4:1}))};return(0,O.jsx)("div",{className:me(["react-flow__nodesselection","react-flow__container",t]),style:{transform:i},children:(0,O.jsx)("div",{ref:l,className:"react-flow__nodesselection-rect",onContextMenu:u,tabIndex:n?void 0:-1,onKeyDown:n?void 0:f,style:{width:r,height:s}})})}var Nc=typeof window<"u"?window:void 0,Zg=e=>({nodesSelectionActive:e.nodesSelectionActive,userSelectionActive:e.userSelectionActive});function jc({children:e,onPaneClick:t,onPaneMouseEnter:n,onPaneMouseMove:o,onPaneMouseLeave:r,onPaneContextMenu:s,onPaneScroll:i,paneClickDistance:a,deleteKeyCode:c,selectionKeyCode:l,selectionOnDrag:d,selectionMode:u,onSelectionStart:f,onSelectionEnd:p,multiSelectionKeyCode:h,panActivationKeyCode:g,zoomActivationKeyCode:x,elementsSelectable:y,zoomOnScroll:v,zoomOnPinch:m,panOnScroll:w,panOnScrollSpeed:S,panOnScrollMode:E,zoomOnDoubleClick:C,panOnDrag:z,autoPanOnSelection:P,defaultViewport:V,translateExtent:L,minZoom:F,maxZoom:H,preventScrolling:b,onSelectionContextMenu:N,noWheelClassName:k,noPanClassName:I,disableKeyboardA11y:D,onViewportChange:A,isControlledViewport:R}){let{nodesSelectionActive:B,userSelectionActive:X}=ae(Zg,ue),Q=Tn(l,{target:Nc}),Z=Tn(g,{target:Nc}),K=Z||z,ne=Z||w,Y=d&&K!==!0,$=Q||X||Y;return Sg({deleteKeyCode:c,multiSelectionKeyCode:h}),(0,O.jsx)(Cg,{onPaneContextMenu:s,elementsSelectable:y,zoomOnScroll:v,zoomOnPinch:m,panOnScroll:ne,panActivationKeyPressed:Z,panOnScrollSpeed:S,panOnScrollMode:E,zoomOnDoubleClick:C,panOnDrag:!Q&&K,defaultViewport:V,translateExtent:L,minZoom:F,maxZoom:H,zoomActivationKeyCode:x,preventScrolling:b,noWheelClassName:k,noPanClassName:I,onViewportChange:A,isControlledViewport:R,paneClickDistance:a,selectionOnDrag:Y,children:(0,O.jsxs)(zg,{onSelectionStart:f,onSelectionEnd:p,onPaneClick:t,onPaneMouseEnter:n,onPaneMouseMove:o,onPaneMouseLeave:r,onPaneContextMenu:s,onPaneScroll:i,panOnDrag:K,autoPanOnSelection:P,isSelecting:!!$,selectionMode:u,selectionKeyPressed:Q,paneClickDistance:a,selectionOnDrag:Y,children:[e,B&&(0,O.jsx)(Yg,{onSelectionContextMenu:N,noPanClassName:I,disableKeyboardA11y:D})]})})}jc.displayName="FlowRenderer";var Gg=(0,T.memo)(jc),Ug=e=>t=>e?Eo(t.nodeLookup,{x:0,y:0,width:t.width,height:t.height},t.transform,!0).map(n=>n.id):Array.from(t.nodeLookup.keys());function jg(e){return ae((0,T.useCallback)(Ug(e),[e]),ue)}var Kg=e=>e.updateNodeInternals;function Qg(){let e=ae(Kg),[t]=(0,T.useState)(()=>typeof ResizeObserver>"u"?null:new ResizeObserver(n=>{let o=new Map;n.forEach(r=>{let s=r.target.getAttribute("data-id");o.set(s,{id:s,nodeElement:r.target,force:!0})}),e(o)}));return(0,T.useEffect)(()=>()=>{t?.disconnect()},[t]),t}function Jg({node:e,nodeType:t,hasDimensions:n,resizeObserver:o}){let r=de(),s=(0,T.useRef)(null),i=(0,T.useRef)(null),a=(0,T.useRef)(e.sourcePosition),c=(0,T.useRef)(e.targetPosition),l=(0,T.useRef)(t),d=n&&!!e.internals.handleBounds;return(0,T.useEffect)(()=>{s.current&&!e.hidden&&(!d||i.current!==s.current)&&(i.current&&o?.unobserve(i.current),o?.observe(s.current),i.current=s.current)},[d,e.hidden]),(0,T.useEffect)(()=>()=>{i.current&&(o?.unobserve(i.current),i.current=null)},[]),(0,T.useEffect)(()=>{if(s.current){let u=l.current!==t,f=a.current!==e.sourcePosition,p=c.current!==e.targetPosition;(u||f||p)&&(l.current=t,a.current=e.sourcePosition,c.current=e.targetPosition,r.getState().updateNodeInternals(new Map([[e.id,{id:e.id,nodeElement:s.current,force:!0}]])))}},[e.id,t,e.sourcePosition,e.targetPosition]),s}function eh({id:e,onClick:t,onMouseEnter:n,onMouseMove:o,onMouseLeave:r,onContextMenu:s,onDoubleClick:i,nodesDraggable:a,elementsSelectable:c,nodesConnectable:l,nodesFocusable:d,resizeObserver:u,noDragClassName:f,noPanClassName:p,disableKeyboardA11y:h,rfId:g,nodeTypes:x,nodeClickDistance:y,onError:v}){let{node:m,internals:w,isParent:S}=ae($=>{let q=$.nodeLookup.get(e),J=$.parentLookup.has(e);return{node:q,internals:q.internals,isParent:J}},ue),E=m.type||"default",C=x?.[E]||Ec[E];C===void 0&&(v?.("003",Oe.error003(E)),E="default",C=x?.default||Ec.default);let z=!!(m.draggable||a&&typeof m.draggable>"u"),P=!!(m.selectable||c&&typeof m.selectable>"u"),V=!!(m.connectable||l&&typeof m.connectable>"u"),L=!!(m.focusable||d&&typeof m.focusable>"u"),F=de(),H=Dr(m),b=Jg({node:m,nodeType:E,hasDimensions:H,resizeObserver:u}),N=Yc({nodeRef:b,disabled:m.hidden||!z,noDragClassName:f,handleSelector:m.dragHandle,nodeId:e,isSelectable:P,nodeClickDistance:y}),k=Zc();if(m.hidden)return null;let I=He(m),D=qg(m),A=P||z||t||n||o||r,R=n?$=>n($,{...w.userNode}):void 0,B=o?$=>o($,{...w.userNode}):void 0,X=r?$=>r($,{...w.userNode}):void 0,Q=s?$=>s($,{...w.userNode}):void 0,Z=i?$=>i($,{...w.userNode}):void 0,K=$=>{let{selectNodesOnDrag:q,nodeDragThreshold:J}=F.getState();P&&(!q||!z||J>0)&&jr({id:e,store:F,nodeRef:b}),t&&t($,{...w.userNode})},ne=$=>{if(!(Hr($.nativeEvent)||h)){if(_r.includes($.key)&&P){let q=$.key==="Escape";jr({id:e,store:F,unselect:q,nodeRef:b})}else if(z&&m.selected&&Object.prototype.hasOwnProperty.call(Fo,$.key)){$.preventDefault();let{ariaLabelConfig:q}=F.getState();F.setState({ariaLiveMessage:q["node.a11yDescription.ariaLiveMessage"]({direction:$.key.replace("Arrow","").toLowerCase(),x:~~w.positionAbsolute.x,y:~~w.positionAbsolute.y})}),k({direction:Fo[$.key],factor:$.shiftKey?4:1})}}},Y=()=>{if(h||!b.current?.matches(":focus-visible"))return;let{transform:$,width:q,height:J,autoPanOnNodeFocus:te,setCenter:G}=F.getState();if(!te)return;Eo(new Map([[e,m]]),{x:0,y:0,width:q,height:J},$,!0).length>0||G(m.position.x+I.width/2,m.position.y+I.height/2,{zoom:$[2]})};return(0,O.jsx)("div",{className:me(["react-flow__node",`react-flow__node-${E}`,{[p]:z},m.className,{selected:m.selected,selectable:P,parent:S,draggable:z,dragging:N}]),ref:b,style:{zIndex:w.z,transform:`translate(${w.positionAbsolute.x}px,${w.positionAbsolute.y}px)`,pointerEvents:A?"all":"none",visibility:H?"visible":"hidden",...m.style,...D},"data-id":e,"data-testid":`rf__node-${e}`,onMouseEnter:R,onMouseMove:B,onMouseLeave:X,onContextMenu:Q,onClick:K,onDoubleClick:Z,onKeyDown:L?ne:void 0,tabIndex:L?0:void 0,onFocus:L?Y:void 0,role:m.ariaRole??(L?"group":void 0),"aria-roledescription":"node","aria-describedby":h?void 0:`${Bc}-${g}`,"aria-label":m.ariaLabel,...m.domAttributes,children:(0,O.jsx)(Dg,{value:e,children:(0,O.jsx)(C,{id:e,data:m.data,type:E,positionAbsoluteX:w.positionAbsolute.x,positionAbsoluteY:w.positionAbsolute.y,selected:m.selected??!1,selectable:P,draggable:z,deletable:m.deletable??!0,isConnectable:V,sourcePosition:m.sourcePosition,targetPosition:m.targetPosition,dragging:N,dragHandle:m.dragHandle,zIndex:w.z,parentId:m.parentId,...I})})})}var th=(0,T.memo)(eh),nh=e=>({nodesConnectable:e.nodesConnectable,nodesFocusable:e.nodesFocusable,elementsSelectable:e.elementsSelectable,onError:e.onError});function Kc(e){let{nodesConnectable:t,nodesFocusable:n,elementsSelectable:o,onError:r}=ae(nh,ue),s=jg(e.onlyRenderVisibleElements),i=Qg();return(0,O.jsx)("div",{className:"react-flow__nodes",style:qo,children:s.map(a=>(0,O.jsx)(th,{id:a,nodeTypes:e.nodeTypes,nodeExtent:e.nodeExtent,onClick:e.onNodeClick,onMouseEnter:e.onNodeMouseEnter,onMouseMove:e.onNodeMouseMove,onMouseLeave:e.onNodeMouseLeave,onContextMenu:e.onNodeContextMenu,onDoubleClick:e.onNodeDoubleClick,noDragClassName:e.noDragClassName,noPanClassName:e.noPanClassName,rfId:e.rfId,disableKeyboardA11y:e.disableKeyboardA11y,resizeObserver:i,nodesDraggable:e.nodesDraggable??!0,nodesConnectable:t,nodesFocusable:n,elementsSelectable:o,nodeClickDistance:e.nodeClickDistance,onError:r},a))})}Kc.displayName="NodeRenderer";var oh=(0,T.memo)(Kc);function rh(e){return ae((0,T.useCallback)(n=>{if(!e)return n.edges.map(r=>r.id);let o=[];if(n.width&&n.height)for(let r of n.edges){let s=n.nodeLookup.get(r.source),i=n.nodeLookup.get(r.target);s&&i&&Pa({sourceNode:s,targetNode:i,width:n.width,height:n.height,transform:n.transform})&&o.push(r.id)}return o},[e]),ue)}var ih=({color:e="none",strokeWidth:t=1})=>{let n={strokeWidth:t,...e&&{stroke:e}};return(0,O.jsx)("polyline",{className:"arrow",style:n,strokeLinecap:"round",fill:"none",strokeLinejoin:"round",points:"-5,-4 0,0 -5,4"})},sh=({color:e="none",strokeWidth:t=1})=>{let n={strokeWidth:t,...e&&{stroke:e,fill:e}};return(0,O.jsx)("polyline",{className:"arrowclosed",style:n,strokeLinecap:"round",strokeLinejoin:"round",points:"-5,-4 0,0 -5,4 -5,-4"})},Cc={[Rt.Arrow]:ih,[Rt.ArrowClosed]:sh};function ah(e){let t=de();return(0,T.useMemo)(()=>Object.prototype.hasOwnProperty.call(Cc,e)?Cc[e]:(t.getState().onError?.("009",Oe.error009(e)),null),[e])}var ch=({id:e,type:t,color:n,width:o=12.5,height:r=12.5,markerUnits:s="strokeWidth",strokeWidth:i,orient:a="auto-start-reverse"})=>{let c=ah(t);return c?(0,O.jsx)("marker",{className:"react-flow__arrowhead",id:e,markerWidth:`${o}`,markerHeight:`${r}`,viewBox:"-10 -10 20 20",markerUnits:s,orient:a,refX:"0",refY:"0",children:(0,O.jsx)(c,{color:n,strokeWidth:i})}):null},Qc=({defaultColor:e,rfId:t})=>{let n=ae(s=>s.edges),o=ae(s=>s.defaultEdgeOptions),r=(0,T.useMemo)(()=>Da(n,{id:t,defaultColor:e,defaultMarkerStart:o?.markerStart,defaultMarkerEnd:o?.markerEnd}),[n,o,t,e]);return r.length?(0,O.jsx)("svg",{className:"react-flow__marker","aria-hidden":"true",children:(0,O.jsx)("defs",{children:r.map(s=>(0,O.jsx)(ch,{id:s.id,type:s.type,color:s.color,width:s.width,height:s.height,markerUnits:s.markerUnits,strokeWidth:s.strokeWidth,orient:s.orient},s.id))})}):null};Qc.displayName="MarkerDefinitions";var lh=(0,T.memo)(Qc);function Jc({x:e,y:t,label:n,labelStyle:o,labelShowBg:r=!0,labelBgStyle:s,labelBgPadding:i=[2,4],labelBgBorderRadius:a=2,children:c,className:l,...d}){let[u,f]=(0,T.useState)({x:1,y:0,width:0,height:0}),p=me(["react-flow__edge-textwrapper",l]),h=(0,T.useRef)(null);return(0,T.useEffect)(()=>{if(h.current){let g=h.current.getBBox();f({x:g.x,y:g.y,width:g.width,height:g.height})}},[n]),n?(0,O.jsxs)("g",{transform:`translate(${e-u.width/2} ${t-u.height/2})`,className:p,visibility:u.width?"visible":"hidden",...d,children:[r&&(0,O.jsx)("rect",{width:u.width+2*i[0],x:-i[0],y:-i[1],height:u.height+2*i[1],className:"react-flow__edge-textbg",style:s,rx:a,ry:a}),(0,O.jsx)("text",{className:"react-flow__edge-text",y:u.height/2,dy:"0.3em",ref:h,style:o,children:n}),c]}):null}Jc.displayName="EdgeText";var uh=(0,T.memo)(Jc);function Qt({path:e,labelX:t,labelY:n,label:o,labelStyle:r,labelShowBg:s,labelBgStyle:i,labelBgPadding:a,labelBgBorderRadius:c,interactionWidth:l=20,...d}){return(0,O.jsxs)(O.Fragment,{children:[(0,O.jsx)("path",{...d,d:e,fill:"none",className:me(["react-flow__edge-path",d.className])}),l?(0,O.jsx)("path",{d:e,fill:"none",strokeOpacity:0,strokeWidth:l,className:"react-flow__edge-interaction"}):null,o&&Le(t)&&Le(n)?(0,O.jsx)(uh,{x:t,y:n,label:o,labelStyle:r,labelShowBg:s,labelBgStyle:i,labelBgPadding:a,labelBgBorderRadius:c}):null]})}function Mc({pos:e,x1:t,y1:n,x2:o,y2:r}){return e===U.Left||e===U.Right?[.5*(t+o),n]:[t,.5*(n+r)]}function el({sourceX:e,sourceY:t,sourcePosition:n=U.Bottom,targetX:o,targetY:r,targetPosition:s=U.Top}){let[i,a]=Mc({pos:n,x1:e,y1:t,x2:o,y2:r}),[c,l]=Mc({pos:s,x1:o,y1:r,x2:e,y2:t}),[d,u,f,p]=Po({sourceX:e,sourceY:t,targetX:o,targetY:r,sourceControlX:i,sourceControlY:a,targetControlX:c,targetControlY:l});return[`M${e},${t} C${i},${a} ${c},${l} ${o},${r}`,d,u,f,p]}function tl(e){return(0,T.memo)(({id:t,sourceX:n,sourceY:o,targetX:r,targetY:s,sourcePosition:i,targetPosition:a,label:c,labelStyle:l,labelShowBg:d,labelBgStyle:u,labelBgPadding:f,labelBgBorderRadius:p,style:h,markerEnd:g,markerStart:x,interactionWidth:y})=>{let[v,m,w]=el({sourceX:n,sourceY:o,sourcePosition:i,targetX:r,targetY:s,targetPosition:a}),S=e.isInternal?void 0:t;return(0,O.jsx)(Qt,{id:S,path:v,labelX:m,labelY:w,label:c,labelStyle:l,labelShowBg:d,labelBgStyle:u,labelBgPadding:f,labelBgBorderRadius:p,style:h,markerEnd:g,markerStart:x,interactionWidth:y})})}var dh=tl({isInternal:!1}),nl=tl({isInternal:!0});dh.displayName="SimpleBezierEdge";nl.displayName="SimpleBezierEdgeInternal";function ol(e){return(0,T.memo)(({id:t,sourceX:n,sourceY:o,targetX:r,targetY:s,label:i,labelStyle:a,labelShowBg:c,labelBgStyle:l,labelBgPadding:d,labelBgBorderRadius:u,style:f,sourcePosition:p=U.Bottom,targetPosition:h=U.Top,markerEnd:g,markerStart:x,pathOptions:y,interactionWidth:v})=>{let[m,w,S]=On({sourceX:n,sourceY:o,sourcePosition:p,targetX:r,targetY:s,targetPosition:h,borderRadius:y?.borderRadius,offset:y?.offset,stepPosition:y?.stepPosition}),E=e.isInternal?void 0:t;return(0,O.jsx)(Qt,{id:E,path:m,labelX:w,labelY:S,label:i,labelStyle:a,labelShowBg:c,labelBgStyle:l,labelBgPadding:d,labelBgBorderRadius:u,style:f,markerEnd:g,markerStart:x,interactionWidth:v})})}var rl=ol({isInternal:!1}),il=ol({isInternal:!0});rl.displayName="SmoothStepEdge";il.displayName="SmoothStepEdgeInternal";function sl(e){return(0,T.memo)(({id:t,...n})=>{let o=e.isInternal?void 0:t;return(0,O.jsx)(rl,{...n,id:o,pathOptions:(0,T.useMemo)(()=>({borderRadius:0,offset:n.pathOptions?.offset}),[n.pathOptions?.offset])})})}var fh=sl({isInternal:!1}),al=sl({isInternal:!0});fh.displayName="StepEdge";al.displayName="StepEdgeInternal";function cl(e){return(0,T.memo)(({id:t,sourceX:n,sourceY:o,targetX:r,targetY:s,label:i,labelStyle:a,labelShowBg:c,labelBgStyle:l,labelBgPadding:d,labelBgBorderRadius:u,style:f,markerEnd:p,markerStart:h,interactionWidth:g})=>{let[x,y,v]=Ao({sourceX:n,sourceY:o,targetX:r,targetY:s}),m=e.isInternal?void 0:t;return(0,O.jsx)(Qt,{id:m,path:x,labelX:y,labelY:v,label:i,labelStyle:a,labelShowBg:c,labelBgStyle:l,labelBgPadding:d,labelBgBorderRadius:u,style:f,markerEnd:p,markerStart:h,interactionWidth:g})})}var ph=cl({isInternal:!1}),ll=cl({isInternal:!0});ph.displayName="StraightEdge";ll.displayName="StraightEdgeInternal";function ul(e){return(0,T.memo)(({id:t,sourceX:n,sourceY:o,targetX:r,targetY:s,sourcePosition:i=U.Bottom,targetPosition:a=U.Top,label:c,labelStyle:l,labelShowBg:d,labelBgStyle:u,labelBgPadding:f,labelBgBorderRadius:p,style:h,markerEnd:g,markerStart:x,pathOptions:y,interactionWidth:v})=>{let[m,w,S]=zo({sourceX:n,sourceY:o,sourcePosition:i,targetX:r,targetY:s,targetPosition:a,curvature:y?.curvature}),E=e.isInternal?void 0:t;return(0,O.jsx)(Qt,{id:E,path:m,labelX:w,labelY:S,label:c,labelStyle:l,labelShowBg:d,labelBgStyle:u,labelBgPadding:f,labelBgBorderRadius:p,style:h,markerEnd:g,markerStart:x,interactionWidth:v})})}var gh=ul({isInternal:!1}),dl=ul({isInternal:!0});gh.displayName="BezierEdge";dl.displayName="BezierEdgeInternal";var Ic={default:dl,straight:ll,step:al,smoothstep:il,simplebezier:nl},Pc={sourceX:null,sourceY:null,targetX:null,targetY:null,sourcePosition:null,targetPosition:null,zIndex:void 0},hh=(e,t,n)=>n===U.Left?e-t:n===U.Right?e+t:e,mh=(e,t,n)=>n===U.Top?e-t:n===U.Bottom?e+t:e,zc="react-flow__edgeupdater";function Ac({position:e,centerX:t,centerY:n,radius:o=10,onMouseDown:r,onMouseEnter:s,onMouseOut:i,type:a}){return(0,O.jsx)("circle",{onMouseDown:r,onMouseEnter:s,onMouseOut:i,className:me([zc,`${zc}-${a}`]),cx:hh(t,o,e),cy:mh(n,o,e),r:o,stroke:"transparent",fill:"transparent"})}function yh({isReconnectable:e,reconnectRadius:t,edge:n,sourceX:o,sourceY:r,targetX:s,targetY:i,sourcePosition:a,targetPosition:c,onReconnect:l,onReconnectStart:d,onReconnectEnd:u,setReconnecting:f,setUpdateHover:p}){let h=de(),g=(w,S)=>{if(w.button!==0)return;let{autoPanOnConnect:E,domNode:C,connectionMode:z,connectionRadius:P,lib:V,onConnectStart:L,cancelConnection:F,nodeLookup:H,rfId:b,panBy:N,updateConnection:k}=h.getState(),I=S.type==="target",D=(B,X)=>{f(!1),u?.(B,n,S.type,X)},A=B=>l?.(n,B),R=(B,X)=>{f(!0),d?.(w,n,S.type),L?.(B,X)};Lo.onPointerDown(w.nativeEvent,{autoPanOnConnect:E,connectionMode:z,connectionRadius:P,domNode:C,handleId:S.id,nodeId:S.nodeId,nodeLookup:H,isTarget:I,edgeUpdaterType:S.type,lib:V,flowId:b,cancelConnection:F,panBy:N,isValidConnection:(...B)=>h.getState().isValidConnection?.(...B)??!0,onConnect:A,onConnectStart:R,onConnectEnd:(...B)=>h.getState().onConnectEnd?.(...B),onReconnectEnd:D,updateConnection:k,getTransform:()=>h.getState().transform,getFromHandle:()=>h.getState().connection.fromHandle,dragThreshold:h.getState().connectionDragThreshold,handleDomNode:w.currentTarget})},x=w=>g(w,{nodeId:n.target,id:n.targetHandle??null,type:"target"}),y=w=>g(w,{nodeId:n.source,id:n.sourceHandle??null,type:"source"}),v=()=>p(!0),m=()=>p(!1);return(0,O.jsxs)(O.Fragment,{children:[(e===!0||e==="source")&&(0,O.jsx)(Ac,{position:a,centerX:o,centerY:r,radius:t,onMouseDown:x,onMouseEnter:v,onMouseOut:m,type:"source"}),(e===!0||e==="target")&&(0,O.jsx)(Ac,{position:c,centerX:s,centerY:i,radius:t,onMouseDown:y,onMouseEnter:v,onMouseOut:m,type:"target"})]})}function xh({id:e,edgesFocusable:t,edgesReconnectable:n,elementsSelectable:o,onClick:r,onDoubleClick:s,onContextMenu:i,onMouseEnter:a,onMouseMove:c,onMouseLeave:l,reconnectRadius:d,onReconnect:u,onReconnectStart:f,onReconnectEnd:p,rfId:h,edgeTypes:g,noPanClassName:x,onError:y,disableKeyboardA11y:v}){let m=ae(G=>G.edgeLookup.get(e)),w=ae(G=>G.defaultEdgeOptions);m=w?{...w,...m}:m;let S=m.type||"default",E=g?.[S]||Ic[S];E===void 0&&(y?.("011",Oe.error011(S)),S="default",E=g?.default||Ic.default);let C=!!(m.focusable||t&&typeof m.focusable>"u"),z=typeof u<"u"&&(m.reconnectable||n&&typeof m.reconnectable>"u"),P=!!(m.selectable||o&&typeof m.selectable>"u"),V=(0,T.useRef)(null),[L,F]=(0,T.useState)(!1),[H,b]=(0,T.useState)(!1),N=de(),{zIndex:k=m.zIndex,sourceX:I,sourceY:D,targetX:A,targetY:R,sourcePosition:B,targetPosition:X}=ae((0,T.useCallback)(G=>{let j=G.nodeLookup.get(m.source),oe=G.nodeLookup.get(m.target);if(!j||!oe)return Pc;let ie=Aa({id:e,sourceNode:j,targetNode:oe,sourceHandle:m.sourceHandle||null,targetHandle:m.targetHandle||null,connectionMode:G.connectionMode,onError:y}),se=Ia({selected:m.selected,zIndex:m.zIndex,sourceNode:j,targetNode:oe,elevateOnSelect:G.elevateEdgesOnSelect,zIndexMode:G.zIndexMode});return{...ie||Pc,zIndex:se}},[m.source,m.target,m.sourceHandle,m.targetHandle,m.selected,m.zIndex,y]),ue),Q=(0,T.useMemo)(()=>m.markerStart?`url('#${Do(m.markerStart,h)}')`:void 0,[m.markerStart,h]),Z=(0,T.useMemo)(()=>m.markerEnd?`url('#${Do(m.markerEnd,h)}')`:void 0,[m.markerEnd,h]);if(m.hidden||I===null||D===null||A===null||R===null)return null;let K=G=>{let{addSelectedEdges:j,unselectNodesAndEdges:oe,multiSelectionActive:ie}=N.getState();P&&(N.setState({nodesSelectionActive:!1}),m.selected&&ie?(oe({nodes:[],edges:[m]}),V.current?.blur()):j([e])),r&&r(G,m)},ne=s?G=>{s(G,{...m})}:void 0,Y=i?G=>{i(G,{...m})}:void 0,$=a?G=>{a(G,{...m})}:void 0,q=c?G=>{c(G,{...m})}:void 0,J=l?G=>{l(G,{...m})}:void 0,te=G=>{if(!v&&_r.includes(G.key)&&P){let{unselectNodesAndEdges:j,addSelectedEdges:oe}=N.getState();G.key==="Escape"?(V.current?.blur(),j({edges:[m]})):oe([e])}};return(0,O.jsx)("svg",{style:{zIndex:k},children:(0,O.jsxs)("g",{className:me(["react-flow__edge",`react-flow__edge-${S}`,m.className,x,{selected:m.selected,animated:m.animated,inactive:!P&&!r,updating:L,selectable:P}]),onClick:K,onDoubleClick:ne,onContextMenu:Y,onMouseEnter:$,onMouseMove:q,onMouseLeave:J,onKeyDown:C?te:void 0,tabIndex:C?0:void 0,role:m.ariaRole??(C?"group":"img"),"aria-roledescription":"edge","data-id":e,"data-testid":`rf__edge-${e}`,"aria-label":m.ariaLabel===null?void 0:m.ariaLabel||`Edge from ${m.source} to ${m.target}`,"aria-describedby":C?`${Vc}-${h}`:void 0,ref:V,...m.domAttributes,children:[!H&&(0,O.jsx)(E,{id:e,source:m.source,target:m.target,type:m.type,selected:m.selected,animated:m.animated,selectable:P,deletable:m.deletable??!0,label:m.label,labelStyle:m.labelStyle,labelShowBg:m.labelShowBg,labelBgStyle:m.labelBgStyle,labelBgPadding:m.labelBgPadding,labelBgBorderRadius:m.labelBgBorderRadius,sourceX:I,sourceY:D,targetX:A,targetY:R,sourcePosition:B,targetPosition:X,data:m.data,style:m.style,sourceHandleId:m.sourceHandle,targetHandleId:m.targetHandle,markerStart:Q,markerEnd:Z,pathOptions:"pathOptions"in m?m.pathOptions:void 0,interactionWidth:m.interactionWidth}),z&&(0,O.jsx)(yh,{edge:m,isReconnectable:z,reconnectRadius:d,onReconnect:u,onReconnectStart:f,onReconnectEnd:p,sourceX:I,sourceY:D,targetX:A,targetY:R,sourcePosition:B,targetPosition:X,setUpdateHover:F,setReconnecting:b})]})})}var wh=(0,T.memo)(xh),bh=e=>({edgesFocusable:e.edgesFocusable,edgesReconnectable:e.edgesReconnectable,elementsSelectable:e.elementsSelectable,connectionMode:e.connectionMode,onError:e.onError});function fl({defaultMarkerColor:e,onlyRenderVisibleElements:t,rfId:n,edgeTypes:o,noPanClassName:r,onReconnect:s,onEdgeContextMenu:i,onEdgeMouseEnter:a,onEdgeMouseMove:c,onEdgeMouseLeave:l,onEdgeClick:d,reconnectRadius:u,onEdgeDoubleClick:f,onReconnectStart:p,onReconnectEnd:h,disableKeyboardA11y:g}){let{edgesFocusable:x,edgesReconnectable:y,elementsSelectable:v,onError:m}=ae(bh,ue),w=rh(t);return(0,O.jsxs)("div",{className:"react-flow__edges",children:[(0,O.jsx)(lh,{defaultColor:e,rfId:n}),w.map(S=>(0,O.jsx)(wh,{id:S,edgesFocusable:x,edgesReconnectable:y,elementsSelectable:v,noPanClassName:r,onReconnect:s,onContextMenu:i,onMouseEnter:a,onMouseMove:c,onMouseLeave:l,onClick:d,reconnectRadius:u,onDoubleClick:f,onReconnectStart:p,onReconnectEnd:h,rfId:n,onError:m,edgeTypes:o,disableKeyboardA11y:g},S))]})}fl.displayName="EdgeRenderer";var vh=(0,T.memo)(fl),Dc=e=>`translate(${e[0]}px,${e[1]}px) scale(${e[2]})`;function kh({children:e}){let t=de(),n=(0,T.useRef)(null),[o]=(0,T.useState)(()=>t.getState().transform);return qc(()=>{let r=null,s=()=>{let i=t.getState().transform;r&&i[0]===r[0]&&i[1]===r[1]&&i[2]===r[2]||(r=i,n.current&&(n.current.style.transform=Dc(i)))};return s(),t.subscribe(s)},[t]),(0,O.jsx)("div",{ref:n,className:"react-flow__viewport xyflow__viewport react-flow__container",style:{transform:Dc(o)},children:e})}function _h(e){let t=Ln(),n=(0,T.useRef)(!1);(0,T.useEffect)(()=>{!n.current&&t.viewportInitialized&&e&&(setTimeout(()=>e(t),1),n.current=!0)},[e,t.viewportInitialized])}var Sh=e=>e.panZoom?.syncViewport;function Eh(e){let t=ae(Sh),n=de();return(0,T.useEffect)(()=>{e&&(t?.(e),n.setState({transform:[e.x,e.y,e.zoom]}))},[e,t]),null}function Oc(e){return e.connection.inProgress?{...e.connection,to:Gt(e.connection.to,e.transform)}:{...e.connection}}function Nh(e){return e?n=>{let o=Oc(n);return e(o)}:Oc}function Ch(e){let t=Nh(e);return ae(t,ue)}var Mh=e=>({nodesConnectable:e.nodesConnectable,isValid:e.connection.isValid,inProgress:e.connection.inProgress,width:e.width,height:e.height});function Ih({containerStyle:e,style:t,type:n,component:o}){let{nodesConnectable:r,width:s,height:i,isValid:a,inProgress:c}=ae(Mh,ue);return!(s&&r&&c)?null:(0,O.jsx)("svg",{style:e,width:s,height:i,className:"react-flow__connectionline react-flow__container",children:(0,O.jsx)("g",{className:me(["react-flow__connection",Lr(a)]),children:(0,O.jsx)(pl,{style:t,type:n,CustomComponent:o,isValid:a})})})}var pl=({style:e,type:t=qe.Bezier,CustomComponent:n,isValid:o})=>{let{inProgress:r,from:s,fromNode:i,fromHandle:a,fromPosition:c,to:l,toNode:d,toHandle:u,toPosition:f,pointer:p}=Ch();if(!r)return;if(n)return(0,O.jsx)(n,{connectionLineType:t,connectionLineStyle:e,fromNode:i,fromHandle:a,fromX:s.x,fromY:s.y,toX:l.x,toY:l.y,fromPosition:c,toPosition:f,connectionStatus:Lr(o),toNode:d,toHandle:u,pointer:p});let h="",g={sourceX:s.x,sourceY:s.y,sourcePosition:c,targetX:l.x,targetY:l.y,targetPosition:f};switch(t){case qe.Bezier:[h]=zo(g);break;case qe.SimpleBezier:[h]=el(g);break;case qe.Step:[h]=On({...g,borderRadius:0});break;case qe.SmoothStep:[h]=On(g);break;default:[h]=Ao(g)}return(0,O.jsx)("path",{d:h,fill:"none",className:"react-flow__connection-path",style:e})};pl.displayName="ConnectionLine";var Ph={};function Tc(e=Ph){let t=(0,T.useRef)(e),n=de();(0,T.useEffect)(()=>{},[e])}function zh(){let e=de(),t=(0,T.useRef)(!1);(0,T.useEffect)(()=>{},[])}function gl({nodeTypes:e,edgeTypes:t,onInit:n,onNodeClick:o,onEdgeClick:r,onNodeDoubleClick:s,onEdgeDoubleClick:i,onNodeMouseEnter:a,onNodeMouseMove:c,onNodeMouseLeave:l,onNodeContextMenu:d,onSelectionContextMenu:u,onSelectionStart:f,onSelectionEnd:p,connectionLineType:h,connectionLineStyle:g,connectionLineComponent:x,connectionLineContainerStyle:y,selectionKeyCode:v,selectionOnDrag:m,selectionMode:w,multiSelectionKeyCode:S,panActivationKeyCode:E,zoomActivationKeyCode:C,deleteKeyCode:z,onlyRenderVisibleElements:P,elementsSelectable:V,defaultViewport:L,translateExtent:F,minZoom:H,maxZoom:b,preventScrolling:N,defaultMarkerColor:k,zoomOnScroll:I,zoomOnPinch:D,panOnScroll:A,panOnScrollSpeed:R,panOnScrollMode:B,zoomOnDoubleClick:X,panOnDrag:Q,autoPanOnSelection:Z,onPaneClick:K,onPaneMouseEnter:ne,onPaneMouseMove:Y,onPaneMouseLeave:$,onPaneScroll:q,onPaneContextMenu:J,paneClickDistance:te,nodeClickDistance:G,onEdgeContextMenu:j,onEdgeMouseEnter:oe,onEdgeMouseMove:ie,onEdgeMouseLeave:se,reconnectRadius:ge,onReconnect:be,onReconnectStart:fe,onReconnectEnd:Ne,noDragClassName:Be,noWheelClassName:yt,noPanClassName:ze,disableKeyboardA11y:le,nodeExtent:he,rfId:ke,viewport:De,onViewportChange:Te,nodesDraggable:nn}){return Tc(e),Tc(t),zh(),_h(n),Eh(De),(0,O.jsx)(Gg,{onPaneClick:K,onPaneMouseEnter:ne,onPaneMouseMove:Y,onPaneMouseLeave:$,onPaneContextMenu:J,onPaneScroll:q,paneClickDistance:te,deleteKeyCode:z,selectionKeyCode:v,selectionOnDrag:m,selectionMode:w,onSelectionStart:f,onSelectionEnd:p,multiSelectionKeyCode:S,panActivationKeyCode:E,zoomActivationKeyCode:C,elementsSelectable:V,zoomOnScroll:I,zoomOnPinch:D,zoomOnDoubleClick:X,panOnScroll:A,panOnScrollSpeed:R,panOnScrollMode:B,panOnDrag:Q,autoPanOnSelection:Z,defaultViewport:L,translateExtent:F,minZoom:H,maxZoom:b,onSelectionContextMenu:u,preventScrolling:N,noDragClassName:Be,noWheelClassName:yt,noPanClassName:ze,disableKeyboardA11y:le,onViewportChange:Te,isControlledViewport:!!De,children:(0,O.jsxs)(kh,{children:[(0,O.jsx)(vh,{edgeTypes:t,onEdgeClick:r,onEdgeDoubleClick:i,onReconnect:be,onReconnectStart:fe,onReconnectEnd:Ne,onlyRenderVisibleElements:P,onEdgeContextMenu:j,onEdgeMouseEnter:oe,onEdgeMouseMove:ie,onEdgeMouseLeave:se,reconnectRadius:ge,defaultMarkerColor:k,noPanClassName:ze,disableKeyboardA11y:le,rfId:ke}),(0,O.jsx)(Ih,{style:g,type:h,component:x,containerStyle:y}),(0,O.jsx)("div",{className:"react-flow__edgelabel-renderer"}),(0,O.jsx)(oh,{nodeTypes:e,onNodeClick:o,onNodeDoubleClick:s,onNodeMouseEnter:a,onNodeMouseMove:c,onNodeMouseLeave:l,onNodeContextMenu:d,nodeClickDistance:G,onlyRenderVisibleElements:P,noPanClassName:ze,noDragClassName:Be,disableKeyboardA11y:le,nodeExtent:he,rfId:ke,nodesDraggable:nn}),(0,O.jsx)("div",{className:"react-flow__viewport-portal"})]})})}gl.displayName="GraphView";var Ah=(0,T.memo)(gl),Dh=Ar("React Flow","https://reactflow.dev/"),Lc=({nodes:e,edges:t,defaultNodes:n,defaultEdges:o,width:r,height:s,fitView:i,fitViewOptions:a,minZoom:c=.5,maxZoom:l=2,nodeOrigin:d,nodeExtent:u,zIndexMode:f="basic"}={})=>{let p=new Map,h=new Map,g=new Map,x=new Map,y=o??t??[],v=n??e??[],m=d??[0,0],w=u??qt;Xr(g,x,y);let{nodesInitialized:S}=Oo(v,p,h,{nodeOrigin:m,nodeExtent:w,zIndexMode:f}),E=[0,0,1];if(i&&r&&s){let C=Xt(p,{filter:L=>!!((L.width||L.initialWidth)&&(L.height||L.initialHeight))}),{x:z,y:P,zoom:V}=Dn(C,r,s,c,l,a?.padding??.1);E=[z,P,V]}return{rfId:"1",width:r??0,height:s??0,transform:E,nodes:v,nodesInitialized:S,nodeLookup:p,parentLookup:h,edges:y,edgeLookup:x,connectionLookup:g,onNodesChange:null,onEdgesChange:null,hasDefaultNodes:n!==void 0,hasDefaultEdges:o!==void 0,panZoom:null,minZoom:c,maxZoom:l,translateExtent:qt,nodeExtent:w,nodesSelectionActive:!1,userSelectionActive:!1,userSelectionRect:null,connectionMode:ut.Strict,domNode:null,paneDragging:!1,noPanClassName:"nopan",nodeOrigin:m,nodeDragThreshold:1,connectionDragThreshold:1,snapGrid:[15,15],snapToGrid:!1,nodesDraggable:!0,nodesConnectable:!0,nodesFocusable:!0,edgesFocusable:!0,edgesReconnectable:!0,elementsSelectable:!0,elevateNodesOnSelect:!0,elevateEdgesOnSelect:!0,selectNodesOnDrag:!0,multiSelectionActive:!1,fitViewQueued:i??!1,fitViewOptions:a,fitViewResolver:null,connection:{...Er},connectionClickStartHandle:null,connectOnClick:!0,ariaLiveMessage:"",autoPanOnConnect:!0,autoPanOnNodeDrag:!0,autoPanOnNodeFocus:!0,autoPanSpeed:15,connectionRadius:20,onError:Dh,isValidConnection:void 0,onSelectionChangeHandlers:[],lib:"react",debug:!1,ariaLabelConfig:Sr,zIndexMode:f,defaultEdgeOptions:void 0,onNodesChangeMiddlewareMap:new Map,onEdgesChangeMiddlewareMap:new Map,onNodesDelete:void 0,onEdgesDelete:void 0,onDelete:void 0,onBeforeDelete:void 0,onViewportChangeStart:void 0,onViewportChange:void 0,onViewportChangeEnd:void 0,onNodeDragStart:void 0,onNodeDrag:void 0,onNodeDragStop:void 0,onSelectionDragStart:void 0,onSelectionDrag:void 0,onSelectionDragStop:void 0,onMoveStart:void 0,onMove:void 0,onMoveEnd:void 0,onConnect:void 0,onConnectStart:void 0,onConnectEnd:void 0,onClickConnectStart:void 0,onClickConnectEnd:void 0}},Oh=({nodes:e,edges:t,defaultNodes:n,defaultEdges:o,width:r,height:s,fitView:i,fitViewOptions:a,minZoom:c,maxZoom:l,nodeOrigin:d,nodeExtent:u,zIndexMode:f})=>dc((p,h)=>{async function g(){let{nodeLookup:x,panZoom:y,fitViewOptions:v,fitViewResolver:m,width:w,height:S,minZoom:E,maxZoom:C}=h();y&&(await _a({nodes:x,width:w,height:S,panZoom:y,minZoom:E,maxZoom:C},v),m?.resolve(!0),p({fitViewResolver:null}))}return{...Lc({nodes:e,edges:t,width:r,height:s,fitView:i,fitViewOptions:a,minZoom:c,maxZoom:l,nodeOrigin:d,nodeExtent:u,defaultNodes:n,defaultEdges:o,zIndexMode:f}),setNodes:x=>{let{nodeLookup:y,parentLookup:v,nodeOrigin:m,nodeExtent:w,elevateNodesOnSelect:S,fitViewQueued:E,zIndexMode:C,nodesSelectionActive:z}=h(),{nodesInitialized:P,hasSelectedNodes:V}=Oo(x,y,v,{nodeOrigin:m,nodeExtent:w,elevateNodesOnSelect:S,checkEquality:!0,zIndexMode:C}),L=z&&V;E&&P?(g(),p({nodes:x,nodesInitialized:P,fitViewQueued:!1,fitViewOptions:void 0,nodesSelectionActive:L})):p({nodes:x,nodesInitialized:P,nodesSelectionActive:L})},setEdges:x=>{let{connectionLookup:y,edgeLookup:v}=h();Xr(y,v,x),p({edges:x})},setDefaultNodesAndEdges:(x,y)=>{if(x){let{setNodes:v}=h();v(x),p({hasDefaultNodes:!0})}if(y){let{setEdges:v}=h();v(y),p({hasDefaultEdges:!0})}},updateNodeInternals:x=>{let{triggerNodeChanges:y,nodeLookup:v,parentLookup:m,domNode:w,nodeOrigin:S,nodeExtent:E,debug:C,fitViewQueued:z,zIndexMode:P}=h(),{changes:V,updatedInternals:L}=$a(x,v,m,w,S,E,P);L&&(Ta(v,m,{nodeOrigin:S,nodeExtent:E,zIndexMode:P}),z?(g(),p({fitViewQueued:!1,fitViewOptions:void 0})):p({}),V?.length>0&&(C&&console.log("React Flow: trigger node changes",V),y?.(V)))},updateNodePositions:(x,y=!1)=>{let v=[],m=[],{nodeLookup:w,triggerNodeChanges:S,connection:E,updateConnection:C,onNodesChangeMiddlewareMap:z}=h();for(let[P,V]of x){let L=w.get(P),F=!!(L?.expandParent&&L?.parentId&&V?.position),H={id:P,type:"position",position:F?{x:Math.max(0,V.position.x),y:Math.max(0,V.position.y)}:V.position,dragging:y};if(L&&E.inProgress&&E.fromNode.id===L.id){let b=dt(L,E.fromHandle,U.Left,!0);C({...E,from:b})}F&&L.parentId&&v.push({id:P,parentId:L.parentId,rect:{...V.internals.positionAbsolute,width:V.measured.width??0,height:V.measured.height??0}}),m.push(H)}if(v.length>0){let{parentLookup:P,nodeOrigin:V}=h(),L=To(v,w,P,V);m.push(...L)}for(let P of z.values())m=P(m);S(m)},triggerNodeChanges:x=>{let{onNodesChange:y,setNodes:v,nodes:m,hasDefaultNodes:w,debug:S}=h();if(x?.length){if(w){let E=Kr(x,m);v(E)}S&&console.log("React Flow: trigger node changes",x),y?.(x)}},triggerEdgeChanges:x=>{let{onEdgesChange:y,setEdges:v,edges:m,hasDefaultEdges:w,debug:S}=h();if(x?.length){if(w){let E=hg(x,m);v(E)}S&&console.log("React Flow: trigger edge changes",x),y?.(x)}},addSelectedNodes:x=>{let{multiSelectionActive:y,edgeLookup:v,nodeLookup:m,triggerNodeChanges:w,triggerEdgeChanges:S}=h();if(y){let E=x.map(C=>Ot(C,!0));w(E);return}w(Kt(m,new Set([...x]),!0)),S(Kt(v))},addSelectedEdges:x=>{let{multiSelectionActive:y,edgeLookup:v,nodeLookup:m,triggerNodeChanges:w,triggerEdgeChanges:S}=h();if(y){let E=x.map(C=>Ot(C,!0));S(E);return}S(Kt(v,new Set([...x]))),w(Kt(m,new Set,!0))},unselectNodesAndEdges:({nodes:x,edges:y}={})=>{let{edges:v,nodes:m,nodeLookup:w,triggerNodeChanges:S,triggerEdgeChanges:E}=h(),C=x||m,z=y||v,P=[];for(let L of C){if(!L.selected)continue;let F=w.get(L.id);F&&(F.selected=!1),P.push(Ot(L.id,!1))}let V=[];for(let L of z)L.selected&&V.push(Ot(L.id,!1));S(P),E(V)},setMinZoom:x=>{let{panZoom:y,maxZoom:v}=h();y?.setScaleExtent([x,v]),p({minZoom:x})},setMaxZoom:x=>{let{panZoom:y,minZoom:v}=h();y?.setScaleExtent([v,x]),p({maxZoom:x})},setTranslateExtent:x=>{h().panZoom?.setTranslateExtent(x),p({translateExtent:x})},resetSelectedElements:()=>{let{edges:x,nodes:y,triggerNodeChanges:v,triggerEdgeChanges:m,elementsSelectable:w}=h();if(!w)return;let S=y.reduce((C,z)=>z.selected?[...C,Ot(z.id,!1)]:C,[]),E=x.reduce((C,z)=>z.selected?[...C,Ot(z.id,!1)]:C,[]);v(S),m(E)},setNodeExtent:x=>{let{nodes:y,nodeLookup:v,parentLookup:m,nodeOrigin:w,elevateNodesOnSelect:S,nodeExtent:E,zIndexMode:C}=h();x[0][0]===E[0][0]&&x[0][1]===E[0][1]&&x[1][0]===E[1][0]&&x[1][1]===E[1][1]||(Oo(y,v,m,{nodeOrigin:w,nodeExtent:x,elevateNodesOnSelect:S,checkEquality:!1,zIndexMode:C}),p({nodeExtent:x}))},panBy:x=>{let{transform:y,width:v,height:m,panZoom:w,translateExtent:S}=h();return Ha({delta:x,panZoom:w,transform:y,translateExtent:S,width:v,height:m})},setCenter:async(x,y,v)=>{let{width:m,height:w,maxZoom:S,panZoom:E}=h();if(!E)return!1;let C=typeof v?.zoom<"u"?v.zoom:S;return await E.setViewport({x:m/2-x*C,y:w/2-y*C,zoom:C},{duration:v?.duration,ease:v?.ease,interpolate:v?.interpolate}),!0},cancelConnection:()=>{p({connection:{...Er}})},updateConnection:x=>{p({connection:x})},reset:()=>p({...Lc()})}},Object.is);function Jr({initialNodes:e,initialEdges:t,defaultNodes:n,defaultEdges:o,initialWidth:r,initialHeight:s,initialMinZoom:i,initialMaxZoom:a,initialFitViewOptions:c,fitView:l,nodeOrigin:d,nodeExtent:u,zIndexMode:f,children:p}){let[h]=(0,T.useState)(()=>Oh({nodes:e,edges:t,defaultNodes:n,defaultEdges:o,width:r,height:s,fitView:l,minZoom:i,maxZoom:a,fitViewOptions:c,nodeOrigin:d,nodeExtent:u,zIndexMode:f}));return(0,O.jsx)(Up,{value:h,children:(0,O.jsx)(bg,{children:(0,O.jsx)(Tg,{children:p})})})}function Th({children:e,nodes:t,edges:n,defaultNodes:o,defaultEdges:r,width:s,height:i,fitView:a,fitViewOptions:c,minZoom:l,maxZoom:d,nodeOrigin:u,nodeExtent:f,zIndexMode:p}){return(0,T.useContext)(Ro)?(0,O.jsx)(O.Fragment,{children:e}):(0,O.jsx)(Jr,{initialNodes:t,initialEdges:n,defaultNodes:o,defaultEdges:r,initialWidth:s,initialHeight:i,fitView:a,initialFitViewOptions:c,initialMinZoom:l,initialMaxZoom:d,nodeOrigin:u,nodeExtent:f,zIndexMode:p,children:e})}var Lh={width:"100%",height:"100%",overflow:"hidden",position:"relative",zIndex:0};function $h({nodes:e,edges:t,defaultNodes:n,defaultEdges:o,className:r,nodeTypes:s,edgeTypes:i,onNodeClick:a,onEdgeClick:c,onInit:l,onMove:d,onMoveStart:u,onMoveEnd:f,onConnect:p,onConnectStart:h,onConnectEnd:g,onClickConnectStart:x,onClickConnectEnd:y,onNodeMouseEnter:v,onNodeMouseMove:m,onNodeMouseLeave:w,onNodeContextMenu:S,onNodeDoubleClick:E,onNodeDragStart:C,onNodeDrag:z,onNodeDragStop:P,onNodesDelete:V,onEdgesDelete:L,onDelete:F,onSelectionChange:H,onSelectionDragStart:b,onSelectionDrag:N,onSelectionDragStop:k,onSelectionContextMenu:I,onSelectionStart:D,onSelectionEnd:A,onBeforeDelete:R,connectionMode:B,connectionLineType:X=qe.Bezier,connectionLineStyle:Q,connectionLineComponent:Z,connectionLineContainerStyle:K,deleteKeyCode:ne="Backspace",selectionKeyCode:Y="Shift",selectionOnDrag:$=!1,selectionMode:q=Pt.Full,panActivationKeyCode:J="Space",multiSelectionKeyCode:te=Ut()?"Meta":"Control",zoomActivationKeyCode:G=Ut()?"Meta":"Control",snapToGrid:j,snapGrid:oe,onlyRenderVisibleElements:ie=!1,selectNodesOnDrag:se,nodesDraggable:ge,autoPanOnNodeFocus:be,nodesConnectable:fe,nodesFocusable:Ne,nodeOrigin:Be=Fc,edgesFocusable:yt,edgesReconnectable:ze,elementsSelectable:le=!0,defaultViewport:he=cg,minZoom:ke=.5,maxZoom:De=2,translateExtent:Te=qt,preventScrolling:nn=!0,nodeExtent:on,defaultMarkerColor:rn="#b1b1b7",zoomOnScroll:nt=!0,zoomOnPinch:sn=!0,panOnScroll:nr=!1,panOnScrollSpeed:re=.5,panOnScrollMode:or=Je.Free,zoomOnDoubleClick:an=!0,panOnDrag:Tt=!0,onPaneClick:xt,onPaneMouseEnter:M,onPaneMouseMove:W,onPaneMouseLeave:ee,onPaneScroll:ce,onPaneContextMenu:xe,paneClickDistance:Rn=1,nodeClickDistance:Wn=0,children:ot,onReconnect:wt,onReconnectStart:Rl,onReconnectEnd:Wl,onEdgeContextMenu:ql,onEdgeDoubleClick:Xl,onEdgeMouseEnter:Yl,onEdgeMouseMove:Zl,onEdgeMouseLeave:Gl,reconnectRadius:Ul=10,onNodesChange:jl,onEdgesChange:Kl,noDragClassName:Ql="nodrag",noWheelClassName:Jl="nowheel",noPanClassName:si="nopan",fitView:ai,fitViewOptions:ci,connectOnClick:eu,attributionPosition:tu,proOptions:nu,defaultEdgeOptions:ou,elevateNodesOnSelect:ru=!0,elevateEdgesOnSelect:iu=!1,disableKeyboardA11y:li=!1,autoPanOnConnect:su,autoPanOnNodeDrag:au,autoPanOnSelection:cu=!0,autoPanSpeed:lu,connectionRadius:uu,isValidConnection:du,onError:fu,style:pu,id:ui,nodeDragThreshold:gu,connectionDragThreshold:hu,viewport:mu,onViewportChange:yu,width:xu,height:wu,colorMode:bu="light",debug:vu,onScroll:di,ariaLabelConfig:ku,zIndexMode:fi="basic",..._u},Su){let rr=ui||"1",Eu=fg(bu),Nu=(0,T.useCallback)(pi=>{pi.currentTarget.scrollTo({top:0,left:0,behavior:"instant"}),di?.(pi)},[di]);return(0,O.jsx)("div",{"data-testid":"rf__wrapper",..._u,onScroll:Nu,style:{...pu,...Lh},ref:Su,className:me(["react-flow",r,Eu]),id:ui,role:"application",children:(0,O.jsxs)(Th,{nodes:e,edges:t,width:xu,height:wu,fitView:ai,fitViewOptions:ci,minZoom:ke,maxZoom:De,nodeOrigin:Be,nodeExtent:on,zIndexMode:fi,children:[(0,O.jsx)(dg,{nodes:e,edges:t,defaultNodes:n,defaultEdges:o,onConnect:p,onConnectStart:h,onConnectEnd:g,onClickConnectStart:x,onClickConnectEnd:y,nodesDraggable:ge,autoPanOnNodeFocus:be,nodesConnectable:fe,nodesFocusable:Ne,edgesFocusable:yt,edgesReconnectable:ze,elementsSelectable:le,elevateNodesOnSelect:ru,elevateEdgesOnSelect:iu,minZoom:ke,maxZoom:De,nodeExtent:on,onNodesChange:jl,onEdgesChange:Kl,snapToGrid:j,snapGrid:oe,connectionMode:B,translateExtent:Te,connectOnClick:eu,defaultEdgeOptions:ou,fitView:ai,fitViewOptions:ci,onNodesDelete:V,onEdgesDelete:L,onDelete:F,onNodeDragStart:C,onNodeDrag:z,onNodeDragStop:P,onSelectionDrag:N,onSelectionDragStart:b,onSelectionDragStop:k,onMove:d,onMoveStart:u,onMoveEnd:f,noPanClassName:si,nodeOrigin:Be,rfId:rr,autoPanOnConnect:su,autoPanOnNodeDrag:au,autoPanSpeed:lu,onError:fu,connectionRadius:uu,isValidConnection:du,selectNodesOnDrag:se,nodeDragThreshold:gu,connectionDragThreshold:hu,onBeforeDelete:R,debug:vu,ariaLabelConfig:ku,zIndexMode:fi}),(0,O.jsx)(Ah,{onInit:l,onNodeClick:a,onEdgeClick:c,onNodeMouseEnter:v,onNodeMouseMove:m,onNodeMouseLeave:w,onNodeContextMenu:S,onNodeDoubleClick:E,nodeTypes:s,edgeTypes:i,connectionLineType:X,connectionLineStyle:Q,connectionLineComponent:Z,connectionLineContainerStyle:K,selectionKeyCode:Y,selectionOnDrag:$,selectionMode:q,deleteKeyCode:ne,multiSelectionKeyCode:te,panActivationKeyCode:J,zoomActivationKeyCode:G,onlyRenderVisibleElements:ie,defaultViewport:he,translateExtent:Te,minZoom:ke,maxZoom:De,preventScrolling:nn,zoomOnScroll:nt,zoomOnPinch:sn,zoomOnDoubleClick:an,panOnScroll:nr,panOnScrollSpeed:re,panOnScrollMode:or,panOnDrag:Tt,autoPanOnSelection:cu,onPaneClick:xt,onPaneMouseEnter:M,onPaneMouseMove:W,onPaneMouseLeave:ee,onPaneScroll:ce,onPaneContextMenu:xe,paneClickDistance:Rn,nodeClickDistance:Wn,onSelectionContextMenu:I,onSelectionStart:D,onSelectionEnd:A,onReconnect:wt,onReconnectStart:Rl,onReconnectEnd:Wl,onEdgeContextMenu:ql,onEdgeDoubleClick:Xl,onEdgeMouseEnter:Yl,onEdgeMouseMove:Zl,onEdgeMouseLeave:Gl,reconnectRadius:Ul,defaultMarkerColor:rn,noDragClassName:Ql,noWheelClassName:Jl,noPanClassName:si,rfId:rr,disableKeyboardA11y:li,nodeExtent:on,viewport:mu,onViewportChange:yu,nodesDraggable:ge}),(0,O.jsx)(ag,{onSelectionChange:H}),ot,(0,O.jsx)(ng,{proOptions:nu,position:tu}),(0,O.jsx)(tg,{rfId:rr,disableKeyboardA11y:li})]})})}var hl=Wc($h);var Rv=Oe.error014();function ei(e){return ae((0,T.useCallback)(n=>n.nodeLookup.get(e),[e]),ue)}function Hh({dimensions:e,lineWidth:t,variant:n,className:o}){return(0,O.jsx)("path",{strokeWidth:t,d:`M${e[0]/2} 0 V${e[1]} M0 ${e[1]/2} H${e[0]}`,className:me(["react-flow__background-pattern",n,o])})}function Bh({radius:e,className:t}){return(0,O.jsx)("circle",{cx:e,cy:e,r:e,className:me(["react-flow__background-pattern","dots",t])})}var Xe;(function(e){e.Lines="lines",e.Dots="dots",e.Cross="cross"})(Xe||(Xe={}));var Vh={[Xe.Dots]:1,[Xe.Lines]:1,[Xe.Cross]:6},Fh=e=>({transform:e.transform,patternId:`pattern-${e.rfId}`});function ml({id:e,variant:t=Xe.Dots,gap:n=20,size:o,lineWidth:r=1,offset:s=0,color:i,bgColor:a,style:c,className:l,patternClassName:d}){let u=(0,T.useRef)(null),{transform:f,patternId:p}=ae(Fh,ue),h=o||Vh[t],g=t===Xe.Dots,x=t===Xe.Cross,y=Array.isArray(n)?n:[n,n],v=[y[0]*f[2]||1,y[1]*f[2]||1],m=h*f[2],w=Array.isArray(s)?s:[s,s],S=x?[m,m]:v,E=[w[0]*f[2]+S[0]/2,w[1]*f[2]+S[1]/2],C=`${p}${e||""}`;return(0,O.jsxs)("svg",{className:me(["react-flow__background",l]),style:{...c,...qo,"--xy-background-color-props":a,"--xy-background-pattern-color-props":i},ref:u,"data-testid":"rf__background",children:[(0,O.jsx)("pattern",{id:C,x:f[0]%v[0],y:f[1]%v[1],width:v[0],height:v[1],patternUnits:"userSpaceOnUse",patternTransform:`translate(-${E[0]},-${E[1]})`,children:g?(0,O.jsx)(Bh,{radius:m/2,className:d}):(0,O.jsx)(Hh,{dimensions:S,lineWidth:r,variant:t,className:d})}),(0,O.jsx)("rect",{x:"0",y:"0",width:"100%",height:"100%",fill:`url(#${C})`})]})}ml.displayName="Background";var yl=(0,T.memo)(ml);function Rh(){return(0,O.jsx)("svg",{xmlns:"http://www.w3.org/2000/svg",viewBox:"0 0 32 32",children:(0,O.jsx)("path",{d:"M32 18.133H18.133V32h-4.266V18.133H0v-4.266h13.867V0h4.266v13.867H32z"})})}function Wh(){return(0,O.jsx)("svg",{xmlns:"http://www.w3.org/2000/svg",viewBox:"0 0 32 5",children:(0,O.jsx)("path",{d:"M0 0h32v4.2H0z"})})}function qh(){return(0,O.jsx)("svg",{xmlns:"http://www.w3.org/2000/svg",viewBox:"0 0 32 30",children:(0,O.jsx)("path",{d:"M3.692 4.63c0-.53.4-.938.939-.938h5.215V0H4.708C2.13 0 0 2.054 0 4.63v5.216h3.692V4.631zM27.354 0h-5.2v3.692h5.17c.53 0 .984.4.984.939v5.215H32V4.631A4.624 4.624 0 0027.354 0zm.954 24.83c0 .532-.4.94-.939.94h-5.215v3.768h5.215c2.577 0 4.631-2.13 4.631-4.707v-5.139h-3.692v5.139zm-23.677.94c-.531 0-.939-.4-.939-.94v-5.138H0v5.139c0 2.577 2.13 4.707 4.708 4.707h5.138V25.77H4.631z"})})}function Xh(){return(0,O.jsx)("svg",{xmlns:"http://www.w3.org/2000/svg",viewBox:"0 0 25 32",children:(0,O.jsx)("path",{d:"M21.333 10.667H19.81V7.619C19.81 3.429 16.38 0 12.19 0 8 0 4.571 3.429 4.571 7.619v3.048H3.048A3.056 3.056 0 000 13.714v15.238A3.056 3.056 0 003.048 32h18.285a3.056 3.056 0 003.048-3.048V13.714a3.056 3.056 0 00-3.048-3.047zM12.19 24.533a3.056 3.056 0 01-3.047-3.047 3.056 3.056 0 013.047-3.048 3.056 3.056 0 013.048 3.048 3.056 3.056 0 01-3.048 3.047zm4.724-13.866H7.467V7.619c0-2.59 2.133-4.724 4.723-4.724 2.591 0 4.724 2.133 4.724 4.724v3.048z"})})}function Yh(){return(0,O.jsx)("svg",{xmlns:"http://www.w3.org/2000/svg",viewBox:"0 0 25 32",children:(0,O.jsx)("path",{d:"M21.333 10.667H19.81V7.619C19.81 3.429 16.38 0 12.19 0c-4.114 1.828-1.37 2.133.305 2.438 1.676.305 4.42 2.59 4.42 5.181v3.048H3.047A3.056 3.056 0 000 13.714v15.238A3.056 3.056 0 003.048 32h18.285a3.056 3.056 0 003.048-3.048V13.714a3.056 3.056 0 00-3.048-3.047zM12.19 24.533a3.056 3.056 0 01-3.047-3.047 3.056 3.056 0 013.047-3.048 3.056 3.056 0 013.048 3.048 3.056 3.056 0 01-3.048 3.047z"})})}function Vo({children:e,className:t,...n}){return(0,O.jsx)("button",{type:"button",className:me(["react-flow__controls-button",t]),...n,children:e})}var Zh=e=>({isInteractive:e.nodesDraggable||e.nodesConnectable||e.elementsSelectable,minZoomReached:e.transform[2]<=e.minZoom,maxZoomReached:e.transform[2]>=e.maxZoom,ariaLabelConfig:e.ariaLabelConfig});function xl({style:e,showZoom:t=!0,showFitView:n=!0,showInteractive:o=!0,fitViewOptions:r,onZoomIn:s,onZoomOut:i,onFitView:a,onInteractiveChange:c,className:l,children:d,position:u="bottom-left",orientation:f="vertical","aria-label":p}){let h=de(),{isInteractive:g,minZoomReached:x,maxZoomReached:y,ariaLabelConfig:v}=ae(Zh,ue),{zoomIn:m,zoomOut:w,fitView:S}=Ln(),E=()=>{m(),s?.()},C=()=>{w(),i?.()},z=()=>{S(r),a?.()},P=()=>{h.setState({nodesDraggable:!g,nodesConnectable:!g,elementsSelectable:!g}),c?.(!g)};return(0,O.jsxs)(Wo,{className:me(["react-flow__controls",f==="horizontal"?"horizontal":"vertical",l]),position:u,style:e,"data-testid":"rf__controls","aria-label":p??v["controls.ariaLabel"],children:[t&&(0,O.jsxs)(O.Fragment,{children:[(0,O.jsx)(Vo,{onClick:E,className:"react-flow__controls-zoomin",title:v["controls.zoomIn.ariaLabel"],"aria-label":v["controls.zoomIn.ariaLabel"],disabled:y,children:(0,O.jsx)(Rh,{})}),(0,O.jsx)(Vo,{onClick:C,className:"react-flow__controls-zoomout",title:v["controls.zoomOut.ariaLabel"],"aria-label":v["controls.zoomOut.ariaLabel"],disabled:x,children:(0,O.jsx)(Wh,{})})]}),n&&(0,O.jsx)(Vo,{className:"react-flow__controls-fitview",onClick:z,title:v["controls.fitView.ariaLabel"],"aria-label":v["controls.fitView.ariaLabel"],children:(0,O.jsx)(qh,{})}),o&&(0,O.jsx)(Vo,{className:"react-flow__controls-interactive",onClick:P,title:v["controls.interactive.ariaLabel"],"aria-label":v["controls.interactive.ariaLabel"],children:g?(0,O.jsx)(Yh,{}):(0,O.jsx)(Xh,{})}),d]})}xl.displayName="Controls";var wl=(0,T.memo)(xl);function Gh({id:e,x:t,y:n,width:o,height:r,style:s,color:i,strokeColor:a,strokeWidth:c,className:l,borderRadius:d,shapeRendering:u,selected:f,onClick:p}){let{background:h,backgroundColor:g}=s||{},x=i||h||g;return(0,O.jsx)("rect",{className:me(["react-flow__minimap-node",{selected:f},l]),x:t,y:n,rx:d,ry:d,width:o,height:r,style:{fill:x,stroke:a,strokeWidth:c},shapeRendering:u,onClick:p?y=>p(y,e):void 0})}var Uh=(0,T.memo)(Gh),jh=e=>e.nodes.map(t=>t.id),Ur=e=>e instanceof Function?e:()=>e;function Kh({nodeStrokeColor:e,nodeColor:t,nodeClassName:n="",nodeBorderRadius:o=5,nodeStrokeWidth:r,nodeComponent:s=Uh,onClick:i}){let a=ae(jh,ue),c=Ur(t),l=Ur(e),d=Ur(n),u=typeof window>"u"||window.chrome?"crispEdges":"geometricPrecision";return(0,O.jsx)(O.Fragment,{children:a.map(f=>(0,O.jsx)(Jh,{id:f,nodeColorFunc:c,nodeStrokeColorFunc:l,nodeClassNameFunc:d,nodeBorderRadius:o,nodeStrokeWidth:r,NodeComponent:s,onClick:i,shapeRendering:u},f))})}function Qh({id:e,nodeColorFunc:t,nodeStrokeColorFunc:n,nodeClassNameFunc:o,nodeBorderRadius:r,nodeStrokeWidth:s,shapeRendering:i,NodeComponent:a,onClick:c}){let{node:l,x:d,y:u,width:f,height:p}=ae(h=>{let g=h.nodeLookup.get(e);if(!g)return{node:void 0,x:0,y:0,width:0,height:0};let x=g.internals.userNode,{x:y,y:v}=g.internals.positionAbsolute,{width:m,height:w}=He(x);return{node:x,x:y,y:v,width:m,height:w}},ue);return!l||l.hidden||!Dr(l)?null:(0,O.jsx)(a,{x:d,y:u,width:f,height:p,style:l.style,selected:!!l.selected,className:o(l),color:t(l),borderRadius:r,strokeColor:n(l),strokeWidth:s,shapeRendering:i,onClick:c,id:l.id})}var Jh=(0,T.memo)(Qh),em=(0,T.memo)(Kh),tm=200,nm=150,om=e=>!e.hidden,rm=e=>{let t={x:-e.transform[0]/e.transform[2],y:-e.transform[1]/e.transform[2],width:e.width/e.transform[2],height:e.height/e.transform[2]},n=!1;for(let o of e.nodeLookup.values())if(!o.hidden){n=!0;break}return{viewBB:t,boundingRect:n?Pr(Xt(e.nodeLookup,{filter:om}),t):t,rfId:e.rfId,panZoom:e.panZoom,translateExtent:e.translateExtent,flowWidth:e.width,flowHeight:e.height,ariaLabelConfig:e.ariaLabelConfig}},$c=(e,t)=>e.x===t.x&&e.y===t.y&&e.width===t.width&&e.height===t.height,im=(e,t)=>$c(e.viewBB,t.viewBB)&&$c(e.boundingRect,t.boundingRect)&&e.rfId===t.rfId&&e.panZoom===t.panZoom&&e.translateExtent===t.translateExtent&&e.flowWidth===t.flowWidth&&e.flowHeight===t.flowHeight&&e.ariaLabelConfig===t.ariaLabelConfig,sm="react-flow__minimap-desc";function bl({style:e,className:t,nodeStrokeColor:n,nodeColor:o,nodeClassName:r="",nodeBorderRadius:s=5,nodeStrokeWidth:i,nodeComponent:a,bgColor:c,maskColor:l,maskStrokeColor:d,maskStrokeWidth:u,position:f="bottom-right",onClick:p,onNodeClick:h,pannable:g=!1,zoomable:x=!1,ariaLabel:y,inversePan:v,zoomStep:m=1,offsetScale:w=5}){let S=de(),E=(0,T.useRef)(null),{boundingRect:C,panZoom:z,viewBB:P,rfId:V,translateExtent:L,flowWidth:F,flowHeight:H,ariaLabelConfig:b}=ae(rm,im),N=e?.width??tm,k=e?.height??nm,I=C.width/N,D=C.height/k,A=Math.max(I,D),R=A*N,B=A*k,X=w*A,Q=C.x-(R-C.width)/2-X,Z=C.y-(B-C.height)/2-X,K=R+X*2,ne=B+X*2,Y=`${sm}-${V}`,$=(0,T.useRef)(0),q=(0,T.useRef)();$.current=A,(0,T.useEffect)(()=>{let oe=S.getState().panZoom;if(E.current&&oe)return q.current=Xa({domNode:E.current,panZoom:oe,getTransform:()=>S.getState().transform,getViewScale:()=>$.current}),()=>{q.current?.destroy()}},[z]),(0,T.useEffect)(()=>{q.current?.update({translateExtent:L,width:F,height:H,inversePan:v,pannable:g,zoomStep:m,zoomable:x})},[g,x,v,m,L,F,H]);let J=p?oe=>{let[ie,se]=q.current?.pointer(oe)||[0,0];p(oe,{x:ie,y:se})}:void 0,te=(0,T.useCallback)((oe,ie)=>{let se=S.getState().nodeLookup.get(ie).internals.userNode;h?.(oe,se)},[h]),G=h?te:void 0,j=y??b["minimap.ariaLabel"];return(0,O.jsx)(Wo,{position:f,style:{...e,"--xy-minimap-background-color-props":typeof c=="string"?c:void 0,"--xy-minimap-mask-background-color-props":typeof l=="string"?l:void 0,"--xy-minimap-mask-stroke-color-props":typeof d=="string"?d:void 0,"--xy-minimap-mask-stroke-width-props":typeof u=="number"?u*A:void 0,"--xy-minimap-node-background-color-props":typeof o=="string"?o:void 0,"--xy-minimap-node-stroke-color-props":typeof n=="string"?n:void 0,"--xy-minimap-node-stroke-width-props":typeof i=="number"?i:void 0},className:me(["react-flow__minimap",t]),"data-testid":"rf__minimap",children:(0,O.jsxs)("svg",{width:N,height:k,viewBox:`${Q} ${Z} ${K} ${ne}`,className:"react-flow__minimap-svg",role:"img","aria-labelledby":Y,ref:E,onClick:J,children:[j&&(0,O.jsx)("title",{id:Y,children:j}),(0,O.jsx)(em,{onClick:G,nodeColor:o,nodeStrokeColor:n,nodeBorderRadius:s,nodeClassName:r,nodeStrokeWidth:i,nodeComponent:a}),(0,O.jsx)("path",{className:"react-flow__minimap-mask",d:`M${Q-X},${Z-X}h${K+X*2}v${ne+X*2}h${-K-X*2}z
-        M${P.x},${P.y}h${P.width}v${P.height}h${-P.width}z`,fillRule:"evenodd",pointerEvents:"none"})]})})}bl.displayName="MiniMap";var Wv=(0,T.memo)(bl),am=e=>t=>e?`${Math.max(1/t.transform[2],1)}`:void 0,cm={[ft.Line]:"right",[ft.Handle]:"bottom-right"};function lm({nodeId:e,position:t,variant:n=ft.Handle,className:o,style:r=void 0,children:s,color:i,minWidth:a=10,minHeight:c=10,maxWidth:l=Number.MAX_VALUE,maxHeight:d=Number.MAX_VALUE,keepAspectRatio:u=!1,resizeDirection:f,autoScale:p=!0,shouldResize:h,onResizeStart:g,onResize:x,onResizeEnd:y}){let v=Gc(),m=typeof e=="string"?e:v,w=de(),S=(0,T.useRef)(null),E=n===ft.Handle,C=ae((0,T.useCallback)(am(E&&p),[E,p]),ue),z=(0,T.useRef)(null),P=t??cm[n];(0,T.useEffect)(()=>{if(!(!S.current||!m))return z.current||(z.current=ja({domNode:S.current,nodeId:m,getStoreItems:()=>{let{nodeLookup:L,transform:F,snapGrid:H,snapToGrid:b,nodeOrigin:N,domNode:k}=w.getState();return{nodeLookup:L,transform:F,snapGrid:H,snapToGrid:b,nodeOrigin:N,paneDomNode:k}},onChange:(L,F)=>{let{triggerNodeChanges:H,nodeLookup:b,parentLookup:N,nodeOrigin:k}=w.getState(),I=[],D={x:L.x,y:L.y},A=b.get(m);if(A&&A.expandParent&&A.parentId){let R=A.origin??k,B=L.width??A.measured.width??0,X=L.height??A.measured.height??0,Q={id:A.id,parentId:A.parentId,rect:{width:B,height:X,...Or({x:L.x??A.position.x,y:L.y??A.position.y},{width:B,height:X},A.parentId,b,R)}},Z=To([Q],b,N,k);I.push(...Z),D.x=L.x?Math.max(R[0]*B,L.x):void 0,D.y=L.y?Math.max(R[1]*X,L.y):void 0}if(D.x!==void 0&&D.y!==void 0){let R={id:m,type:"position",position:{...D}};I.push(R)}if(L.width!==void 0&&L.height!==void 0){let B={id:m,type:"dimensions",resizing:!0,setAttributes:f?f==="horizontal"?"width":"height":!0,dimensions:{width:L.width,height:L.height}};I.push(B)}for(let R of F){let B={...R,type:"position"};I.push(B)}H(I)},onEnd:({width:L,height:F})=>{let H={id:m,type:"dimensions",resizing:!1,dimensions:{width:L,height:F}};w.getState().triggerNodeChanges([H])}})),z.current.update({controlPosition:P,boundaries:{minWidth:a,minHeight:c,maxWidth:l,maxHeight:d},keepAspectRatio:u,resizeDirection:f,onResizeStart:g,onResize:x,onResizeEnd:y,shouldResize:h}),()=>{z.current?.destroy()}},[P,a,c,l,d,u,g,x,y,h]);let V=P.split("-");return(0,O.jsx)("div",{className:me(["react-flow__resize-control","nodrag",...V,n,o]),ref:S,style:{...r,scale:C,...i&&{[E?"backgroundColor":"borderColor"]:i}},children:s})}var qv=(0,T.memo)(lm);var Jt={recency:"recent",workspace:"all",status:"all",kind:"all",archived:!1,query:""},Xo={...Jt,recency:"all",frequency:"all",statuses:[]};var um=e=>(/^[A-Za-z]:[/\\]/.test(e)||e.startsWith("\\\\")?e.replaceAll("\\","/"):e).replace(/\/+$/,"");function $n(e){let t=e.map(o=>({id:o.id,path:um(o.path)})),n=new Map;for(let o of t){let r=-1;for(let s of t)s.id!==o.id&&s.path.length>r&&o.path!==s.path&&o.path.startsWith(s.path+"/")&&(n.set(o.id,s.id),r=s.path.length)}return n}function Hn(e){let t=new Map(e.map(o=>[o.id,o])),n=new Map;for(let o of e){if(!o.parentId||!t.has(o.parentId))continue;let r=new Set([o.id]),s=o.parentId;for(;s&&t.has(s)&&!r.has(s);)r.add(s),s=t.get(s).parentId;(!s||!r.has(s))&&n.set(o.id,o.parentId)}return n}function Yo(e,t,n){let o=new Map;for(let[i,a]of $n(e.workspaces))o.set("workspace:"+i,"workspace:"+a);for(let i of e.workspaces)for(let a of i.sessionIds)o.has("session:"+a)||o.set("session:"+a,"workspace:"+i.id);for(let i of e.sessions)o.has("session:"+i.id)||o.set("session:"+i.id,"workspace:__ungrouped__");for(let[i,a]of Hn(e.sessions))o.set("session:"+i,"session:"+a);let r={...n},s=i=>{if(r[i])return r[i];let a=t[i],c=o.get(i);if(!a||!c)return a;let l=t[c],d=s(c);return!l||!d?a:r[i]={x:a.x+d.x-l.x,y:a.y+d.y-l.y}};for(let i of o.keys())t[i]&&s(i);return r}function pt(e){let t=e==="workspace"?53:37;return{offset:{x:72,y:t},radius:t}}function vl(e,t){let n=t.x-e.x,o=t.y-e.y,r=Math.hypot(n,o),s=r>1e-9?n/r:1,i=r>1e-9?o/r:0;return{source:{x:e.x+s*e.radius,y:e.y+i*e.radius},target:{x:t.x-s*t.radius,y:t.y-i*t.radius}}}var kl=new WeakMap;function dm(e){let t=kl.get(e);if(t)return t;let n=new Map,o=new Map,r=new Map;for(let f of[...e.workspaces].sort((p,h)=>p.id.localeCompare(h.id))){o.set("workspace:"+f.id,"workspace");for(let p of f.sessionIds)r.has(p)||r.set(p,f.id)}for(let[f,p]of $n(e.workspaces))n.set("workspace:"+f,"workspace:"+p);let s=Hn(e.sessions);for(let f of e.sessions){let p="session:"+f.id;o.set(p,"session");let h=r.get(f.id)??"__ungrouped__";h==="__ungrouped__"&&o.set("workspace:__ungrouped__","workspace"),n.set(p,s.has(f.id)?"session:"+s.get(f.id):"workspace:"+h)}let i=new Map;for(let f of o.keys()){let p=n.get(f);!p||!o.has(p)||(i.has(p)||i.set(p,[]),i.get(p).push(f))}for(let f of i.values())f.sort();let a=new Map,c=f=>{if(a.has(f))return a.get(f);let p=Math.max(1,(i.get(f)??[]).reduce((h,g)=>h+c(g),0));return a.set(f,p),p},l={},d=280,u=[...o.keys()].filter(f=>!n.has(f)||!o.has(n.get(f))).sort();for(let f of u){let p=new Map,h=(y,v,m,w,S)=>{p.set(y,{x:v,y:m});let E=i.get(y)??[],C=E.reduce((V,L)=>V+c(L),0),z=Math.max(225,C*165/S),P=w-S/2;for(let V of E){let L=S*c(V)/C,F=P+L/2;h(V,v+Math.cos(F)*z,m+Math.sin(F)*z,F,Math.min(Math.PI*.8,L)),P+=L}};h(f,0,0,-Math.PI/2,2*Math.PI);let g=Math.min(...[...p.values()].map(y=>y.x)),x=Math.max(...[...p.values()].map(y=>y.x));for(let[y,v]of p){let m=pt(o.get(y));l[y]={x:v.x-g+d-m.offset.x,y:v.y+290-m.offset.y}}d+=x-g+360}for(let f of Object.values(l))Object.freeze(f);return Object.freeze(l),kl.set(e,l),l}function Zo(e,t){let n=dm(e);return{...n,...Yo(e,n,t)}}function _l(e,t,n=Date.now()){let o={...e};for(let r of t)Object.hasOwn(o,r)||Object.defineProperty(o,r,{value:{since:n,visits:[]},enumerable:!0,writable:!0,configurable:!0});return o}function ti(e,t=Date.now()){return!Number.isFinite(e)||e<=0||e>t+6e4?"unknown":t-e<=7*864e5?"recent":"early"}function ni(e,t=Date.now()){return e?e.visits.filter(o=>o>=t-30*864e5&&o<=t).length>=5?"frequent":t-e.since>=30*864e5?"infrequent":"accumulating":"accumulating"}function Sl(e,t=Date.now()){let n=(e?.visits??[]).filter(o=>o>=t-2592e6&&o<=t);return(!n.length||t-n[n.length-1]>=30*6e4)&&n.push(t),{since:e?.since??t,visits:n}}var Go={recent:"\u8FD1\u671F",early:"\u65E9\u671F",unknown:"\u65F6\u95F4\u672A\u77E5"},Uo={frequent:"\u5E38\u7528",infrequent:"\u4E0D\u5E38\u7528",accumulating:"\u4F7F\u7528\u8BB0\u5F55\u79EF\u7D2F\u4E2D"};function oi(e){return e.pending?"waiting":e.running===!0?"running":e.unread?"unread":e.running===!1?"idle":"unknown"}function jo(e,t,n,o={},r=new Set,s=Date.now(),i){let a=$n(e.workspaces),c=new Set(e.currentSessionIds??(e.currentSessionId?[e.currentSessionId]:[])),l=k=>c.has(k.id)||k.running===!0||k.pending===!0,d=Hn(e.sessions),u=new Map(e.sessions.map(k=>[k.id,k])),f=new Set(e.archivedSessionIds),p=e.sessions.filter(k=>l(k)||!k.blank&&k.origin!=="subagent"&&(t.archived||!f.has(k.id))),h=new Map(p.map(k=>[k.id,k])),g=new Set(e.workspaces.flatMap(k=>[...k.sessionIds])),x=p.filter(k=>!g.has(k.id)),y=[...e.workspaces];(x.length||[...d.values()].some(k=>!g.has(k)))&&y.push({id:"__ungrouped__",title:"\u672A\u5206\u7EC4",path:"",sessionIds:x.map(k=>k.id),virtual:!0});let v=[],m=[],w=[],S=t.query.trim().toLocaleLowerCase(),E=t.statuses??(t.status==="all"?[]:[t.status]),C=0,z=new Set,P=new Set,V=new Map;for(let k of y)for(let I of k.sessionIds)V.has(I)||V.set(I,k.id);let L=new Map(y.map(k=>[k.id,k])),F=Zo(e,n.positions),H=k=>n.positions["workspace:"+k]??F["workspace:"+k]??{x:280,y:290},b=k=>n.positions["session:"+k.id]??F["session:"+k.id]??{x:280,y:290},N=(k,I=!1)=>({id:"session:"+k.id,type:"bubble",position:b(k),data:{kind:"session",entityId:k.id,title:k.title,status:oi(k),path:k.cwd,workspaceId:V.get(k.id)??"__ungrouped__",parentSessionId:d.get(k.id),context:I,archived:f.has(k.id),updatedAt:k.updatedAt,current:c.has(k.id),working:k.running===!0,pinned:n.settings?.pinned?.includes(k.id),recency:ti(k.updatedAt,s),frequency:ni(n.settings?.usage?.[k.id],s)}});y.forEach(k=>{let I=k.id;for(;I&&I!==t.workspace;)I=a.get(I);let D=t.workspace==="all"||I===t.workspace,A=[...new Set(k.sessionIds)].flatMap(q=>h.has(q)&&V.get(q)===k.id?[h.get(q)]:[]),R=!S||(k.title+" "+k.path).toLocaleLowerCase().includes(S),B=A.filter(q=>D&&(R||(q.title+" "+(q.cwd??"")+" "+(n.settings?.manualSummaries?.[q.id]??"")).toLocaleLowerCase().includes(S))&&(!E.length||E.includes(oi(q)))&&(!t.recency||t.recency==="all"||ti(q.updatedAt,s)===t.recency)&&(!t.frequency||t.frequency==="all"||ni(n.settings?.usage?.[q.id],s)===t.frequency)).sort((q,J)=>Number(n.settings?.pinned?.includes(J.id)??!1)-Number(n.settings?.pinned?.includes(q.id)??!1)),X=A.map(oi),Q=["waiting","running","unread","idle"].find(q=>X.includes(q))??"unknown",Z="workspace:"+k.id,K=!r.has(k.id);v.push({id:Z,type:"bubble",position:H(k.id),data:{kind:"workspace",entityId:k.id,title:k.title,path:k.path,status:Q,count:B.length,total:A.length,virtual:k.virtual,parentWorkspaceId:a.get(k.id),childWorkspaceCount:y.filter(q=>a.get(q.id)===k.id).length,collapsed:K,current:A.some(q=>c.has(q.id)),working:A.some(q=>q.running===!0)}});let ne=a.get(k.id);ne&&m.push({id:"workspace:"+ne+"->"+Z,source:"workspace:"+ne,target:Z}),C+=B.length;for(let q of B)z.add(q.id),w.push(N(q));let Y=o[k.id]??20,$=K||t.kind==="workspace"?[]:B.slice(0,Y);for(let q of A.filter(J=>l(J)||J.id===i))$.some(J=>J.id===q.id)||$.push(q);$.forEach(q=>{if(P.has(q.id))return;P.add(q.id);let J=N(q);J.data.outsideFilters=!z.has(q.id),v.push(J)})});for(let k of P){let I=d.get(k);I&&!P.has(I)&&(P.add(I),v.push(N(u.get(I),!0)))}for(let k of P){let I=d.get(k),D=I?"session:"+I:"workspace:"+(V.get(k)??"__ungrouped__"),A="session:"+k;m.push({id:D+"->"+A,source:D,target:A,...I?{sourceHandle:"branch-source",targetHandle:"branch-target"}:{}})}return{matches:w,nodes:v,edges:m,matched:C,total:p.length,hidden:[...z].filter(k=>!P.has(k)).length}}var tt="#6aabff";function Bn(e){if(typeof e!="string")return;let t=e.trim().toLowerCase();if(/^#[\da-f]{6}$/.test(t))return t;if(/^#[\da-f]{3}$/.test(t))return"#"+[...t.slice(1)].map(n=>n+n).join("")}var El=e=>[1,3,5].map(t=>parseInt(e.slice(t,t+2),16)),Ko=(e,t,n)=>"#"+El(e).map((o,r)=>Math.round(o*(1-n)+El(t)[r]*n).toString(16).padStart(2,"0")).join("");function Nl(e){let t=Bn(e)??tt;return{workspace:Ko(t,"#243247",.8),expanded:Ko(t,"#080d17",.94),session:Ko(t,"#ffffff",.82),text:"#ffffff",sessionText:"#111827",accent:Ko(t,"#ffffff",.55)}}var tn=()=>({schemaVersion:1,revision:0,positions:{},collapsed:[],views:{}}),en=e=>!["__proto__","prototype","constructor"].includes(e)&&e.length<1e3,Ye=e=>!!e&&typeof e=="object"&&!Array.isArray(e),Cl=e=>Ye(e)&&typeof e.x=="number"&&typeof e.y=="number"&&Number.isFinite(e.x)&&Number.isFinite(e.y)&&Math.abs(e.x)<1e8&&Math.abs(e.y)<1e8;function fm(e){return Ye(e)&&typeof e.workspace=="string"&&(e.recency===void 0||["all","recent","early","unknown"].includes(String(e.recency)))&&(e.frequency===void 0||["all","frequent","infrequent","accumulating"].includes(String(e.frequency)))&&(e.statuses===void 0||Array.isArray(e.statuses)&&e.statuses.every(t=>["running","waiting","unread","idle","unknown"].includes(t)))&&["all","running","waiting","unread","idle","unknown"].includes(String(e.status))&&["all","workspace","session"].includes(String(e.kind))&&typeof e.archived=="boolean"&&typeof e.query=="string"}function Ml(e){if(!Ye(e)||e.schemaVersion!==1||!Number.isSafeInteger(e.revision)||Number(e.revision)<0||!Ye(e.positions)||!Array.isArray(e.collapsed)||!Ye(e.views))throw new Error("Invalid layout format or unsupported version");for(let[t,n]of Object.entries(e.positions))if(!en(t)||!Cl(n))throw new Error("Invalid layout position");if(!e.collapsed.every(t=>typeof t=="string"&&en(t)))throw new Error("Invalid layout collapse state");for(let[t,n]of Object.entries(e.views)){if(!en(t)||!Ye(n))throw new Error("Invalid layout view");if(n.viewport!==void 0&&(!Cl(n.viewport)||typeof n.viewport.zoom!="number"||!Number.isFinite(n.viewport.zoom)||n.viewport.zoom<.1||n.viewport.zoom>3))throw new Error("Invalid layout viewport");if(n.filters!==void 0&&!fm(n.filters))throw new Error("Invalid layout filters")}}var Qo=class e{positions={};viewports={};revision=0;storedRevision;storage;key;constructor(t,n){this.storage=t,this.key=n}loadStored(){let t=this.storage.getItem(this.key);if(t===null)return tn();let n;try{n=JSON.parse(t)}catch{throw new Error("Invalid layout JSON")}Ml(n);let o=Ye(n.settings)?n.settings:{},r=Object.fromEntries(Object.entries(Ye(o.manualSummaries)?o.manualSummaries:{}).filter(([i,a])=>en(i)&&typeof a=="string").map(([i,a])=>[i,a.slice(0,4e3)])),s=Object.fromEntries(Object.entries(Ye(o.usage)?o.usage:{}).filter(([i,a])=>en(i)&&Ye(a)&&Number.isFinite(a.since)&&Number(a.since)>=0&&Array.isArray(a.visits)&&a.visits.every(c=>typeof c=="number"&&Number.isFinite(c)&&c>=0)).map(([i,a])=>[i,{since:a.since,visits:a.visits.slice(-2e3).sort((c,l)=>c-l)}]));return n.settings={theme:Bn(o.theme)??tt,reducedMotion:o.reducedMotion===!0,pinned:Array.isArray(o.pinned)?o.pinned.filter(i=>typeof i=="string"&&en(i)):[],usage:s,manualSummaries:r},n}load(){let t=this.loadStored();this.storedRevision!==void 0&&t.revision!==this.storedRevision&&this.revision++,this.storedRevision=t.revision;let n=Object.fromEntries(Object.entries(t.views).map(([o,r])=>[o,{filters:r.filters}]));for(let[o,r]of Object.entries(this.viewports))n[o]={...n[o],...r};return{...t,revision:this.revision,positions:this.positions,views:n}}initializePositions(t){let n=this.load(),o=Object.fromEntries(Object.entries(t).filter(([r])=>!n.positions[r]));return Object.keys(o).length?this.savePatch({positions:o},n.revision):n}reset(t){if(this.storage.getItem(this.key)!==t)throw new Error("Layout conflict: another window changed the saved layout");let n=tn();return this.storage.setItem(this.key,JSON.stringify(n)),this.positions={},this.viewports={},this.revision=0,this.storedRevision=0,n}previewBackup(t){if(t.length>5*1024*1024)throw new Error("\u5907\u4EFD\u8D85\u8FC7 5 MB");return new e({getItem:()=>t,setItem(){}},this.key).loadStored()}importBackup(t,n){let o=this.previewBackup(t);if(this.storage.getItem(this.key)!==n)throw new Error("Layout conflict: another window changed the saved layout");let r=this.storedRevision??0;try{r=Math.max(r,this.loadStored().revision)}catch{}let s=r+1;return this.storage.setItem(this.key,JSON.stringify({...o,revision:s,positions:{},views:Object.fromEntries(Object.entries(o.views).map(([i,a])=>[i,{filters:a.filters}]))})),this.positions=o.positions,this.viewports=Object.fromEntries(Object.entries(o.views).filter(([,i])=>i.viewport).map(([i,a])=>[i,{viewport:a.viewport}])),this.storedRevision=s,this.revision++,this.load()}savePatch(t,n){let o=this.load(),r=t.settings!==void 0||t.collapsed!==void 0||Object.values(t.views??{}).some(a=>a.filters!==void 0);if(r&&o.revision!==n)throw new Error("Layout conflict: another window saved a newer layout");let s={...o.views};for(let[a,c]of Object.entries(t.views??{}))s[a]={...s[a],...c};let i={schemaVersion:1,revision:o.revision+1,positions:{...o.positions,...t.positions},collapsed:t.collapsed??o.collapsed,views:s,settings:{theme:tt,reducedMotion:!1,...o.settings,...t.settings}};if(Ml(i),r){let a={...i,revision:(this.storedRevision??0)+1,positions:{},views:Object.fromEntries(Object.entries(s).map(([c,l])=>[c,{filters:l.filters}]))};this.storage.setItem(this.key,JSON.stringify(a)),this.storedRevision=a.revision}return this.positions=i.positions,this.viewports=Object.fromEntries(Object.entries(s).filter(([,a])=>a.viewport).map(([a,c])=>[a,{viewport:c.viewport}])),this.revision=i.revision,i}};var we=Ge(require("react"),1);function Il({color:e,reduced:t,onColor:n,onReduced:o}){let[r,s]=(0,we.useState)(e),[i,a]=(0,we.useState)(!1),[c,l]=(0,we.useState)(t);(0,we.useEffect)(()=>l(t),[t]),(0,we.useEffect)(()=>{s(e),a(!1)},[e]);let d=()=>{let u=Bn(r);a(!u),u&&n(u)};return we.default.createElement("details",{className:"wg-theme"},we.default.createElement("summary",null,"\u4E3B\u9898\u4E0E\u52A8\u6001\u6548\u679C"),we.default.createElement("div",{className:"wg-theme-controls"},we.default.createElement("label",null,"\u4E3B\u9898\u8272"," ",we.default.createElement("input",{type:"color","aria-label":"\u4E3B\u9898\u8272",value:e,onChange:u=>n(u.target.value)})),we.default.createElement("input",{"aria-label":"\u4E3B\u9898 HEX",value:r,onChange:u=>s(u.target.value),onBlur:d,onKeyDown:u=>{u.key==="Enter"&&d()},"aria-invalid":i}),we.default.createElement("button",{onClick:d},"\u5E94\u7528\u989C\u8272"),["#6aabff","#c084fc","#2dd4bf","#fb923c"].map(u=>we.default.createElement("button",{key:u,"aria-label":"\u914D\u8272 "+u,onClick:()=>n(u),style:{borderColor:u}},"\u25CF")),we.default.createElement("button",{onClick:()=>n(tt)},"\u6062\u590D\u9ED8\u8BA4\u8272"),i&&we.default.createElement("span",{role:"alert"},"\u8BF7\u8F93\u5165\u6709\u6548\u7684 HEX \u8272\u503C\uFF0C\u4F8B\u5982 #6aabff"),we.default.createElement("label",{className:"wg-check"},we.default.createElement("input",{type:"checkbox",checked:c,onChange:u=>{l(u.target.checked),o(u.target.checked)}}),"\u51CF\u5C11\u52A8\u6001\u6548\u679C\uFF08\u4E5F\u9075\u5FAA\u7CFB\u7EDF\u8BBE\u7F6E\uFF09")))}var pe=require("react");var Jo=.86*1.25,er=1.25,gt=1.2,ht=e=>Math.max(-99800,Math.min(99800,e)),Vn=(e,t)=>JSON.stringify([e,t]),tr=class{bodies=new Map;links=[];active=!1;reduced=!1;contactScale=er;dragging;mode="elastic";idle=0;hardening=gt;quiet=0;recovery;inputs=new Map;groups=[];groupIndex=new Map;ordered=[];originals=new Map;sync(t,n,o=!1,r){let s=new Set(this.bodies.keys()),i=new Set(t.map(g=>g.id)),a=new Map(t.map(g=>[g.id,g])),c=new Map(n.map(g=>[g.target,g.source])),l=s.size!==i.size;for(let g of s)i.has(g)||(this.bodies.delete(g),this.inputs.delete(g),l=!0);let d=new Set;for(let g of t){let{offset:x,radius:y}=pt(g.data.kind),v=ht(g.position.x)+x.x,m=ht(g.position.y)+x.y,w=this.bodies.get(g.id),S=this.inputs.get(g.id),E=o||!r?.has(g.position)&&(!S||Math.hypot(S.x-g.position.x,S.y-g.position.y)>.1);this.inputs.set(g.id,{...g.position}),w?E&&!w.pin&&Math.hypot(w.x-v,w.y-m)>.1&&(Object.assign(w,{x:v,y:m,vx:0,vy:0}),delete w.opening,l=!0,d.add(g.id)):(this.bodies.set(g.id,{id:g.id,x:v,y:m,vx:0,vy:0,radius:y,offset:x}),l=!0)}let u=new Map(this.links.map(g=>[Vn(g.source,g.target),g]));this.links=n.filter(g=>i.has(g.source)&&i.has(g.target)).map(g=>{let x=u.get(Vn(g.source,g.target));if(x&&!o&&!d.has(g.source)&&!d.has(g.target))return x;let y=this.bodies.get(g.source),v=this.bodies.get(g.target);return{...g,restLength:Math.hypot(v.x-y.x,v.y-y.y),restVector:{x:v.x-y.x,y:v.y-y.y},stiffness:1}}),(this.links.length!==u.size||this.links.some(g=>!u.has(Vn(g.source,g.target))))&&(l=!0);let f=new Set,p=g=>{if(f.has(g))return;f.add(g);let x=c.get(g);if(x&&i.has(x)&&p(x),s.has(g)||!s.size||this.reduced||o)return;let y=this.bodies.get(g),v=x?this.bodies.get(x):void 0,m=x?a.get(x):void 0;if(!v||!m)return;let w=y.x-m.position.x-v.offset.x,S=y.y-m.position.y-v.offset.y,E=Math.hypot(w,S),C=Math.min(1,(v.radius+y.radius+2)*er/(E||1));y.opening={parent:v.id,dx:w,dy:S,elapsed:0,start:C},y.x=v.x+w*C,y.y=v.y+S*C};for(let g of i)p(g);let h=new Map;for(let g of this.links)for(let[x,y]of[[g.source,g.target],[g.target,g.source]])h.has(x)||h.set(x,[]),h.get(x).push(y);this.groups=[],this.groupIndex.clear();for(let g of i)if(!this.groupIndex.has(g)){let x=this.groups.length,y=[],v=[g];this.groupIndex.set(g,x);for(let m=0;m<v.length;m++){let w=v[m];y.push(this.bodies.get(w));for(let S of h.get(w)??[])this.groupIndex.has(S)||(this.groupIndex.set(S,x),v.push(S))}this.groups.push(y)}return this.dragging&&!i.has(this.dragging)&&(this.dragging=void 0,this.mode="elastic",this.hardening=0),this.recovery&&!i.has(this.recovery.id)&&(this.recovery=void 0),o&&(this.recovery=void 0,this.hardening=gt,this.originals.clear()),this.orderLinks(),l&&this.wake(),l}wake(){this.active=!0,this.quiet=0}pin(t,n){let o=this.bodies.get(t);o&&(o.pin={x:ht(n.x)+o.offset.x,y:ht(n.y)+o.offset.y},o.x=o.pin.x,o.y=o.pin.y,o.vx=o.vy=0,delete o.opening,this.orderLinks(),this.wake())}unpin(t){let n=this.bodies.get(t);n?.pin&&(delete n.pin,this.orderLinks(),this.wake())}capture(){this.originals.clear();for(let t of this.links){let n=this.bodies.get(t.source),o=this.bodies.get(t.target);t.restVector={x:o.x-n.x,y:o.y-n.y},t.restLength=Math.hypot(t.restVector.x,t.restVector.y),this.originals.set(Vn(t.source,t.target),{...t.restVector})}}beginDrag(t,n="elastic"){if(this.bodies.has(t)){this.dragging=t,this.mode=n,this.recovery=void 0,this.idle=0,this.hardening=0,this.contactScale=Jo,this.capture(),this.orderLinks();for(let o of this.bodies.values())o.vx=o.vy=0;this.wake()}}drag(t,n,o="elastic"){let r=this.bodies.get(t);if(!r)return;this.dragging!==t?this.beginDrag(t,o):this.mode!==o&&(this.mode=o,this.capture(),this.orderLinks());let s=ht(n.x)+r.offset.x,i=ht(n.y)+r.offset.y,a=s-r.x,c=i-r.y;Math.hypot(a,c)>.05&&(this.idle=0,this.hardening=0,this.contactScale=Jo),delete r.opening;let l=Math.max(1,Math.ceil(Math.hypot(a,c)/18)),d={x:r.x,y:r.y};for(let u=1;u<=l;u++)r.x=d.x+a*u/l,r.y=d.y+c*u/l,r.pin={x:r.x,y:r.y},this.contacts(!0);r.vx=r.vy=0,this.wake()}release(t){if(this.dragging===t){let n=this.bodies.get(t);if(n&&this.mode==="elastic"){this.recovery={id:t,point:{x:n.x,y:n.y},elapsed:0};let o=this.groupIndex.get(t);for(let r of this.links)if(this.groupIndex.get(r.source)===o){let s=this.bodies.get(r.source),i=this.bodies.get(r.target),a=this.originals.get(Vn(r.source,r.target))??r.restVector,c=i.x-s.x-a.x,l=i.y-s.y-a.y,d=.2*Math.min(1,Math.hypot(a.x,a.y)/(Math.hypot(c,l)||1));r.restVector={x:a.x+c*d,y:a.y+l*d},r.restLength=Math.hypot(r.restVector.x,r.restVector.y)}}else this.capture(),n&&(this.recovery={id:t,point:{x:n.x,y:n.y},elapsed:0});this.dragging=void 0,this.idle=0}this.unpin(t),this.orderLinks(),this.wake()}ropeState(t,n){let o=this.links.find(i=>i.source===t&&i.target===n),r=this.bodies.get(t),s=this.bodies.get(n);return{softness:1-this.hardening/gt,stretch:o&&r&&s?Math.max(0,Math.hypot(s.x-r.x,s.y-r.y)-o.restLength):0}}positions(){return Object.fromEntries([...this.bodies.values()].map(t=>[t.id,{x:t.x-t.offset.x,y:t.y-t.offset.y}]))}orderLinks(){this.ordered=[];let t=new Set,n=this.dragging??this.recovery?.id??[...this.bodies.values()].find(s=>s.pin)?.id,o=[...n?[n]:[],...this.bodies.keys()],r=new Map;for(let s of this.links)for(let i of[s.source,s.target])r.has(i)||r.set(i,[]),r.get(i).push(s);for(let s of o)if(!t.has(s)){let i=[s];t.add(s);for(let a=0;a<i.length;a++)for(let c of r.get(i[a])??[]){let l=i[a],d=c.source===l?c.target:c.source;t.has(d)||(t.add(d),i.push(d),this.ordered.push({link:c,from:l,to:d,sign:c.source===l?1:-1,rate:c.source===l?7:10}))}}}contacts(t=!1){let n=[...this.bodies.values()],o=106*er+8,r=new Map;for(let a of n){let c=Math.floor(a.x/o)+":"+Math.floor(a.y/o);r.has(c)||r.set(c,[]),r.get(c).push(a)}let s=new Set;if(this.mode!=="free")for(let a of n)(a.pin||a.id===this.recovery?.id)&&s.add(this.groupIndex.get(a.id));let i=0;for(let a=0;a<n.length;a++){let c=n[a],l=Math.floor(c.x/o),d=Math.floor(c.y/o);for(let u=l-1;u<=l+1;u++)for(let f=d-1;f<=d+1;f++)for(let p of r.get(u+":"+f)??[]){if(c.id>=p.id||c.pin&&p.pin)continue;let h=this.groupIndex.get(c.id),g=this.groupIndex.get(p.id),x=p.x-c.x,y=p.y-c.y,v=Math.hypot(x,y),m=(c.radius+p.radius+(h===g?2:4))*this.contactScale;if(v>=m)continue;let w=m-v;i=Math.max(i,w);let S=v>1e-6?x/v:Math.cos(a*2.39996),E=v>1e-6?y/v:Math.sin(a*2.39996),C=h!==g&&this.mode!=="free",z=C?s.has(h):!!c.pin||c.id===this.recovery?.id,P=C?s.has(g):!!p.pin||p.id===this.recovery?.id;if(z&&P)continue;let V=z||P?1:.5,L=(F,H,b)=>{for(let N of C?this.groups[H]:[F])N.x+=S*w*V*b,N.y+=E*w*V*b,!t&&!this.reduced&&!this.dragging&&w>2&&(N.vx+=S*b*Math.min(8,w*.1),N.vy+=E*b*Math.min(8,w*.1))};z||L(c,h,-1),P||L(p,g,1)}}return i}step(t){if(!this.active)return!1;let n=Math.min(Math.max(t,0),1/30),o=Math.max(1,Math.ceil(n*120)),r=n/o,s=this.positions();this.idle+=n,this.reduced?this.hardening=gt:(!this.dragging||this.idle>.12)&&(this.hardening=Math.min(gt,this.hardening+n)),this.contactScale=Jo+(er-Jo)*(this.hardening/gt),this.recovery&&(this.recovery.elapsed+=n);for(let c=0;c<o;c++){for(let u of this.bodies.values()){if(u.pin){u.x=u.pin.x,u.y=u.pin.y,u.vx=u.vy=0;continue}this.reduced&&(u.vx=u.vy=0),u.vx*=Math.exp(-12*r),u.vy*=Math.exp(-12*r),u.x+=u.vx*r,u.y+=u.vy*r,u.id===this.recovery?.id&&(u.x=this.recovery.point.x,u.y=this.recovery.point.y,u.vx=u.vy=0)}let l=this.mode!=="free"&&(!!this.dragging||!!this.recovery);for(let u of this.ordered){let{link:f,from:p,to:h,sign:g,rate:x}=u,y=this.bodies.get(p),v=this.bodies.get(h);if(this.mode==="free"&&(this.dragging||this.recovery)||y.opening||v.opening)continue;let m=Math.hypot(v.x-y.x,v.y-y.y);if(!l){let S=Math.max(280,f.restLength);if(m<=S||!m)continue;let E=(m-S)/m*(1-Math.exp(-5*r)),C=(v.x-y.x)*E,z=(v.y-y.y)*E;y.pin||(y.x+=C*.5,y.y+=z*.5),v.pin||(v.x-=C*.5,v.y-=z*.5);continue}if(this.dragging&&this.groupIndex.get(p)!==this.groupIndex.get(this.dragging)||v.pin||v.id===this.recovery?.id)continue;f.stiffness=.3+.7*this.hardening/gt;let w=1-Math.exp(-(this.reduced?35:x*(.55+f.stiffness))*r);v.x+=(y.x+f.restVector.x*g-v.x)*w,v.y+=(y.y+f.restVector.y*g-v.y)*w}for(let u of this.bodies.values())if(u.opening){let f=u.opening,p=this.bodies.get(f.parent);if(!p){delete u.opening;continue}f.elapsed+=r;let h=Math.min(1,f.elapsed/.24),g=f.start+(1-f.start)*(1-(1-h)**3);u.x=p.x+f.dx*g,u.y=p.y+f.dy*g,h===1&&delete u.opening}let d=0;for(let u=0;u<4;u++)d=Math.max(d,this.contacts());if(!l&&!this.dragging&&d>.1)for(let u of this.links){let f=this.bodies.get(u.source),p=this.bodies.get(u.target);u.restLength=Math.max(u.restLength,Math.hypot(p.x-f.x,p.y-f.y))}for(let u of this.bodies.values())u.pin||(u.x=ht(u.x-u.offset.x)+u.offset.x,u.y=ht(u.y-u.offset.y)+u.offset.y)}this.recovery&&(this.reduced||this.recovery.elapsed>2.4)&&(this.capture(),this.recovery=void 0,this.mode="elastic",this.orderLinks());let i=Math.max(0,...[...this.bodies.values()].map(c=>Math.hypot(c.x-c.offset.x-s[c.id].x,c.y-c.offset.y-s[c.id].y))),a=Math.max(0,...[...this.bodies.values()].map(c=>Math.hypot(c.vx,c.vy)));if(this.quiet=this.hardening>=gt&&!this.recovery&&![...this.bodies.values()].some(c=>c.opening)&&i<.035&&a<.2?this.quiet+n:0,this.quiet>.22){this.active=!1;for(let c of this.bodies.values())c.vx=c.vy=0}return this.active}};function Pl(e,t,n){let[o,r]=(0,pe.useState)([]),[s,i]=(0,pe.useState)({}),a=(0,pe.useRef)(new tr),c=(0,pe.useRef)(),l=(0,pe.useRef)(0),d=(0,pe.useRef)(n),u=(0,pe.useRef)(),f=(0,pe.useRef)(),p=(0,pe.useRef)(!1),h=(0,pe.useRef)(new WeakSet);d.current=n;let g=(0,pe.useCallback)(()=>{let S=a.current.positions();for(let E of Object.values(S))h.current.add(E);d.current(S)},[]),x=(0,pe.useCallback)(()=>{let S=a.current.positions();i(Object.fromEntries(a.current.links.map(E=>[JSON.stringify([E.source,E.target]),a.current.ropeState(E.source,E.target)]))),r(E=>E.map(C=>{let z=S[C.id];return z&&(z.x!==C.position.x||z.y!==C.position.y)?{...C,position:z}:C}))},[]),y=(0,pe.useCallback)(()=>{if(c.current!==void 0)return;l.current=performance.now();let S=E=>{a.current.step((E-l.current)/1e3),l.current=E,x(),a.current.active?c.current=requestAnimationFrame(S):(c.current=void 0,g())};c.current=requestAnimationFrame(S)},[x,g]);(0,pe.useEffect)(()=>{a.current.reduced=t},[t]),(0,pe.useEffect)(()=>{let S=a.current.sync(e.nodes,e.edges,p.current,h.current);p.current=!1;let E=a.current.positions();r(C=>{let z=new Map(C.map(P=>[P.id,P]));return e.nodes.map(P=>({...z.get(P.id),...P,position:E[P.id]??P.position}))}),S&&y()},[e,y]),(0,pe.useEffect)(()=>()=>{c.current!==void 0&&cancelAnimationFrame(c.current)},[]);let v=(0,pe.useCallback)(S=>{if(f.current&&f.current!==u.current&&a.current.unpin(f.current),f.current=S,S&&!u.current){let E=a.current.positions()[S];E&&a.current.pin(S,E)}a.current.active&&y()},[y]),m=(0,pe.useCallback)((S,E,C="elastic")=>{v(),u.current=S,a.current.drag(S,E,C),x(),y()},[v,x,y]),w=(0,pe.useCallback)(S=>{a.current.release(S),u.current=void 0,g(),y()},[g,y]);return(0,pe.useEffect)(()=>{let S=C=>{let z=u.current;if(!z||C.key!=="Control")return;let P=a.current.positions()[z];P&&m(z,P,C.type==="keydown"?"free":"elastic")},E=()=>{u.current&&w(u.current)};return window.addEventListener("keydown",S),window.addEventListener("keyup",S),window.addEventListener("blur",E),window.addEventListener("pointercancel",E),()=>{window.removeEventListener("keydown",S),window.removeEventListener("keyup",S),window.removeEventListener("blur",E),window.removeEventListener("pointercancel",E)}},[m,w]),{nodes:o,ropes:s,setNodes:r,drag:m,release:w,hover:v,world:a.current,forceNextSync:()=>{p.current=!0}}}var zl=Ge(require("react"),1);function Al({id:e,source:t,target:n,style:o,data:r}){let s=ei(t),i=ei(n);if(!s||!i)return null;let a=x=>{let y=pt(x.data.kind),v=x.internals.positionAbsolute;return{x:v.x+y.offset.x,y:v.y+y.offset.y,radius:y.radius}},c=vl(a(s),a(i)),l=c.target.x-c.source.x,d=c.target.y-c.source.y,u=Math.hypot(l,d),f=Number(r?.softness??0),p=Math.min(48,u*.15)*f,h=(c.source.x+c.target.x)/2-(u?d/u:0)*p,g=(c.source.y+c.target.y)/2+(u?l/u:0)*p;return zl.default.createElement(Qt,{id:e,path:`M ${c.source.x},${c.source.y} Q ${h},${g} ${c.target.x},${c.target.y}`,style:o})}var Ze=Ge(require("react"),1);function Dl(e){return[...new Intl.Segmenter(void 0,{granularity:"grapheme"}).segment(e)].map(t=>t.segment)}function Ol({value:e,onSave:t}){let[n,o]=(0,Ze.useState)(e);return(0,Ze.useEffect)(()=>o(e),[e]),Ze.default.createElement("form",{className:"wg-summary-editor",onSubmit:r=>{r.preventDefault(),t(n.trim())}},Ze.default.createElement("label",null,"\u624B\u52A8\u77ED\u6982\u62EC",Ze.default.createElement("textarea",{"aria-label":"\u624B\u52A8\u77ED\u6982\u62EC",value:n,onChange:r=>o(r.target.value),maxLength:4e3,placeholder:"\u5EFA\u8BAE 12\u201324 \u5B57\uFF1B\u7559\u7A7A\u4F7F\u7528\u63D2\u4EF6\u6458\u8981\u6216\u539F\u6807\u9898"})),Ze.default.createElement("p",{className:"wg-small-note"},Dl(n).length," \u4E2A\u5B57\u7B26 \xB7 \u4EC5\u4FDD\u5B58\u5728\u5F53\u524D\u6D4F\u89C8\u5668"),Ze.default.createElement("button",null,"\u4FDD\u5B58\u6982\u62EC"))}var Ee=Ge(require("react"),1);function Tl({repository:e,snapshot:t,prepareImport:n,onImport:o,onError:r}){let[s,i]=(0,Ee.useState)(!1),[a,c]=(0,Ee.useState)(!1),[l,d]=(0,Ee.useState)();return Ee.default.createElement("div",{className:"wg-backup"},Ee.default.createElement("button",{onClick:()=>i(!s),"aria-expanded":s},"\u5907\u4EFD\u4E0E\u6062\u590D"),s&&Ee.default.createElement("div",{className:"wg-backup-panel",role:"region","aria-label":"\u5907\u4EFD\u4E0E\u6062\u590D"},Ee.default.createElement("p",null,"\u5907\u4EFD\u5305\u542B\u6982\u62EC\u3001\u7F6E\u9876\u3001\u4E3B\u9898\u3001\u4F7F\u7528\u8BB0\u5F55\u3001\u7B5B\u9009\u548C\u5F53\u524D\u5E03\u5C40\u3002"),Ee.default.createElement("button",{onClick:()=>{let u=URL.createObjectURL(new Blob([JSON.stringify(t(),null,2)],{type:"application/json"})),f=document.createElement("a");f.href=u,f.download="workspace-graph-backup.json",f.click(),setTimeout(()=>URL.revokeObjectURL(u),1e3)}},"\u5BFC\u51FA\u56FE\u8C31\u5907\u4EFD"),Ee.default.createElement("label",{className:"wg-backup-file"},"\u5BFC\u5165\u5907\u4EFD\uFF08JSON\uFF0C\u6700\u591A 5 MB\uFF09",Ee.default.createElement("input",{type:"file",accept:".json,application/json","aria-label":"\u9009\u62E9\u56FE\u8C31\u5907\u4EFD",disabled:a,onChange:async u=>{let f=u.target.files?.[0];if(u.target.value="",d(void 0),!!f){c(!0);try{if(f.size>5*1024*1024)throw new Error("\u5907\u4EFD\u8D85\u8FC7 5 MB");let p=await f.text(),h=e.previewBackup(p),g=await n();d({raw:p,doc:h,expected:g})}catch(p){r("\u65E0\u6CD5\u8BFB\u53D6\u5907\u4EFD\uFF1A"+String(p))}finally{c(!1)}}}})),l&&Ee.default.createElement("div",{role:"status"},Ee.default.createElement("p",null,"\u5C06\u66FF\u6362\u672C\u5730\u8BBE\u7F6E\uFF1A",Object.keys(l.doc.settings?.manualSummaries??{}).length," ","\u6761\u6982\u62EC\u3001",l.doc.settings?.pinned?.length??0," ","\u4E2A\u7F6E\u9876\u3002\u5EFA\u8BAE\u5148\u5BFC\u51FA\u5F53\u524D\u5907\u4EFD\u3002\u5BFC\u5165\u7684\u4F4D\u7F6E\u4EC5\u5728\u672C\u6B21\u8FD0\u884C\u4FDD\u7559\u3002"),Ee.default.createElement("button",{disabled:a,onClick:async()=>{c(!0);try{await o(l.raw,l.expected),d(void 0)}catch(u){r("\u5BFC\u5165\u672A\u5B8C\u6210\uFF1A"+String(u))}finally{c(!1)}}},"\u786E\u8BA4\u5BFC\u5165\u5907\u4EFD"),Ee.default.createElement("button",{disabled:a,onClick:()=>d(void 0)},"\u53D6\u6D88\u5BFC\u5165"))))}var Pe=Ge(require("react"),1);function Ll({rows:e,title:t,onLocate:n}){let[o,r]=(0,Pe.useState)(50),i=(0,Pe.useMemo)(()=>e.slice(0,o),[e,o]),a={running:"\u8FD0\u884C\u4E2D",waiting:"\u7B49\u5F85\u56DE\u5E94",unread:"\u65B0\u7ED3\u679C",idle:"\u7A7A\u95F2",unknown:"\u672A\u77E5"};return Pe.default.createElement("section",{className:"wg-navigation","aria-label":"\u4F1A\u8BDD\u5BFC\u822A"},Pe.default.createElement("h2",null,t," ",Pe.default.createElement("span",null,e.length," \u4E2A\u4F1A\u8BDD")),!e.length&&Pe.default.createElement("p",null,"\u6CA1\u6709\u5339\u914D\u4F1A\u8BDD\uFF0C\u53EF\u8C03\u6574\u65F6\u95F4\u3001\u72B6\u6001\u6216\u641C\u7D22\u6761\u4EF6\u3002"),Pe.default.createElement("div",{className:"wg-result-list"},i.map(c=>Pe.default.createElement("button",{key:c.id,"aria-label":"\u5B9A\u4F4D "+c.data.title,onClick:()=>n(c.data.entityId)},Pe.default.createElement("strong",null,c.data.pinned?"\u2605 ":"",c.data.title),Pe.default.createElement("span",null,a[c.data.status],c.data.current?" \xB7 \u5F53\u524D":""),c.data.path&&Pe.default.createElement("small",null,c.data.path)))),e.length>o&&Pe.default.createElement("button",{onClick:()=>r(o+50)},"\u518D\u663E\u793A 50 \u6761\u7ED3\u679C"))}var Fn={running:"\u8FD0\u884C\u4E2D",waiting:"\u7B49\u5F85\u56DE\u5E94",unread:"\u65B0\u7ED3\u679C",idle:"\u7A7A\u95F2",unknown:"\u672A\u77E5"},ri={running:"#6aabff",waiting:"#ffc56c",unread:"#5fe0b4",idle:"#9aaac5",unknown:"#748099"};function pm({data:e,selected:t}){let n=e.kind==="workspace";return _.default.createElement("div",{className:"wg-bubble "+(n?"is-workspace":"is-session")+" is-status-"+e.status+(t?" is-selected":"")+(e.collapsed===!1?" is-expanded":"")+(e.current?" is-current":"")+(e.working?" is-working":"")+(e.archived?" is-archived":""),style:{"--bubble-color":ri[e.status]},title:e.title+(e.path?" \xB7 "+e.path:"")},_.default.createElement(et,{type:"target",position:U.Top,isConnectable:!1}),_.default.createElement("div",{className:"wg-orb"},_.default.createElement("span",{className:"wg-orb-symbol"},n?"\u25C8":"\u2726"),n&&_.default.createElement("span",{className:"wg-orb-count"},e.total," \u4E2A\u4F1A\u8BDD"),n&&!!e.childWorkspaceCount&&_.default.createElement("span",{className:"wg-orb-count"},e.childWorkspaceCount," \u4E2A\u5B50\u5DE5\u4F5C\u533A")),_.default.createElement("div",{className:"wg-node-title"},e.title),_.default.createElement("div",{className:"wg-node-badges"},e.current&&_.default.createElement("span",null,"\u5F53\u524D"),e.working&&_.default.createElement("strong",null,"\u25B6 \u5DE5\u4F5C\u4E2D"),e.parentWorkspaceId&&_.default.createElement("span",null,"\u5B50\u5DE5\u4F5C\u533A"),e.parentSessionId&&_.default.createElement("span",null,"\u5206\u652F"),e.context&&_.default.createElement("span",null,"\u6765\u6E90"),e.outsideFilters&&_.default.createElement("span",null,e.current||e.working||e.status==="waiting"?"\u7B5B\u9009\u5916\u6D3B\u52A8":"\u4E34\u65F6\u5B9A\u4F4D")),!n&&_.default.createElement("div",{className:"wg-activity"},e.pinned?"\u2605 ":"",e.recency&&Go[e.recency]," \xB7"," ",e.frequency&&Uo[e.frequency]),_.default.createElement("div",{className:"wg-node-meta"},_.default.createElement("i",null),n?e.collapsed?"\u5DF2\u6536\u8D77":"\u5DE5\u4F5C\u533A":e.archived?"\u5DF2\u5F52\u6863":Fn[e.status]),_.default.createElement(et,{type:"source",position:U.Bottom,isConnectable:!1}),!n&&_.default.createElement(_.default.Fragment,null,_.default.createElement(et,{id:"branch-source",type:"source",position:U.Top,isConnectable:!1}),_.default.createElement(et,{id:"branch-target",type:"target",position:U.Bottom,isConnectable:!1})))}var gm={bubble:_.default.memo(pm)},hm={rope:_.default.memo(Al)};function mm(e){return(0,_.useState)(()=>{try{return{layout:e.load(),error:""}}catch(t){return{layout:tn(),error:"\u65E0\u6CD5\u8BFB\u53D6\u5DF2\u4FDD\u5B58\u5E03\u5C40\uFF1A"+String(t)}}})[0]}function $l(e){return _.default.createElement(Jr,null,_.default.createElement(ym,{...e}))}function ym({catalog:e,actions:t,repository:n,demo:o,access:r}){let s=mm(n),[i,a]=(0,_.useState)(s.layout),c=(0,_.useRef)(i),[l,d]=(0,_.useState)(s.error),[u,f]=(0,_.useState)(!1),[p,h]=(0,_.useState)(""),[g,x]=(0,_.useState)(()=>({...Jt,...s.layout.views.all?.filters})),[y,v]=(0,_.useState)(),[m,w]=(0,_.useState)(()=>new Set),[S,E]=(0,_.useState)({}),[C,z]=(0,_.useState)(!0),[P,V]=(0,_.useState)(),[L,F]=(0,_.useState)(),[H,b]=(0,_.useState)(!1),[N,k]=(0,_.useState)(),[I,D]=(0,_.useState)(!1),A=(0,_.useRef)(),[R,B]=(0,_.useState)(),[X,Q]=(0,_.useState)(()=>window.matchMedia("(prefers-reduced-motion: reduce)").matches),Z=!!i.settings?.reducedMotion||X,[K,ne]=(0,_.useState)(Date.now),Y=Ln(),$=(0,_.useRef)(null),q=(0,_.useRef)(!1),J=(0,_.useCallback)(()=>{let M=$.current;if(!M||!Y.getNodes().length)return;let W=M.getBoundingClientRect(),ee=M.querySelector(".wg-dock")?.getBoundingClientRect(),ce=W.width>850?(ee?.width??0)+45:20,xe=W.width<=850?(ee?.height??0)+35:35,Rn=Math.max(180,W.width-ce-35),Wn=Math.max(120,W.height-xe-40),ot=Y.getNodesBounds(Y.getNodes()),wt=Math.max(.1,Math.min(1,Rn/(ot.width+100),Wn/(ot.height+100)));Y.setViewport({x:ce+(Rn-ot.width*wt)/2-ot.x*wt,y:20+(Wn-ot.height*wt)/2-ot.y*wt,zoom:wt})},[Y]),te=(0,_.useRef)(!0),G=(0,_.useRef)(Promise.resolve()),j=(0,_.useRef)(!!s.error),oe=(0,_.useRef)(0),ie=(0,_.useRef)(0),se=(0,_.useRef)(),ge=(0,_.useRef)(),be=(0,_.useRef)(g);be.current=g;let fe=(0,_.useMemo)(()=>jo(e,g,i,S,m,K,L),[e,g,i,S,m,K,L]),Ne=(0,_.useMemo)(()=>jo(e,Xo,{...tn(),settings:i.settings},{},new Set,K).matches,[e,i.settings,K]),Be=(0,_.useMemo)(()=>Object.fromEntries(["waiting","running","unread"].map(M=>[M,Ne.filter(W=>W.data.status===M).length])),[Ne]),yt=(0,_.useMemo)(()=>N?Ne.filter(M=>M.data.status===N):fe.matches,[N,Ne,fe.matches]),ze=(0,_.useCallback)(M=>{c.current=M,a(M)},[]),le=(0,_.useCallback)((M,W=!1)=>{j.current||(oe.current++,W&&ie.current++,G.current=G.current.then(async()=>{if(!te.current||j.current)return;let ee=()=>{if(!te.current||j.current)return;let ce=c.current.revision,xe=W?n.initializePositions(M.positions??{}):n.savePatch(M,ce);ze(xe),h(M.settings?"\u8BBE\u7F6E\u5DF2\u4FDD\u5B58":"\u5E03\u5C40\u5728\u672C\u6B21\u8FD0\u884C\u4FDD\u7559")};navigator.locks?await navigator.locks.request(n.key,ee):ee()}).catch(ee=>{j.current=!0,te.current&&d("\u5E03\u5C40\u672A\u4FDD\u5B58\uFF1A"+String(ee))}).finally(()=>{oe.current--,W&&ie.current--}))},[n,ze]),he=Pl(fe,Z,M=>{let W=c.current.positions;Object.entries(M).some(([ce,xe])=>!W[ce]||Math.hypot(xe.x-W[ce].x,xe.y-W[ce].y)>.1)&&le({positions:Yo(e,W,M)})}),{nodes:ke,setNodes:De}=he,Te=(0,_.useRef)();(0,_.useEffect)(()=>{let M=ke.find(W=>W.id===Te.current);M&&(Te.current=void 0,Y.fitView({nodes:[M],padding:.8,maxZoom:1}))},[ke,Y]);let nn=M=>{A.current??=Y.getViewport(),Te.current="session:"+M,F(M),v("session:"+M);let W=ke.find(ee=>ee.id==="session:"+M);W&&(Te.current=void 0,Y.fitView({nodes:[W],padding:.8,maxZoom:1}))},on=(0,_.useMemo)(()=>fe.edges.map(M=>({...M,type:"rope",data:he.ropes[JSON.stringify([M.source,M.target])],style:{stroke:"#47719a",strokeWidth:1.25,opacity:.56}})),[fe.edges,he.ropes]);(0,_.useEffect)(()=>{if(e.loading||j.current)return;let M=c.current.settings?.usage??{},W=e.sessions.map(ee=>ee.id);W.some(ee=>!Object.hasOwn(M,ee))&&le({settings:{usage:_l(M,W)}})},[e.sessions,e.loading,i.settings?.usage,le]),(0,_.useEffect)(()=>{let M=setInterval(()=>ne(Date.now()),6e4);return()=>clearInterval(M)},[]),(0,_.useEffect)(()=>{let M=window.matchMedia("(prefers-reduced-motion: reduce)"),W=()=>Q(M.matches);return M.addEventListener("change",W),()=>M.removeEventListener("change",W)},[]),(0,_.useEffect)(()=>(te.current=!0,()=>{te.current=!1,clearTimeout(ge.current),clearTimeout(se.current)}),[]),(0,_.useEffect)(()=>{De(M=>M.map(W=>({...W,selected:W.id===y})))},[y,De]),(0,_.useEffect)(()=>{let M=W=>{if(W.key===n.key)try{let ee=n.load();ze(ee),h("\u8BBE\u7F6E\u5DF2\u4ECE\u53E6\u4E00\u7A97\u53E3\u540C\u6B65")}catch(ee){j.current=!0,d("\u65E0\u6CD5\u540C\u6B65\u5E03\u5C40\uFF1A"+String(ee))}};return window.addEventListener("storage",M),()=>window.removeEventListener("storage",M)},[n,ze]),(0,_.useEffect)(()=>{if(e.loading)return;let M=c.current.views[g.workspace]?.viewport,W=setTimeout(()=>{if(M)Y.setViewport(M);else{let ee=e.currentSessionId??e.currentSessionIds?.[0],ce=!q.current&&ee?Y.getNodes().find(xe=>xe.id==="session:"+ee):void 0;if(ce){let{offset:xe}=pt("session");Y.setCenter(ce.position.x+xe.x,ce.position.y+xe.y,{zoom:1})}else J()}q.current=!0},60);return()=>clearTimeout(W)},[g.workspace,e.loading,Y,J]),(0,_.useEffect)(()=>{if(e.loading||j.current)return;let M=Object.entries(Zo(e,c.current.positions)).filter(([W])=>!c.current.positions[W]);M.length&&le({positions:Object.fromEntries(M)},!0)},[e.loading,fe,le]),(0,_.useEffect)(()=>{if(!p)return;let M=setTimeout(()=>h(""),2400);return()=>clearTimeout(M)},[p]);let rn=async M=>{f(!0),j.current||d("");try{if(clearTimeout(ge.current),le({views:{[be.current.workspace]:{viewport:Y.getViewport()}}}),await G.current,!te.current)return;await M()}catch(W){d("\u64CD\u4F5C\u672A\u5B8C\u6210\uFF1A"+String(W))}finally{te.current&&f(!1)}},nt=M=>{let W={...be.current,...M};x(W),M.query===void 0&&le({views:{all:{filters:W}}})};(0,_.useEffect)(()=>(se.current=setTimeout(()=>le({views:{all:{filters:be.current}}}),250),()=>clearTimeout(se.current)),[g.query,le]);let sn=M=>{F(void 0),k(void 0),v(void 0),x({...M}),le({views:{all:{filters:{...M}}}})},nr=M=>{clearTimeout(ge.current);let W=be.current.workspace;le({views:{[W]:{viewport:Y.getViewport()},all:{...W==="all"?{viewport:Y.getViewport()}:{},filters:{...be.current,workspace:M}}}}),x(ee=>({...ee,workspace:M})),v(void 0)},re=fe.nodes.find(M=>M.id===y),or=()=>{he.forceNextSync();let M=jo(e,g,tn(),S,m),W=Object.fromEntries(ke.map(ee=>[ee.id,ee.position]));V(W),le({positions:Object.fromEntries(M.nodes.map(ee=>[ee.id,ee.position]))}),setTimeout(()=>Y.fitView({padding:.12,maxZoom:1}),70)},an=M=>rn(async()=>{if(M.data.kind==="workspace"){M.data.virtual||await t.openWorkspace(M.data.entityId);return}if(M.data.archived)throw new Error("\u8BF7\u5148\u6062\u590D\u8FD9\u4E2A\u5F52\u6863\u4F1A\u8BDD");let W=M.data.entityId;le({settings:{usage:{...c.current.settings?.usage,[W]:Sl(c.current.settings?.usage?.[W])}}}),await G.current,te.current&&await t.openSession(W)}),Tt=g.query||!!g.statuses?.length||g.recency&&g.recency!=="all"||g.frequency&&g.frequency!=="all"||g.status!=="all"||g.kind!=="all"||g.workspace!=="all"||g.archived,xt=Nl(i.settings?.theme??tt);return _.default.createElement("section",{className:"wg-root"+(i.settings?.reducedMotion?" wg-reduced":""),style:{"--wg-workspace":xt.workspace,"--wg-expanded":xt.expanded,"--wg-session":xt.session,"--wg-session-text":xt.sessionText,"--wg-accent":xt.accent},"aria-label":"\u5DE5\u4F5C\u533A\u56FE\u8C31"},_.default.createElement("header",{className:"wg-header"},_.default.createElement("div",{className:"wg-brand"},_.default.createElement("span",{className:"wg-logo"},"\u25C8"),_.default.createElement("div",null,_.default.createElement("h1",null,"\u5DE5\u4F5C\u533A\u56FE\u8C31",_.default.createElement("span",null,"WORKSPACE ATLAS")),_.default.createElement("p",null,e.workspaces.length," \u4E2A\u5DE5\u4F5C\u533A \xB7 ",fe.total," \u4E2A\u4F1A\u8BDD",o?" \xB7 \u6F14\u793A\u6570\u636E":""))),_.default.createElement("div",{className:"wg-top-actions"},_.default.createElement("button",{"aria-pressed":H,onClick:()=>b(!H)},H?"\u56FE\u8C31\u89C6\u56FE":"\u5217\u8868\u89C6\u56FE"),_.default.createElement(Tl,{repository:n,snapshot:()=>({...c.current,views:{...c.current.views,all:{...c.current.views.all,filters:be.current}},positions:{...c.current.positions,...Object.fromEntries(ke.map(M=>[M.id,M.position]))}}),prepareImport:async()=>(clearTimeout(se.current),le({views:{all:{filters:be.current}}}),await G.current,n.storage.getItem(n.key)),onError:d,onImport:async(M,W)=>{await G.current;let ee=()=>{let ce=n.importBackup(M,W);he.forceNextSync(),j.current=!1,ze(ce),d(""),x({...Jt,...ce.views.all?.filters}),F(void 0),v(void 0),h("\u5907\u4EFD\u5DF2\u5BFC\u5165");let xe=ce.views[ce.views.all?.filters?.workspace??"all"]?.viewport;xe&&Y.setViewport(xe)};navigator.locks?await navigator.locks.request(n.key,ee):ee()}}),_.default.createElement("label",{className:"wg-search"},_.default.createElement("span",null,"\u2315"),_.default.createElement("input",{"aria-label":"\u641C\u7D22\u5DE5\u4F5C\u533A\u548C\u4F1A\u8BDD",placeholder:"\u641C\u7D22\u5DE5\u4F5C\u533A\u6216\u4F1A\u8BDD\u2026",value:g.query,onChange:M=>{k(void 0),nt({query:M.target.value})}})),_.default.createElement("button",{onClick:J},"\u9002\u5E94\u753B\u5E03"),_.default.createElement("button",{onClick:or},"\u91CD\u7F6E\u5E03\u5C40"))),(l||e.error)&&_.default.createElement("div",{className:"wg-alert",role:"alert"},_.default.createElement("span",null,l||e.error),j.current&&_.default.createElement(_.default.Fragment,null,_.default.createElement("button",{onClick:()=>location.reload()},"\u91CD\u65B0\u8F7D\u5165"),_.default.createElement("button",{onClick:()=>{try{B({raw:n.storage.getItem(n.key)})}catch(M){d(String(M))}}},"\u6E05\u9664\u5168\u90E8\u672C\u5730\u6570\u636E"),_.default.createElement("button",{onClick:()=>{try{let M=n.storage.getItem(n.key),W=URL.createObjectURL(new Blob([M??""],{type:"text/plain"})),ee=document.createElement("a");ee.href=W,ee.download="workspace-graph-layout-backup.txt",ee.click(),setTimeout(()=>URL.revokeObjectURL(W),1e3)}catch(M){d(String(M))}}},"\u5BFC\u51FA\u5DF2\u4FDD\u5B58\u539F\u6587")),_.default.createElement("button",{onClick:()=>{let M=new Blob([JSON.stringify({...c.current,positions:{...c.current.positions,...Object.fromEntries(ke.map(ce=>[ce.id,ce.position]))}},null,2)],{type:"application/json"}),W=URL.createObjectURL(M),ee=document.createElement("a");ee.href=W,ee.download="workspace-graph-layout.json",ee.click(),setTimeout(()=>URL.revokeObjectURL(W),1e3)}},"\u5BFC\u51FA\u5F53\u524D\u5E03\u5C40")),R&&_.default.createElement("div",{className:"wg-alert",role:"alert"},_.default.createElement("span",null,"\u8FD9\u4F1A\u6E05\u9664\u5168\u90E8\u56FE\u8C31\u672C\u5730\u6570\u636E\uFF0C\u5305\u62EC\u624B\u52A8\u6982\u62EC\u3001\u7F6E\u9876\u3001\u4E3B\u9898\u3001\u4F7F\u7528\u8BB0\u5F55\u3001\u7B5B\u9009\u548C\u5E03\u5C40\u3002\u8BF7\u5148\u5BFC\u51FA\u5907\u4EFD\u3002"),_.default.createElement("button",{onClick:()=>{try{let M=n.reset(R.raw);j.current=!1,ze(M),d(""),x(Jt),B(void 0)}catch(M){d("\u65E0\u6CD5\u91CD\u7F6E\uFF1A"+String(M))}}},"\u786E\u8BA4\u6E05\u9664\u5168\u90E8\u6570\u636E"),_.default.createElement("button",{onClick:()=>B(void 0)},"\u53D6\u6D88")),o&&_.default.createElement("div",{className:"wg-demo-label"},"\u4EA4\u4E92\u6F14\u793A \xB7 \u6570\u636E\u4EC5\u7528\u4E8E\u9884\u89C8"),_.default.createElement("div",{className:"wg-canvas"+(I?" wg-compact":"")+(H?" wg-list-view":"")+(re?" wg-has-details":""),ref:$,onKeyDown:M=>{if(M.key!=="Enter"&&M.key!==" ")return;let W=M.target.closest(".react-flow__node")?.getAttribute("data-id"),ee=ke.find(ce=>ce.id===W);ee?.data.kind==="workspace"&&(M.preventDefault(),v(ee.id),w(ce=>{let xe=new Set(ce);return xe.has(ee.data.entityId)?xe.delete(ee.data.entityId):xe.add(ee.data.entityId),xe}))}},_.default.createElement(hl,{nodes:ke,edges:on,nodeTypes:gm,edgeTypes:hm,onNodesChange:M=>De(W=>Kr(M,W)),onNodeDragStart:(M,W)=>{he.drag(W.id,W.position,M.ctrlKey?"free":"elastic")},onNodeDrag:(M,W)=>he.drag(W.id,W.position,M.ctrlKey?"free":"elastic"),onNodeDragStop:(M,W)=>{he.drag(W.id,W.position,M.ctrlKey?"free":"elastic"),he.release(W.id)},autoPanOnNodeFocus:!1,autoPanOnNodeDrag:!1,zoomOnDoubleClick:!1,nodeDragThreshold:5,onNodeClick:(M,W)=>{v(W.id),W.data.kind==="workspace"&&w(ee=>{let ce=new Set(ee);return ce.has(W.data.entityId)?ce.delete(W.data.entityId):ce.add(W.data.entityId),ce})},onNodeDoubleClick:(M,W)=>{an(W)},onPaneClick:()=>v(void 0),onMoveEnd:(M,W)=>{D(W.zoom<.55),clearTimeout(ge.current);let ee=be.current.workspace;ge.current=setTimeout(()=>le({views:{[ee]:{viewport:W}}}),180)},minZoom:.1,maxZoom:3,nodesConnectable:!1,edgesReconnectable:!1,deleteKeyCode:null,selectionOnDrag:!1,multiSelectionKeyCode:null,selectionKeyCode:null,proOptions:{hideAttribution:!1},defaultViewport:i.views[g.workspace]?.viewport,onViewportChange:M=>D(M.zoom<.55)},_.default.createElement(yl,{variant:Xe.Dots,gap:26,size:1,color:"#284061"}),_.default.createElement(wl,{position:"bottom-right",showInteractive:!1})),_.default.createElement("div",{className:"wg-attention","aria-label":"\u5168\u5C40\u4F1A\u8BDD\u72B6\u6001"},["waiting","running","unread"].map(M=>_.default.createElement("button",{key:M,"aria-pressed":N===M,onClick:()=>k(N===M?void 0:M)},Fn[M]," ",Be[M]??0)),N&&_.default.createElement("button",{onClick:()=>k(void 0)},"\u8FD4\u56DE\u5168\u90E8\u4F1A\u8BDD"),A.current&&_.default.createElement("button",{onClick:()=>{Y.setViewport(A.current),A.current=void 0,F(void 0),v(void 0)}},"\u8FD4\u56DE\u5B9A\u4F4D\u524D\u89C6\u89D2")),(H||g.query.trim()||N)&&_.default.createElement(Ll,{key:N??g.query,rows:yt,title:N?"\u5168\u5C40"+Fn[N]:g.query.trim()?"\u641C\u7D22\u7ED3\u679C":"\u5339\u914D\u4F1A\u8BDD",onLocate:nn}),e.loading&&_.default.createElement("div",{className:"wg-empty",role:"status"},_.default.createElement("span",{className:"wg-empty-orb"},"\u25C8"),_.default.createElement("h2",null,"\u6B63\u5728\u8FDE\u63A5\u5DE5\u4F5C\u533A"),_.default.createElement("p",null,"\u8BFB\u53D6 Harness \u7684\u5DE5\u4F5C\u533A\u4E0E\u4F1A\u8BDD\u2026")),!e.loading&&Tt&&fe.matched===0&&_.default.createElement("div",{className:"wg-no-match",role:"status"},"\u6CA1\u6709\u5339\u914D\u7684\u4F1A\u8BDD\uFF1B\u5DE5\u4F5C\u533A\u4E0E\u5F53\u524D\u4F1A\u8BDD\u4ECD\u4FDD\u7559\u3002"),!e.loading&&!fe.nodes.length&&_.default.createElement("div",{className:"wg-empty"},_.default.createElement("span",{className:"wg-empty-orb"},"\u2315"),_.default.createElement("h2",null,Tt?"\u6CA1\u6709\u5339\u914D\u7684\u8282\u70B9":"\u4ECE\u4E00\u4E2A\u5DE5\u4F5C\u533A\u5F00\u59CB"),_.default.createElement("p",null,Tt?"\u8C03\u6574\u5DE6\u4E0B\u89D2\u7684\u9009\u62E9\u6216\u6E05\u9664\u641C\u7D22\u3002":"\u5728 Harness \u4FA7\u680F\u6DFB\u52A0\u5DE5\u4F5C\u533A\u540E\uFF0C\u8FD9\u91CC\u4F1A\u81EA\u52A8\u663E\u793A\u3002"),Tt&&_.default.createElement("button",{onClick:()=>{sn(Xo)}},"\u6E05\u9664\u7B5B\u9009")),_.default.createElement("div",{className:"wg-dock "+(C?"":"is-folded")},_.default.createElement("button",{className:"wg-dock-heading",onClick:()=>z(!C),"aria-expanded":C},_.default.createElement("span",null,"\u2637\u3000\u89C6\u56FE\u4E0E\u7B5B\u9009"),_.default.createElement("span",null,C?"\u2212":"+")),C&&_.default.createElement(_.default.Fragment,null,_.default.createElement("label",{className:"wg-field"},_.default.createElement("span",null,"\u5DE5\u4F5C\u533A"),_.default.createElement("select",{"aria-label":"\u9009\u62E9\u5DE5\u4F5C\u533A",value:g.workspace,onChange:M=>nr(M.target.value)},_.default.createElement("option",{value:"all"},"\u5168\u90E8\u5DE5\u4F5C\u533A"),e.workspaces.map(M=>_.default.createElement("option",{key:M.id,value:M.id},M.title," \xB7"," ",M.path.split(/[\/]/).filter(Boolean).slice(-2).join("/"))),_.default.createElement("option",{value:"__ungrouped__"},"\u672A\u5206\u7EC4"))),_.default.createElement("div",{className:"wg-filter-row"},_.default.createElement("span",null,"\u72B6\u6001"),_.default.createElement("div",{className:"wg-chips"},["all","running","waiting","unread","idle","unknown"].map(M=>_.default.createElement("button",{key:M,className:(M==="all"?!(g.statuses??(g.status==="all"?[]:[g.status])).length:(g.statuses??[g.status]).includes(M))?"active":"","aria-pressed":M==="all"?!(g.statuses??(g.status==="all"?[]:[g.status])).length:(g.statuses??[g.status]).includes(M),onClick:()=>{let W=g.statuses??(g.status==="all"?[]:[g.status]);nt({status:"all",statuses:M==="all"?[]:W.includes(M)?W.filter(ee=>ee!==M):[...W,M]})}},M!=="all"&&_.default.createElement("i",{style:{background:ri[M]}}),M==="all"?"\u5168\u90E8":Fn[M])))),_.default.createElement("div",{className:"wg-filter-row"},_.default.createElement("span",null,"\u663E\u793A"),_.default.createElement("div",{className:"wg-chips"},["all","workspace","session"].map(M=>_.default.createElement("button",{key:M,className:g.kind===M?"active":"","aria-pressed":g.kind===M,onClick:()=>nt({kind:M})},M==="all"?"\u5168\u90E8":M==="workspace"?"\u5DE5\u4F5C\u533A":"\u4F1A\u8BDD")),_.default.createElement("label",{className:"wg-check"},_.default.createElement("input",{type:"checkbox",checked:g.archived,onChange:M=>nt({archived:M.target.checked})}),"\u5F52\u6863"))),_.default.createElement(Il,{color:i.settings?.theme??tt,reduced:!!i.settings?.reducedMotion,onColor:M=>le({settings:{theme:M}}),onReduced:M=>le({settings:{reducedMotion:M}})}),_.default.createElement("div",{className:"wg-dock-foot"},_.default.createElement("label",null,"\u65F6\u95F4"," ",_.default.createElement("select",{"aria-label":"\u65F6\u95F4\u5206\u7C7B",value:g.recency??"all",onChange:M=>nt({recency:M.target.value})},_.default.createElement("option",{value:"all"},"\u5168\u90E8\u65F6\u95F4"),Object.entries(Go).map(([M,W])=>_.default.createElement("option",{value:M,key:M},W)))),_.default.createElement("label",null,"\u9891\u7387"," ",_.default.createElement("select",{"aria-label":"\u9891\u7387\u5206\u7C7B",value:g.frequency??"all",onChange:M=>nt({frequency:M.target.value})},_.default.createElement("option",{value:"all"},"\u5168\u90E8\u9891\u7387"),Object.entries(Uo).map(([M,W])=>_.default.createElement("option",{value:M,key:M},W)))),_.default.createElement("span",{className:"wg-small-note"},"\u5E38\u7528\u6309\u56FE\u8C31\u4E3B\u52A8\u6253\u5F00\u8BA1\u6570\uFF1B30 \u5929\u5185 5 \u6B21\uFF0C\u95F4\u9694 30 \u5206\u949F\u3002\u5386\u53F2\u8BB0\u5F55\u4ECE\u672C\u7248\u672C\u5F00\u59CB\u7D2F\u8BA1\u3002"),_.default.createElement("span",null,fe.nodes.length," \u4E2A\u53EF\u89C1\u8282\u70B9",fe.hidden>0?" \xB7 "+fe.hidden+" \u4E2A\u4F1A\u8BDD\u672A\u5C55\u5F00":""),_.default.createElement("button",{onClick:()=>{sn(Xo)}},"\u6E05\u9664\u7B5B\u9009"),_.default.createElement("button",{onClick:()=>{w(new Set),E({}),sn(Jt)}},"\u6062\u590D\u9ED8\u8BA4\u89C6\u56FE")))),re&&_.default.createElement("aside",{className:"wg-details","aria-label":"\u8282\u70B9\u8BE6\u60C5"},_.default.createElement("div",{className:"wg-detail-heading"},_.default.createElement("span",null,re.data.kind==="workspace"?"\u5DE5\u4F5C\u533A":"\u4F1A\u8BDD"),_.default.createElement("button",{"aria-label":"\u5173\u95ED\u8BE6\u60C5",onClick:()=>v(void 0)},"\xD7")),_.default.createElement("h2",null,re.data.title),_.default.createElement("div",{className:"wg-status",style:{color:ri[re.data.status]}},"\u25CF ",Fn[re.data.status],re.data.archived?" \xB7 \u5DF2\u5F52\u6863":""),_.default.createElement("dl",null,re.data.kind==="session"&&_.default.createElement(_.default.Fragment,null,_.default.createElement("dt",null,"\u5206\u7C7B"),_.default.createElement("dd",null,re.data.recency&&Go[re.data.recency]," ","\xB7"," ",re.data.frequency&&Uo[re.data.frequency]),_.default.createElement("dt",null,"\u56FE\u8C31\u4E3B\u52A8\u6253\u5F00\uFF08\u8FD1 30 \u5929\uFF09"),_.default.createElement("dd",null,i.settings?.usage?.[re.data.entityId]?.visits.filter(M=>M>=Date.now()-30*864e5).length??"\u8BB0\u5F55\u79EF\u7D2F\u4E2D")),_.default.createElement("dt",null,"\u8DEF\u5F84"),_.default.createElement("dd",null,re.data.path||"\u672A\u8BB0\u5F55\u76EE\u5F55"),_.default.createElement("dt",null,"\u6807\u8BC6"),_.default.createElement("dd",null,re.data.entityId),re.data.updatedAt&&_.default.createElement(_.default.Fragment,null,_.default.createElement("dt",null,"\u6700\u8FD1\u66F4\u65B0"),_.default.createElement("dd",null,new Date(re.data.updatedAt).toLocaleString()))),re.data.kind==="session"&&_.default.createElement("button",{onClick:()=>{let M=c.current.settings?.pinned??[];le({settings:{pinned:M.includes(re.data.entityId)?M.filter(W=>W!==re.data.entityId):[...M,re.data.entityId]}})}},re.data.pinned?"\u53D6\u6D88\u7F6E\u9876":"\u7F6E\u9876\u4F1A\u8BDD"),re.data.kind==="session"&&_.default.createElement(Ol,{key:"summary:"+re.id,value:i.settings?.manualSummaries?.[re.data.entityId]??"",onSave:M=>le({settings:{manualSummaries:{...c.current.settings?.manualSummaries,[re.data.entityId]:M}}})}),re.data.kind==="workspace"?_.default.createElement(xm,{key:re.id,node:re,actions:t,access:r,busy:u,perform:rn,open:()=>{an(re)},collapse:()=>w(M=>{let W=new Set(M);return W.has(re.data.entityId)?W.delete(re.data.entityId):W.add(re.data.entityId),W}),more:()=>E(M=>({...M,[re.data.entityId]:(M[re.data.entityId]??20)+20}))}):_.default.createElement(wm,{key:re.id,node:re,actions:t,access:r,busy:u,perform:rn,open:()=>{an(re)}})),_.default.createElement("div",{className:"wg-canvas-hint"},"\u62D6\u52A8\u67D4\u6027\u7275\u5F15 \xB7 Ctrl \u81EA\u7531\u62D6\u52A8 \xB7 \u6EDA\u8F6E\u7F29\u653E \xB7 \u53CC\u51FB\u6253\u5F00"),_.default.createElement("div",{className:"wg-save-status",role:"status"},p),P&&_.default.createElement("div",{className:"wg-undo"},"\u5DF2\u91CD\u6392\u5F53\u524D\u89C6\u56FE",_.default.createElement("button",{onClick:()=>{he.forceNextSync(),le({positions:P}),V(void 0)}},"\u64A4\u9500"),_.default.createElement("button",{onClick:()=>V(void 0),"aria-label":"\u5173\u95ED\u64A4\u9500\u63D0\u793A"},"\xD7"))))}function xm({node:e,actions:t,access:n,busy:o,perform:r,open:s,collapse:i,more:a}){let[c,l]=(0,_.useState)(!1),[d,u]=(0,_.useState)(e.data.title),f=n?.useCreate()??!0,p=n?.useWorkspace(e.data.entityId,"workspace/rename")??!0;return _.default.createElement("div",{className:"wg-detail-actions"},!e.data.virtual&&_.default.createElement(_.default.Fragment,null,_.default.createElement("button",{className:"wg-primary",disabled:o||!f,onClick:s},"\u6253\u5F00\u5DE5\u4F5C\u533A \u2197"),_.default.createElement("button",{disabled:o||!f,onClick:()=>{r(()=>t.newSession(e.data.entityId))}},"\u65B0\u5EFA\u4F1A\u8BDD"),p&&_.default.createElement("button",{disabled:o,onClick:()=>l(!c)},"\u91CD\u547D\u540D\u5DE5\u4F5C\u533A")),c&&_.default.createElement("form",{onSubmit:h=>{h.preventDefault(),d.trim()&&r(async()=>{await t.renameWorkspace(e.data.entityId,d.trim()),l(!1)})}},_.default.createElement("input",{"aria-label":"\u5DE5\u4F5C\u533A\u65B0\u540D\u79F0",value:d,onChange:h=>u(h.target.value)}),_.default.createElement("button",{disabled:o||!d.trim()},"\u4FDD\u5B58\u540D\u79F0")),_.default.createElement("button",{onClick:i},e.data.collapsed?"\u5C55\u5F00\u4F1A\u8BDD":"\u6536\u8D77\u4F1A\u8BDD"),!e.data.collapsed&&_.default.createElement("button",{onClick:a},"\u518D\u663E\u793A 20 \u4E2A\u4F1A\u8BDD"))}function wm({node:e,actions:t,access:n,busy:o,perform:r,open:s}){let i=n?.useSession(e.data.entityId,"workspace/archiveSession")??!0,a=n?.useSession(e.data.entityId,"workspace/unarchiveSession")??!0;return _.default.createElement("div",{className:"wg-detail-actions"},e.data.archived?_.default.createElement("button",{className:"wg-primary",disabled:o||!a,onClick:()=>{r(()=>t.restore(e.data.entityId))}},"\u6062\u590D\u4F1A\u8BDD"):_.default.createElement(_.default.Fragment,null,_.default.createElement("button",{className:"wg-primary",disabled:o,onClick:s},"\u6253\u5F00\u4F1A\u8BDD \u2197"),_.default.createElement("button",{disabled:o||!i,onClick:()=>{r(()=>t.archive(e.data.entityId))}},"\u5F52\u6863\u4F1A\u8BDD")),_.default.createElement("p",{className:"wg-small-note"},"\u4F4D\u7F6E\u5728\u672C\u6B21\u8FD0\u884C\u4FDD\u7559\uFF0C\u91CD\u542F\u6062\u590D\u9ED8\u8BA4\u3002\u6D3B\u52A8\u4F1A\u8BDD\u4FDD\u7559\u663E\u793A\u3002\u62D6\u52A8\u4E0D\u4F1A\u6539\u53D8\u4F1A\u8BDD\u6240\u5C5E\u3002"))}function Hl(e,t,n){let o=e,r=t,s=n,i=Object.values(r?.byId??{}).filter(c=>(c.retainedBy?.mainView??0)>0).map(c=>c.id);return{currentSessionId:i[0],currentSessionIds:i,loading:o?.phase!=="ready"||r?.phase!=="ready",error:o?.error?.message,workspaces:(o?.items??[]).map(c=>({id:c.workspaceId,title:c.title,path:c.path,sessionIds:c.sessionIds})),archivedSessionIds:[...o?.archivedSessionIds??[]],sessions:[...new Set([...r?.ids??[],...i])].flatMap(c=>{let l=r?.byId[c];if(!l)return[];let d=s?.get(c);return[{id:c,title:l.title||l.displayTitle||"\u672A\u547D\u540D\u4F1A\u8BDD",cwd:l.cwd,parentId:l.parentId,updatedAt:l.updatedAt,running:r?.phase==="ready"?d?d.running:l.running:void 0,pending:!!d?.pendingInteraction,unread:d?.completionUnread,blank:l.blank,origin:l.origin}]})}}var Bl=`.wg-root {
-  height: 100%;
-  min-height: 380px;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  background: #080f1e;
-  color: #e6edf9;
-  font:
-    14px/1.5 -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    "Microsoft YaHei",
-    sans-serif;
-  isolation: isolate;
-  --wg-line: rgba(154, 186, 229, 0.14);
-}
-.wg-root * {
-  box-sizing: border-box;
-}
-.wg-root button,
-.wg-root input,
-.wg-root select {
-  font: inherit;
-}
-.wg-root button {
-  cursor: pointer;
-  border: 1px solid var(--wg-line);
-  background: #16243b;
-  color: #dce8fa;
-  border-radius: 9px;
-  padding: 7px 12px;
-  transition:
-    background 0.15s,
-    border-color 0.15s;
-}
-.wg-root button:hover {
-  background: #20344f;
-  border-color: #5380b2;
-}
-.wg-root button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-.wg-root button:focus-visible,
-.wg-root input:focus-visible,
-.wg-root select:focus-visible {
-  outline: 2px solid #8bb7ff;
-  outline-offset: 3px;
-}
-.wg-root input,
-.wg-root select {
-  color: #e3ebf7;
-  background: #101b2e;
-  border: 1px solid var(--wg-line);
-  border-radius: 8px;
-  padding: 8px 10px;
-}
-.wg-header {
-  z-index: 5;
-  min-height: 98px;
-  padding: 23px 30px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  border-bottom: 1px solid var(--wg-line);
-  background: #0c1425;
-}
-.wg-brand {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  white-space: nowrap;
-}
-.wg-logo {
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  border: 1px solid #365b8a;
-  border-radius: 13px;
-  color: #a9c8ff;
-  background: linear-gradient(140deg, #1f385c, #18283f);
-  font-size: 27px;
-}
-.wg-header h1 {
-  font-size: 19px;
-  margin: 0;
-  font-weight: 650;
-  letter-spacing: 1px;
-}
-.wg-header h1 span {
-  font-size: 9px;
-  letter-spacing: 2.2px;
-  display: block;
-  color: #7089b0;
-  margin-top: 2px;
-}
-.wg-header p {
-  font-size: 11px;
-  margin: 4px 0 0;
-  color: #8e9db6;
-}
-.wg-top-actions {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-}
-.wg-top-actions button {
-  font-size: 12px;
-  white-space: nowrap;
-  background: #121e32;
-}
-.wg-search {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #7897c1;
-  background: #101c30;
-  border: 1px solid var(--wg-line);
-  border-radius: 9px;
-  padding: 0 11px;
-}
-.wg-search span {
-  font-size: 23px;
-  line-height: 1;
-}
-.wg-search input {
-  width: 200px;
-  border: 0;
-  background: none;
-  padding: 8px 0;
-  font-size: 12px;
-}
-.wg-search input::placeholder {
-  color: #6e819f;
-}
-.wg-canvas {
-  position: relative;
-  flex: 1;
-  min-height: 0;
-  background: radial-gradient(
-    ellipse at 37% 40%,
-    #10233e 0%,
-    #0b172b 40%,
-    #080f1e 85%
-  );
-}
-.wg-root .react-flow__node-bubble {
-  border: none;
-  background: none;
-  width: 144px;
-  box-shadow: none;
-}
-.wg-root .react-flow__node:focus-visible {
-  outline: 2px solid #8bb7ff;
-  border-radius: 30px;
-}
-.wg-bubble {
-  position: relative;
-  isolation: isolate;
-  width: 144px;
-  text-align: center;
-  --bubble-color: #6aabff;
-  user-select: none;
-}
-.wg-orb {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  width: 74px;
-  height: 74px;
-  margin: 0 auto 12px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 30% 22%, #283c59, #16263c 65%);
-  border: 1px solid #547194;
-  box-shadow:
-    0 0 0 7px rgba(94, 139, 196, 0.025),
-    0 8px 20px #0004;
-  transition:
-    box-shadow 0.2s,
-    border-color 0.2s;
-}
-.wg-orb-symbol {
-  font-size: 24px;
-  color: #adc9ed;
-  font-weight: 300;
-}
-.is-workspace .wg-orb {
-  width: 106px;
-  height: 106px;
-  margin-bottom: 14px;
-  border: 1px solid #6b96c7;
-  background: radial-gradient(circle at 32% 20%, #355478, #1a304f 70%);
-  box-shadow:
-    0 0 0 9px #6aabff05,
-    0 0 0 19px #6aabff03,
-    0 8px 22px #0004;
-}
-.is-workspace .wg-orb-symbol {
-  font-size: 31px;
-  line-height: 1.1;
-}
-.wg-orb-count {
-  font-size: 10px;
-  letter-spacing: 0.3px;
-  color: #97b1d1;
-}
-.wg-node-title {
-  font-size: 15px;
-  color: #e4edfb;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding: 0 2px;
-  max-width: 144px;
-}
-.is-workspace .wg-node-title {
-  font-size: 17px;
-  font-weight: 600;
-}
-.wg-node-meta {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 5px;
-  font-size: 10px;
-  color: #8396b2;
-  margin-top: 5px;
-  letter-spacing: 0.6px;
-}
-.wg-node-meta i {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--bubble-color);
-}
-.wg-bubble.is-selected .wg-orb {
-  border-color: #9cc7ff;
-  box-shadow:
-    0 0 0 4px #82b6ff20,
-    0 0 34px #599bff33;
-}
-.wg-bubble:hover .wg-orb {
-  border-color: #a8c6ee;
-}
-.wg-bubble.is-archived {
-  opacity: 0.55;
-}
-.wg-root .react-flow__handle {
-  opacity: 0;
-  pointer-events: none;
-}
-.wg-root .react-flow__controls {
-  box-shadow: none;
-  border: 1px solid var(--wg-line);
-  border-radius: 10px;
-  overflow: hidden;
-  bottom: 25px;
-  right: 24px;
-}
-.wg-root .react-flow__controls button {
-  border: 0;
-  border-bottom: 1px solid #25374e;
-  background: #122038;
-  border-radius: 0;
-  color: #bbcee8;
-  width: 32px;
-  height: 32px;
-  padding: 8px;
-}
-.wg-root .react-flow__controls svg {
-  fill: currentColor;
-}
-.wg-root .react-flow__attribution {
-  background: transparent;
-  color: #6983a7;
-  font-size: 9px;
-}
-.wg-root .react-flow__attribution a {
-  color: inherit;
-}
-.wg-dock {
-  position: absolute;
-  bottom: 28px;
-  left: 28px;
-  width: 410px;
-  border: 1px solid #314b6b88;
-  border-radius: 14px;
-  background: #101d33eb;
-  backdrop-filter: blur(14px);
-  box-shadow: 0 12px 40px #0004;
-  z-index: 4;
-  padding: 0 18px 13px;
-}
-.wg-dock.is-folded {
-  width: 190px;
-  padding-bottom: 0;
-}
-.wg-dock-heading {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  padding: 14px 0 !important;
-  border: 0 !important;
-  background: none !important;
-  text-align: left;
-  font-size: 12px !important;
-  letter-spacing: 0.7px;
-}
-.wg-dock-heading span:last-child {
-  color: #7b9ac3;
-}
-.wg-field {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin: 3px 0 15px;
-  font-size: 11px;
-  color: #8fa1bc;
-}
-.wg-field select {
-  flex: 1;
-  min-width: 0;
-  padding: 7px 10px;
-  font-size: 12px;
-  background: #192940;
-}
-.wg-filter-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  margin: 12px 0;
-  font-size: 11px;
-  color: #8fa1bc;
-}
-.wg-filter-row > span {
-  padding-top: 5px;
-  white-space: nowrap;
-}
-.wg-chips {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-.wg-chips button {
-  font-size: 10px;
-  padding: 4px 9px;
-  border-radius: 6px;
-  color: #91a6c4;
-  background: #17273e;
-  border-color: transparent;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-.wg-chips button.active {
-  background: #28486f;
-  color: #e5f0ff;
-  border-color: #416da0;
-}
-.wg-chips i {
-  display: inline-block;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-}
-.wg-check {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  cursor: pointer;
-  font-size: 11px;
-}
-.wg-check input {
-  accent-color: #7caef9;
-}
-.wg-dock-foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-top: 1px solid var(--wg-line);
-  padding-top: 10px;
-  margin-top: 14px;
-  color: #7286a4;
-  font-size: 10px;
-}
-.wg-dock-foot button {
-  border: 0;
-  padding: 0;
-  font-size: 10px;
-  color: #9bbbe6;
-  background: none;
-}
-.wg-details {
-  position: absolute;
-  right: 24px;
-  top: 24px;
-  width: 268px;
-  max-height: calc(100% - 135px);
-  overflow: auto;
-  border: 1px solid #314b6b88;
-  border-radius: 14px;
-  background: #101c30f5;
-  backdrop-filter: blur(12px);
-  padding: 18px 20px;
-  box-shadow: 0 12px 40px #0005;
-  z-index: 5;
-}
-.wg-detail-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  color: #8fa8c8;
-  font-size: 11px;
-  letter-spacing: 1px;
-}
-.wg-detail-heading button {
-  background: none;
-  border: 0;
-  padding: 0 4px;
-  font-size: 21px;
-  color: #8da1be;
-}
-.wg-details h2 {
-  font-size: 18px;
-  margin: 15px 0 8px;
-  overflow-wrap: anywhere;
-}
-.wg-status {
-  font-size: 11px;
-}
-.wg-details dl {
-  margin: 20px 0;
-  font-size: 11px;
-}
-.wg-details dt {
-  color: #6e87a8;
-  margin-top: 12px;
-  font-size: 10px;
-}
-.wg-details dd {
-  margin: 4px 0;
-  color: #b5c6df;
-  overflow-wrap: anywhere;
-}
-.wg-detail-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.wg-detail-actions button {
-  font-size: 12px;
-  text-align: left;
-  padding: 8px 12px;
-}
-.wg-root .wg-primary {
-  background: #315987;
-  border-color: #416d9f;
-  color: #ecf4ff;
-}
-.wg-small-note {
-  font-size: 10px;
-  line-height: 1.8;
-  color: #758cae;
-  margin: 7px 0 0;
-}
-.wg-detail-actions input {
-  width: 100%;
-  margin-bottom: 7px;
-  font-size: 12px;
-}
-.wg-alert {
-  padding: 10px 20px;
-  background: #482e25;
-  color: #ffd2b3;
-  z-index: 8;
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.wg-alert span {
-  flex: 1;
-}
-.wg-alert button {
-  font-size: 11px;
-  background: #5f3b2c;
-  border-color: #ae775a;
-}
-.wg-empty {
-  position: absolute;
-  left: 50%;
-  top: 40%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  pointer-events: none;
-  width: 80%;
-  color: #92a7c7;
-}
-.wg-empty h2 {
-  color: #d1dff1;
-  font-size: 20px;
-  font-weight: 500;
-  margin: 12px 0 8px;
-}
-.wg-empty p {
-  font-size: 12px;
-}
-.wg-empty button {
-  pointer-events: auto;
-  margin-top: 10px;
-}
-.wg-empty-orb {
-  font-size: 44px;
-  color: #658bb9;
-}
-.wg-canvas-hint {
-  position: absolute;
-  top: 22px;
-  left: 28px;
-  font-size: 10px;
-  color: #5f7899;
-  pointer-events: none;
-  letter-spacing: 1px;
-}
-.wg-save-status {
-  position: absolute;
-  bottom: 14px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: #82a3c5;
-  font-size: 10px;
-  pointer-events: none;
-}
-.wg-demo-label {
-  z-index: 3;
-  position: absolute;
-  top: 111px;
-  right: 27px;
-  color: #9bafce;
-  font-size: 10px;
-  background: #192d48;
-  border: 1px solid #355174;
-  padding: 4px 10px;
-  border-radius: 20px;
-}
-.wg-undo {
-  position: absolute;
-  bottom: 28px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 10px 14px;
-  border: 1px solid #3e5c85;
-  border-radius: 10px;
-  background: #182b46;
-  z-index: 6;
-  font-size: 11px;
-  white-space: nowrap;
-}
-.wg-undo button {
-  margin-left: 10px;
-  font-size: 11px;
-  padding: 2px 8px;
-}
-@media (max-width: 1050px) {
-  .wg-header {
-    padding: 18px;
-    min-height: 90px;
-  }
-  .wg-header h1 {
-    font-size: 16px;
-  }
-  .wg-search input {
-    width: 130px;
-  }
-  .wg-top-actions {
-    gap: 6px;
-  }
-  .wg-top-actions button {
-    padding: 6px 8px;
-    font-size: 11px;
-  }
-  .wg-details {
-    width: 235px;
-    right: 16px;
-  }
-  .wg-dock {
-    left: 18px;
-    bottom: 22px;
-    width: 370px;
-  }
-  .wg-canvas-hint {
-    left: 18px;
-  }
-}
-@media (max-width: 700px) {
-  .wg-header {
-    flex-wrap: wrap;
-    gap: 12px;
-    padding: 14px 16px;
-  }
-  .wg-top-actions {
-    width: 100%;
-  }
-  .wg-search {
-    flex: 1;
-  }
-  .wg-search input {
-    width: 100%;
-    min-width: 50px;
-  }
-  .wg-dock {
-    width: calc(100% - 36px);
-    bottom: 20px;
-  }
-  .wg-details {
-    top: 16px;
-    max-height: 42%;
-    width: 220px;
-  }
-  .wg-canvas-hint {
-    display: none;
-  }
-  .wg-demo-label {
-    display: none;
-  }
-  .wg-root .react-flow__controls {
-    bottom: 260px;
-    right: 16px;
-  }
-  .wg-header h1 span {
-    display: inline;
-    margin-left: 10px;
-  }
-  .wg-logo {
-    height: 35px;
-    width: 35px;
-  }
-  .wg-dock-heading {
-    padding: 10px 0 !important;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .wg-root * {
-    transition: none !important;
-  }
-}
-.wg-root .is-workspace .wg-orb {
-  background: var(--wg-workspace);
-  color: #fff;
-  border: 2px solid var(--wg-accent);
-}
-.wg-root .is-workspace.is-expanded .wg-orb {
-  background: var(--wg-expanded);
-  border-style: double;
-  border-width: 4px;
-}
-.wg-root .is-workspace .wg-orb-symbol,
-.wg-root .is-workspace .wg-orb-count {
-  color: #fff;
-}
-.wg-root .is-session .wg-orb {
-  background: var(--wg-session);
-  border: 2px solid var(--wg-accent);
-}
-.wg-root .is-session .wg-orb-symbol {
-  color: var(--wg-session-text);
-}
-.wg-root .is-current .wg-orb {
-  outline: 3px solid #fff;
-  outline-offset: 6px;
-}
-.wg-root .wg-bubble {
-  --wg-glow-color: var(--bubble-color);
-}
-.wg-root .wg-bubble.is-current {
-  --wg-glow-color: #a8ccff;
-}
-/* A separate layer keeps the glow behind the orb, leaving text and edges crisp. */
-.wg-root
-  .wg-bubble:is(
-    .is-current,
-    .is-status-running,
-    .is-status-waiting,
-    .is-status-unread
-  )
-  .wg-orb::before {
-  content: "";
-  position: absolute;
-  inset: -5px;
-  z-index: -1;
-  border-radius: 50%;
-  pointer-events: none;
-  opacity: 0.78;
-  box-shadow:
-    0 0 10px 2px color-mix(in srgb, var(--wg-glow-color) 48%, transparent),
-    0 0 26px 7px color-mix(in srgb, var(--wg-glow-color) 22%, transparent);
-}
-.wg-root .wg-bubble.is-current .wg-orb::before {
-  inset: -8px;
-  box-shadow:
-    0 0 12px 3px color-mix(in srgb, var(--wg-glow-color) 58%, transparent),
-    0 0 30px 8px color-mix(in srgb, var(--wg-glow-color) 26%, transparent);
-}
-.wg-root .wg-bubble:is(.is-status-running, .is-status-waiting) .wg-orb::before {
-  animation: wg-glow-breathe 3.6s ease-in-out infinite;
-}
-.wg-root .is-working .wg-orb {
-  border: 3px dashed #ffdd85;
-  box-shadow: 0 0 0 3px #ffdd8520;
-}
-.wg-node-badges {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 4px;
-  font-size: 12px;
-  color: #fff;
-}
-.wg-node-badges span,
-.wg-node-badges strong {
-  padding: 1px 5px;
-  border-radius: 5px;
-  background: #263d5b;
-}
-.wg-node-badges strong {
-  color: #ffe6a3;
-  background: #473914;
-}
-.wg-root .wg-node-meta,
-.wg-root .wg-small-note,
-.wg-root .wg-filter-row,
-.wg-root .wg-dock-foot {
-  font-size: 12px;
-  color: #bdcce0;
-}
-.wg-root .wg-chips button {
-  font-size: 12px;
-  color: #c1d2e9;
-}
-.wg-dock {
-  max-height: calc(100% - 70px);
-  overflow: auto;
-}
-.wg-theme {
-  margin: 12px 0;
-  font-size: 12px;
-  color: #bdcce0;
-}
-.wg-theme summary {
-  cursor: pointer;
-  padding: 6px 0;
-}
-.wg-theme-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  padding-top: 8px;
-}
-.wg-theme-controls input[type="color"] {
-  padding: 2px;
-  width: 40px;
-  height: 30px;
-  vertical-align: middle;
-}
-.wg-theme-controls input[aria-label="\u4E3B\u9898 HEX"] {
-  width: 100px;
-}
-.wg-theme-controls button {
-  padding: 4px 8px;
-  font-size: 12px;
-}
-.wg-no-match {
-  position: absolute;
-  left: 24px;
-  top: 48px;
-  background: #182b46;
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 12px;
-  pointer-events: none;
-}
-.wg-activity {
-  font-size: 12px;
-  color: #bdcce0;
-  margin-top: 3px;
-}
-.wg-summary-overlay {
-  position: absolute;
-  width: 0;
-  height: 0;
-  z-index: 12;
-  pointer-events: none;
-}
-.wg-ring-hit {
-  position: absolute;
-  overflow: visible;
-  pointer-events: none;
-}
-.wg-ring-hit circle {
-  pointer-events: stroke;
-  cursor: help;
-}
-.wg-ring-orbit {
-  position: absolute;
-  width: 0;
-  height: 0;
-  animation: wg-orbit var(--wg-orbit-duration) linear infinite;
-}
-.wg-ring-slot {
-  position: absolute;
-  width: 0;
-  height: 0;
-}
-.wg-ring-glyph {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 22px;
-  margin-left: -9px;
-  margin-top: -11px;
-  font-size: 12px;
-  line-height: 22px;
-  background: #0c1425;
-  color: #fff;
-  border-radius: 5px;
-  animation: wg-counter var(--wg-orbit-duration) linear infinite;
-}
-.wg-summary-readable {
-  position: absolute;
-  left: -125px;
-  width: 250px;
-  max-height: 120px;
-  overflow: auto;
-  border: 1px solid #86a5cd;
-  border-radius: 10px;
-  background: #101c30;
-  padding: 10px 14px;
-  pointer-events: auto;
-  user-select: text;
-  font-size: 12px;
-  color: #fff;
-}
-.wg-summary-readable span {
-  color: #becde2;
-}
-.wg-summary-readable p {
-  margin: 4px 0 0;
-  overflow-wrap: anywhere;
-}
-.wg-summary-editor {
-  margin: 14px 0;
-  font-size: 12px;
-}
-.wg-summary-editor textarea {
-  display: block;
-  width: 100%;
-  min-height: 70px;
-  background: #101b2e;
-  color: #fff;
-  border: 1px solid #6683aa;
-  padding: 8px;
-  margin: 6px 0;
-  border-radius: 8px;
-  font: inherit;
-  resize: vertical;
-}
-.wg-demo-tools {
-  position: fixed;
-  z-index: 20;
-  top: 2px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 11px;
-  background: #122038;
-  color: #fff;
-  border-radius: 5px;
-  padding: 2px 8px;
-  display: flex;
-  gap: 10px;
-}
-.wg-summary-overlay.is-static .wg-ring-orbit,
-.wg-summary-overlay.is-static .wg-ring-glyph {
-  animation: none;
-}
-@keyframes wg-orbit {
-  to {
-    transform: rotate(360deg);
-  }
-}
-@keyframes wg-counter {
-  to {
-    transform: rotate(-360deg);
-  }
-}
-.wg-root .wg-dock-foot {
-  flex-wrap: wrap;
-  gap: 10px;
-}
-.wg-dock-foot label {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-.wg-dock-foot .wg-small-note {
-  flex-basis: 100%;
-}
-@keyframes wg-glow-breathe {
-  0%,
-  100% {
-    opacity: 0.58;
-  }
-  50% {
-    opacity: 0.92;
-  }
-}
-.wg-reduced *,
-.wg-reduced *::before {
-  animation: none !important;
-  transition: none !important;
-}
-@media (prefers-reduced-motion: reduce) {
-  .wg-root *,
-  .wg-root *::before {
-    animation: none !important;
-  }
-}
-.wg-backup {
-  position: relative;
-}
-.wg-backup-panel {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  width: min(360px, 85vw);
-  max-height: 70vh;
-  overflow: auto;
-  padding: 16px;
-  background: #101c30;
-  border: 1px solid #486b93;
-  border-radius: 12px;
-  box-shadow: 0 12px 40px #0008;
-  z-index: 12;
-  white-space: normal;
-}
-.wg-backup-panel p {
-  margin: 0 0 12px;
-}
-.wg-backup-file {
-  display: block;
-  margin-top: 16px;
-}
-.wg-backup-file input {
-  display: block;
-  width: 100%;
-  margin-top: 8px;
-}
-.wg-attention {
-  position: absolute;
-  top: 12px;
-  left: 24px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  max-width: calc(100% - 48px);
-  z-index: 4;
-}
-.wg-attention button[aria-pressed="true"] {
-  border-color: #8bb7ff;
-  background: #263e5d;
-}
-.wg-navigation {
-  position: absolute;
-  top: 64px;
-  right: 24px;
-  width: 310px;
-  max-height: calc(100% - 145px);
-  overflow: auto;
-  padding: 14px;
-  border: 1px solid #486b9388;
-  border-radius: 12px;
-  background: #101c30f5;
-  z-index: 4;
-}
-.wg-has-details .wg-navigation {
-  right: 310px;
-}
-.wg-navigation h2 {
-  margin: 0 0 12px;
-  font-size: 15px;
-}
-.wg-navigation h2 span {
-  font-size: 12px;
-  color: #9eb3cd;
-}
-.wg-result-list {
-  display: grid;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-.wg-result-list button {
-  text-align: left;
-  display: grid;
-  gap: 4px;
-  width: 100%;
-  overflow-wrap: anywhere;
-}
-.wg-result-list span,
-.wg-result-list small {
-  font-size: 12px;
-  color: #a9bdd6;
-}
-.wg-list-view .wg-navigation {
-  left: 24px;
-  right: 24px;
-  width: auto;
-  bottom: 80px;
-  max-height: none;
-}
-.wg-list-view.wg-has-details .wg-navigation {
-  right: 310px;
-}
-.wg-list-view .wg-result-list {
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-}
-.wg-list-view .wg-dock {
-  display: none;
-}
-.wg-list-view .react-flow {
-  visibility: hidden;
-}
-.wg-compact .wg-activity,
-.wg-compact .wg-orb-count,
-.wg-compact .wg-node-badges {
-  display: none;
-}
-.wg-compact .wg-node-title {
-  font-size: 16px;
-}
-.wg-top-actions {
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-@media (max-width: 850px) {
-  .wg-attention {
-    left: 12px;
-    top: 8px;
-  }
-  .wg-attention button {
-    padding: 4px 8px;
-    font-size: 12px;
-  }
-  .wg-navigation,
-  .wg-has-details .wg-navigation {
-    top: 86px;
-    right: 12px;
-    width: min(310px, calc(100% - 24px));
-    max-height: 40%;
-  }
-  .wg-list-view .wg-navigation,
-  .wg-list-view.wg-has-details .wg-navigation {
-    left: 12px;
-    right: 12px;
-    bottom: 40px;
-    width: auto;
-    max-height: none;
-  }
-  .wg-list-view.wg-has-details .wg-navigation {
-    bottom: 52%;
-  }
-  .wg-list-view.wg-has-details .wg-details {
-    top: 50%;
-    bottom: 40px;
-    max-height: none;
-    left: 12px;
-    right: 12px;
-    width: auto;
-  }
-}
+        M${P.x},${P.y}h${P.width}v${P.height}h${-P.width}z`,fillRule:"evenodd",pointerEvents:"none"})]})})}bl.displayName="MiniMap";var Wv=(0,T.memo)(bl),am=e=>t=>e?`${Math.max(1/t.transform[2],1)}`:void 0,cm={[ft.Line]:"right",[ft.Handle]:"bottom-right"};function lm({nodeId:e,position:t,variant:n=ft.Handle,className:o,style:r=void 0,children:s,color:i,minWidth:a=10,minHeight:c=10,maxWidth:l=Number.MAX_VALUE,maxHeight:d=Number.MAX_VALUE,keepAspectRatio:u=!1,resizeDirection:f,autoScale:p=!0,shouldResize:h,onResizeStart:g,onResize:x,onResizeEnd:y}){let v=Gc(),m=typeof e=="string"?e:v,w=de(),S=(0,T.useRef)(null),E=n===ft.Handle,C=ae((0,T.useCallback)(am(E&&p),[E,p]),ue),z=(0,T.useRef)(null),P=t??cm[n];(0,T.useEffect)(()=>{if(!(!S.current||!m))return z.current||(z.current=ja({domNode:S.current,nodeId:m,getStoreItems:()=>{let{nodeLookup:L,transform:F,snapGrid:H,snapToGrid:b,nodeOrigin:N,domNode:k}=w.getState();return{nodeLookup:L,transform:F,snapGrid:H,snapToGrid:b,nodeOrigin:N,paneDomNode:k}},onChange:(L,F)=>{let{triggerNodeChanges:H,nodeLookup:b,parentLookup:N,nodeOrigin:k}=w.getState(),I=[],D={x:L.x,y:L.y},A=b.get(m);if(A&&A.expandParent&&A.parentId){let R=A.origin??k,B=L.width??A.measured.width??0,X=L.height??A.measured.height??0,Q={id:A.id,parentId:A.parentId,rect:{width:B,height:X,...Or({x:L.x??A.position.x,y:L.y??A.position.y},{width:B,height:X},A.parentId,b,R)}},Z=To([Q],b,N,k);I.push(...Z),D.x=L.x?Math.max(R[0]*B,L.x):void 0,D.y=L.y?Math.max(R[1]*X,L.y):void 0}if(D.x!==void 0&&D.y!==void 0){let R={id:m,type:"position",position:{...D}};I.push(R)}if(L.width!==void 0&&L.height!==void 0){let B={id:m,type:"dimensions",resizing:!0,setAttributes:f?f==="horizontal"?"width":"height":!0,dimensions:{width:L.width,height:L.height}};I.push(B)}for(let R of F){let B={...R,type:"position"};I.push(B)}H(I)},onEnd:({width:L,height:F})=>{let H={id:m,type:"dimensions",resizing:!1,dimensions:{width:L,height:F}};w.getState().triggerNodeChanges([H])}})),z.current.update({controlPosition:P,boundaries:{minWidth:a,minHeight:c,maxWidth:l,maxHeight:d},keepAspectRatio:u,resizeDirection:f,onResizeStart:g,onResize:x,onResizeEnd:y,shouldResize:h}),()=>{z.current?.destroy()}},[P,a,c,l,d,u,g,x,y,h]);let V=P.split("-");return(0,O.jsx)("div",{className:me(["react-flow__resize-control","nodrag",...V,n,o]),ref:S,style:{...r,scale:C,...i&&{[E?"backgroundColor":"borderColor"]:i}},children:s})}var qv=(0,T.memo)(lm);var Jt={recency:"recent",workspace:"all",status:"all",kind:"all",archived:!1,query:""},Xo={...Jt,recency:"all",frequency:"all",statuses:[]};var um=e=>(/^[A-Za-z]:[/\\]/.test(e)||e.startsWith("\\\\")?e.replaceAll("\\","/"):e).replace(/\/+$/,"");function $n(e){let t=e.map(o=>({id:o.id,path:um(o.path)})),n=new Map;for(let o of t){let r=-1;for(let s of t)s.id!==o.id&&s.path.length>r&&o.path!==s.path&&o.path.startsWith(s.path+"/")&&(n.set(o.id,s.id),r=s.path.length)}return n}function Hn(e){let t=new Map(e.map(o=>[o.id,o])),n=new Map;for(let o of e){if(!o.parentId||!t.has(o.parentId))continue;let r=new Set([o.id]),s=o.parentId;for(;s&&t.has(s)&&!r.has(s);)r.add(s),s=t.get(s).parentId;(!s||!r.has(s))&&n.set(o.id,o.parentId)}return n}function Yo(e,t,n){let o=new Map;for(let[i,a]of $n(e.workspaces))o.set("workspace:"+i,"workspace:"+a);for(let i of e.workspaces)for(let a of i.sessionIds)o.has("session:"+a)||o.set("session:"+a,"workspace:"+i.id);for(let i of e.sessions)o.has("session:"+i.id)||o.set("session:"+i.id,"workspace:__ungrouped__");for(let[i,a]of Hn(e.sessions))o.set("session:"+i,"session:"+a);let r={...n},s=i=>{if(r[i])return r[i];let a=t[i],c=o.get(i);if(!a||!c)return a;let l=t[c],d=s(c);return!l||!d?a:r[i]={x:a.x+d.x-l.x,y:a.y+d.y-l.y}};for(let i of o.keys())t[i]&&s(i);return r}function pt(e){let t=e==="workspace"?53:37;return{offset:{x:72,y:t},radius:t}}function vl(e,t){let n=t.x-e.x,o=t.y-e.y,r=Math.hypot(n,o),s=r>1e-9?n/r:1,i=r>1e-9?o/r:0;return{source:{x:e.x+s*e.radius,y:e.y+i*e.radius},target:{x:t.x-s*t.radius,y:t.y-i*t.radius}}}var kl=new WeakMap;function dm(e){let t=kl.get(e);if(t)return t;let n=new Map,o=new Map,r=new Map;for(let f of[...e.workspaces].sort((p,h)=>p.id.localeCompare(h.id))){o.set("workspace:"+f.id,"workspace");for(let p of f.sessionIds)r.has(p)||r.set(p,f.id)}for(let[f,p]of $n(e.workspaces))n.set("workspace:"+f,"workspace:"+p);let s=Hn(e.sessions);for(let f of e.sessions){let p="session:"+f.id;o.set(p,"session");let h=r.get(f.id)??"__ungrouped__";h==="__ungrouped__"&&o.set("workspace:__ungrouped__","workspace"),n.set(p,s.has(f.id)?"session:"+s.get(f.id):"workspace:"+h)}let i=new Map;for(let f of o.keys()){let p=n.get(f);!p||!o.has(p)||(i.has(p)||i.set(p,[]),i.get(p).push(f))}for(let f of i.values())f.sort();let a=new Map,c=f=>{if(a.has(f))return a.get(f);let p=Math.max(1,(i.get(f)??[]).reduce((h,g)=>h+c(g),0));return a.set(f,p),p},l={},d=280,u=[...o.keys()].filter(f=>!n.has(f)||!o.has(n.get(f))).sort();for(let f of u){let p=new Map,h=(y,v,m,w,S)=>{p.set(y,{x:v,y:m});let E=i.get(y)??[],C=E.reduce((V,L)=>V+c(L),0),z=Math.max(225,C*165/S),P=w-S/2;for(let V of E){let L=S*c(V)/C,F=P+L/2;h(V,v+Math.cos(F)*z,m+Math.sin(F)*z,F,Math.min(Math.PI*.8,L)),P+=L}};h(f,0,0,-Math.PI/2,2*Math.PI);let g=Math.min(...[...p.values()].map(y=>y.x)),x=Math.max(...[...p.values()].map(y=>y.x));for(let[y,v]of p){let m=pt(o.get(y));l[y]={x:v.x-g+d-m.offset.x,y:v.y+290-m.offset.y}}d+=x-g+360}for(let f of Object.values(l))Object.freeze(f);return Object.freeze(l),kl.set(e,l),l}function Zo(e,t){let n=dm(e);return{...n,...Yo(e,n,t)}}function _l(e,t,n=Date.now()){let o={...e};for(let r of t)Object.hasOwn(o,r)||Object.defineProperty(o,r,{value:{since:n,visits:[]},enumerable:!0,writable:!0,configurable:!0});return o}function ti(e,t=Date.now()){return!Number.isFinite(e)||e<=0||e>t+6e4?"unknown":t-e<=7*864e5?"recent":"early"}function ni(e,t=Date.now()){return e?e.visits.filter(o=>o>=t-30*864e5&&o<=t).length>=5?"frequent":t-e.since>=30*864e5?"infrequent":"accumulating":"accumulating"}function Sl(e,t=Date.now()){let n=(e?.visits??[]).filter(o=>o>=t-2592e6&&o<=t);return(!n.length||t-n[n.length-1]>=30*6e4)&&n.push(t),{since:e?.since??t,visits:n}}var Go={recent:"\u8FD1\u671F",early:"\u65E9\u671F",unknown:"\u65F6\u95F4\u672A\u77E5"},Uo={frequent:"\u5E38\u7528",infrequent:"\u4E0D\u5E38\u7528",accumulating:"\u4F7F\u7528\u8BB0\u5F55\u79EF\u7D2F\u4E2D"};function oi(e){return e.pending?"waiting":e.running===!0?"running":e.unread?"unread":e.running===!1?"idle":"unknown"}function jo(e,t,n,o={},r=new Set,s=Date.now(),i){let a=$n(e.workspaces),c=new Set(e.currentSessionIds??(e.currentSessionId?[e.currentSessionId]:[])),l=k=>c.has(k.id)||k.running===!0||k.pending===!0,d=Hn(e.sessions),u=new Map(e.sessions.map(k=>[k.id,k])),f=new Set(e.archivedSessionIds),p=e.sessions.filter(k=>l(k)||!k.blank&&k.origin!=="subagent"&&(t.archived||!f.has(k.id))),h=new Map(p.map(k=>[k.id,k])),g=new Set(e.workspaces.flatMap(k=>[...k.sessionIds])),x=p.filter(k=>!g.has(k.id)),y=[...e.workspaces];(x.length||[...d.values()].some(k=>!g.has(k)))&&y.push({id:"__ungrouped__",title:"\u672A\u5206\u7EC4",path:"",sessionIds:x.map(k=>k.id),virtual:!0});let v=[],m=[],w=[],S=t.query.trim().toLocaleLowerCase(),E=t.statuses??(t.status==="all"?[]:[t.status]),C=0,z=new Set,P=new Set,V=new Map;for(let k of y)for(let I of k.sessionIds)V.has(I)||V.set(I,k.id);let L=new Map(y.map(k=>[k.id,k])),F=Zo(e,n.positions),H=k=>n.positions["workspace:"+k]??F["workspace:"+k]??{x:280,y:290},b=k=>n.positions["session:"+k.id]??F["session:"+k.id]??{x:280,y:290},N=(k,I=!1)=>({id:"session:"+k.id,type:"bubble",position:b(k),data:{kind:"session",entityId:k.id,title:k.title,status:oi(k),path:k.cwd,workspaceId:V.get(k.id)??"__ungrouped__",parentSessionId:d.get(k.id),context:I,archived:f.has(k.id),updatedAt:k.updatedAt,current:c.has(k.id),working:k.running===!0,pinned:n.settings?.pinned?.includes(k.id),recency:ti(k.updatedAt,s),frequency:ni(n.settings?.usage?.[k.id],s)}});y.forEach(k=>{let I=k.id;for(;I&&I!==t.workspace;)I=a.get(I);let D=t.workspace==="all"||I===t.workspace,A=[...new Set(k.sessionIds)].flatMap(q=>h.has(q)&&V.get(q)===k.id?[h.get(q)]:[]),R=!S||(k.title+" "+k.path).toLocaleLowerCase().includes(S),B=A.filter(q=>D&&(R||(q.title+" "+(q.cwd??"")+" "+(n.settings?.manualSummaries?.[q.id]??"")).toLocaleLowerCase().includes(S))&&(!E.length||E.includes(oi(q)))&&(!t.recency||t.recency==="all"||ti(q.updatedAt,s)===t.recency)&&(!t.frequency||t.frequency==="all"||ni(n.settings?.usage?.[q.id],s)===t.frequency)).sort((q,J)=>Number(n.settings?.pinned?.includes(J.id)??!1)-Number(n.settings?.pinned?.includes(q.id)??!1)),X=A.map(oi),Q=["waiting","running","unread","idle"].find(q=>X.includes(q))??"unknown",Z="workspace:"+k.id,K=!r.has(k.id);v.push({id:Z,type:"bubble",position:H(k.id),data:{kind:"workspace",entityId:k.id,title:k.title,path:k.path,status:Q,count:B.length,total:A.length,virtual:k.virtual,parentWorkspaceId:a.get(k.id),childWorkspaceCount:y.filter(q=>a.get(q.id)===k.id).length,collapsed:K,current:A.some(q=>c.has(q.id)),working:A.some(q=>q.running===!0)}});let ne=a.get(k.id);ne&&m.push({id:"workspace:"+ne+"->"+Z,source:"workspace:"+ne,target:Z}),C+=B.length;for(let q of B)z.add(q.id),w.push(N(q));let Y=o[k.id]??20,$=K||t.kind==="workspace"?[]:B.slice(0,Y);for(let q of A.filter(J=>l(J)||J.id===i))$.some(J=>J.id===q.id)||$.push(q);$.forEach(q=>{if(P.has(q.id))return;P.add(q.id);let J=N(q);J.data.outsideFilters=!z.has(q.id),v.push(J)})});for(let k of P){let I=d.get(k);I&&!P.has(I)&&(P.add(I),v.push(N(u.get(I),!0)))}for(let k of P){let I=d.get(k),D=I?"session:"+I:"workspace:"+(V.get(k)??"__ungrouped__"),A="session:"+k;m.push({id:D+"->"+A,source:D,target:A,...I?{sourceHandle:"branch-source",targetHandle:"branch-target"}:{}})}return{matches:w,nodes:v,edges:m,matched:C,total:p.length,hidden:[...z].filter(k=>!P.has(k)).length}}var tt="#6aabff";function Bn(e){if(typeof e!="string")return;let t=e.trim().toLowerCase();if(/^#[\da-f]{6}$/.test(t))return t;if(/^#[\da-f]{3}$/.test(t))return"#"+[...t.slice(1)].map(n=>n+n).join("")}var El=e=>[1,3,5].map(t=>parseInt(e.slice(t,t+2),16)),Ko=(e,t,n)=>"#"+El(e).map((o,r)=>Math.round(o*(1-n)+El(t)[r]*n).toString(16).padStart(2,"0")).join("");function Nl(e){let t=Bn(e)??tt;return{workspace:Ko(t,"#243247",.8),expanded:Ko(t,"#080d17",.94),session:Ko(t,"#ffffff",.82),text:"#ffffff",sessionText:"#111827",accent:Ko(t,"#ffffff",.55)}}var tn=()=>({schemaVersion:1,revision:0,positions:{},collapsed:[],views:{}}),en=e=>!["__proto__","prototype","constructor"].includes(e)&&e.length<1e3,Ye=e=>!!e&&typeof e=="object"&&!Array.isArray(e),Cl=e=>Ye(e)&&typeof e.x=="number"&&typeof e.y=="number"&&Number.isFinite(e.x)&&Number.isFinite(e.y)&&Math.abs(e.x)<1e8&&Math.abs(e.y)<1e8;function fm(e){return Ye(e)&&typeof e.workspace=="string"&&(e.recency===void 0||["all","recent","early","unknown"].includes(String(e.recency)))&&(e.frequency===void 0||["all","frequent","infrequent","accumulating"].includes(String(e.frequency)))&&(e.statuses===void 0||Array.isArray(e.statuses)&&e.statuses.every(t=>["running","waiting","unread","idle","unknown"].includes(t)))&&["all","running","waiting","unread","idle","unknown"].includes(String(e.status))&&["all","workspace","session"].includes(String(e.kind))&&typeof e.archived=="boolean"&&typeof e.query=="string"}function Ml(e){if(!Ye(e)||e.schemaVersion!==1||!Number.isSafeInteger(e.revision)||Number(e.revision)<0||!Ye(e.positions)||!Array.isArray(e.collapsed)||!Ye(e.views))throw new Error("Invalid layout format or unsupported version");for(let[t,n]of Object.entries(e.positions))if(!en(t)||!Cl(n))throw new Error("Invalid layout position");if(!e.collapsed.every(t=>typeof t=="string"&&en(t)))throw new Error("Invalid layout collapse state");for(let[t,n]of Object.entries(e.views)){if(!en(t)||!Ye(n))throw new Error("Invalid layout view");if(n.viewport!==void 0&&(!Cl(n.viewport)||typeof n.viewport.zoom!="number"||!Number.isFinite(n.viewport.zoom)||n.viewport.zoom<.1||n.viewport.zoom>3))throw new Error("Invalid layout viewport");if(n.filters!==void 0&&!fm(n.filters))throw new Error("Invalid layout filters")}}var Qo=class e{positions={};viewports={};revision=0;storedRevision;storage;key;constructor(t,n){this.storage=t,this.key=n}loadStored(){let t=this.storage.getItem(this.key);if(t===null)return tn();let n;try{n=JSON.parse(t)}catch{throw new Error("Invalid layout JSON")}Ml(n);let o=Ye(n.settings)?n.settings:{},r=Object.fromEntries(Object.entries(Ye(o.manualSummaries)?o.manualSummaries:{}).filter(([i,a])=>en(i)&&typeof a=="string").map(([i,a])=>[i,a.slice(0,4e3)])),s=Object.fromEntries(Object.entries(Ye(o.usage)?o.usage:{}).filter(([i,a])=>en(i)&&Ye(a)&&Number.isFinite(a.since)&&Number(a.since)>=0&&Array.isArray(a.visits)&&a.visits.every(c=>typeof c=="number"&&Number.isFinite(c)&&c>=0)).map(([i,a])=>[i,{since:a.since,visits:a.visits.slice(-2e3).sort((c,l)=>c-l)}]));return n.settings={theme:Bn(o.theme)??tt,reducedMotion:o.reducedMotion===!0,pinned:Array.isArray(o.pinned)?o.pinned.filter(i=>typeof i=="string"&&en(i)):[],usage:s,manualSummaries:r},n}load(){let t=this.loadStored();this.storedRevision!==void 0&&t.revision!==this.storedRevision&&this.revision++,this.storedRevision=t.revision;let n=Object.fromEntries(Object.entries(t.views).map(([o,r])=>[o,{filters:r.filters}]));for(let[o,r]of Object.entries(this.viewports))n[o]={...n[o],...r};return{...t,revision:this.revision,positions:this.positions,views:n}}initializePositions(t){let n=this.load(),o=Object.fromEntries(Object.entries(t).filter(([r])=>!n.positions[r]));return Object.keys(o).length?this.savePatch({positions:o},n.revision):n}reset(t){if(this.storage.getItem(this.key)!==t)throw new Error("Layout conflict: another window changed the saved layout");let n=tn();return this.storage.setItem(this.key,JSON.stringify(n)),this.positions={},this.viewports={},this.revision=0,this.storedRevision=0,n}previewBackup(t){if(t.length>5*1024*1024)throw new Error("\u5907\u4EFD\u8D85\u8FC7 5 MB");return new e({getItem:()=>t,setItem(){}},this.key).loadStored()}importBackup(t,n){let o=this.previewBackup(t);if(this.storage.getItem(this.key)!==n)throw new Error("Layout conflict: another window changed the saved layout");let r=this.storedRevision??0;try{r=Math.max(r,this.loadStored().revision)}catch{}let s=r+1;return this.storage.setItem(this.key,JSON.stringify({...o,revision:s,positions:{},views:Object.fromEntries(Object.entries(o.views).map(([i,a])=>[i,{filters:a.filters}]))})),this.positions=o.positions,this.viewports=Object.fromEntries(Object.entries(o.views).filter(([,i])=>i.viewport).map(([i,a])=>[i,{viewport:a.viewport}])),this.storedRevision=s,this.revision++,this.load()}savePatch(t,n){let o=this.load(),r=t.settings!==void 0||t.collapsed!==void 0||Object.values(t.views??{}).some(a=>a.filters!==void 0);if(r&&o.revision!==n)throw new Error("Layout conflict: another window saved a newer layout");let s={...o.views};for(let[a,c]of Object.entries(t.views??{}))s[a]={...s[a],...c};let i={schemaVersion:1,revision:o.revision+1,positions:{...o.positions,...t.positions},collapsed:t.collapsed??o.collapsed,views:s,settings:{theme:tt,reducedMotion:!1,...o.settings,...t.settings}};if(Ml(i),r){let a={...i,revision:(this.storedRevision??0)+1,positions:{},views:Object.fromEntries(Object.entries(s).map(([c,l])=>[c,{filters:l.filters}]))};this.storage.setItem(this.key,JSON.stringify(a)),this.storedRevision=a.revision}return this.positions=i.positions,this.viewports=Object.fromEntries(Object.entries(s).filter(([,a])=>a.viewport).map(([a,c])=>[a,{viewport:c.viewport}])),this.revision=i.revision,i}};var we=Ge(require("react"),1);function Il({color:e,reduced:t,onColor:n,onReduced:o}){let[r,s]=(0,we.useState)(e),[i,a]=(0,we.useState)(!1),[c,l]=(0,we.useState)(t);(0,we.useEffect)(()=>l(t),[t]),(0,we.useEffect)(()=>{s(e),a(!1)},[e]);let d=()=>{let u=Bn(r);a(!u),u&&n(u)};return we.default.createElement("details",{className:"wg-theme"},we.default.createElement("summary",null,"\u4E3B\u9898\u4E0E\u52A8\u6001\u6548\u679C"),we.default.createElement("div",{className:"wg-theme-controls"},we.default.createElement("label",null,"\u4E3B\u9898\u8272"," ",we.default.createElement("input",{type:"color","aria-label":"\u4E3B\u9898\u8272",value:e,onChange:u=>n(u.target.value)})),we.default.createElement("input",{"aria-label":"\u4E3B\u9898 HEX",value:r,onChange:u=>s(u.target.value),onBlur:d,onKeyDown:u=>{u.key==="Enter"&&d()},"aria-invalid":i}),we.default.createElement("button",{onClick:d},"\u5E94\u7528\u989C\u8272"),["#6aabff","#c084fc","#2dd4bf","#fb923c"].map(u=>we.default.createElement("button",{key:u,"aria-label":"\u914D\u8272 "+u,onClick:()=>n(u),style:{borderColor:u}},"\u25CF")),we.default.createElement("button",{onClick:()=>n(tt)},"\u6062\u590D\u9ED8\u8BA4\u8272"),i&&we.default.createElement("span",{role:"alert"},"\u8BF7\u8F93\u5165\u6709\u6548\u7684 HEX \u8272\u503C\uFF0C\u4F8B\u5982 #6aabff"),we.default.createElement("label",{className:"wg-check"},we.default.createElement("input",{type:"checkbox",checked:c,onChange:u=>{l(u.target.checked),o(u.target.checked)}}),"\u51CF\u5C11\u52A8\u6001\u6548\u679C\uFF08\u4E5F\u9075\u5FAA\u7CFB\u7EDF\u8BBE\u7F6E\uFF09")))}var pe=require("react");var Jo=.86*1.25,er=1.25,gt=1.2,ht=e=>Math.max(-99800,Math.min(99800,e)),Vn=(e,t)=>JSON.stringify([e,t]),tr=class{bodies=new Map;links=[];active=!1;reduced=!1;contactScale=er;dragging;mode="elastic";idle=0;hardening=gt;quiet=0;recovery;inputs=new Map;groups=[];groupIndex=new Map;ordered=[];originals=new Map;sync(t,n,o=!1,r){let s=new Set(this.bodies.keys()),i=new Set(t.map(g=>g.id)),a=new Map(t.map(g=>[g.id,g])),c=new Map(n.map(g=>[g.target,g.source])),l=s.size!==i.size;for(let g of s)i.has(g)||(this.bodies.delete(g),this.inputs.delete(g),l=!0);let d=new Set;for(let g of t){let{offset:x,radius:y}=pt(g.data.kind),v=ht(g.position.x)+x.x,m=ht(g.position.y)+x.y,w=this.bodies.get(g.id),S=this.inputs.get(g.id),E=o||!r?.has(g.position)&&(!S||Math.hypot(S.x-g.position.x,S.y-g.position.y)>.1);this.inputs.set(g.id,{...g.position}),w?E&&!w.pin&&Math.hypot(w.x-v,w.y-m)>.1&&(Object.assign(w,{x:v,y:m,vx:0,vy:0}),delete w.opening,l=!0,d.add(g.id)):(this.bodies.set(g.id,{id:g.id,x:v,y:m,vx:0,vy:0,radius:y,offset:x}),l=!0)}let u=new Map(this.links.map(g=>[Vn(g.source,g.target),g]));this.links=n.filter(g=>i.has(g.source)&&i.has(g.target)).map(g=>{let x=u.get(Vn(g.source,g.target));if(x&&!o&&!d.has(g.source)&&!d.has(g.target))return x;let y=this.bodies.get(g.source),v=this.bodies.get(g.target);return{...g,restLength:Math.hypot(v.x-y.x,v.y-y.y),restVector:{x:v.x-y.x,y:v.y-y.y},stiffness:1}}),(this.links.length!==u.size||this.links.some(g=>!u.has(Vn(g.source,g.target))))&&(l=!0);let f=new Set,p=g=>{if(f.has(g))return;f.add(g);let x=c.get(g);if(x&&i.has(x)&&p(x),s.has(g)||!s.size||this.reduced||o)return;let y=this.bodies.get(g),v=x?this.bodies.get(x):void 0,m=x?a.get(x):void 0;if(!v||!m)return;let w=y.x-m.position.x-v.offset.x,S=y.y-m.position.y-v.offset.y,E=Math.hypot(w,S),C=Math.min(1,(v.radius+y.radius+2)*er/(E||1));y.opening={parent:v.id,dx:w,dy:S,elapsed:0,start:C},y.x=v.x+w*C,y.y=v.y+S*C};for(let g of i)p(g);let h=new Map;for(let g of this.links)for(let[x,y]of[[g.source,g.target],[g.target,g.source]])h.has(x)||h.set(x,[]),h.get(x).push(y);this.groups=[],this.groupIndex.clear();for(let g of i)if(!this.groupIndex.has(g)){let x=this.groups.length,y=[],v=[g];this.groupIndex.set(g,x);for(let m=0;m<v.length;m++){let w=v[m];y.push(this.bodies.get(w));for(let S of h.get(w)??[])this.groupIndex.has(S)||(this.groupIndex.set(S,x),v.push(S))}this.groups.push(y)}return this.dragging&&!i.has(this.dragging)&&(this.dragging=void 0,this.mode="elastic",this.hardening=0),this.recovery&&!i.has(this.recovery.id)&&(this.recovery=void 0),o&&(this.recovery=void 0,this.hardening=gt,this.originals.clear()),this.orderLinks(),l&&this.wake(),l}wake(){this.active=!0,this.quiet=0}pin(t,n){let o=this.bodies.get(t);o&&(o.pin={x:ht(n.x)+o.offset.x,y:ht(n.y)+o.offset.y},o.x=o.pin.x,o.y=o.pin.y,o.vx=o.vy=0,delete o.opening,this.orderLinks(),this.wake())}unpin(t){let n=this.bodies.get(t);n?.pin&&(delete n.pin,this.orderLinks(),this.wake())}capture(){this.originals.clear();for(let t of this.links){let n=this.bodies.get(t.source),o=this.bodies.get(t.target);t.restVector={x:o.x-n.x,y:o.y-n.y},t.restLength=Math.hypot(t.restVector.x,t.restVector.y),this.originals.set(Vn(t.source,t.target),{...t.restVector})}}beginDrag(t,n="elastic"){if(this.bodies.has(t)){this.dragging=t,this.mode=n,this.recovery=void 0,this.idle=0,this.hardening=0,this.contactScale=Jo,this.capture(),this.orderLinks();for(let o of this.bodies.values())o.vx=o.vy=0;this.wake()}}drag(t,n,o="elastic"){let r=this.bodies.get(t);if(!r)return;this.dragging!==t?this.beginDrag(t,o):this.mode!==o&&(this.mode=o,this.capture(),this.orderLinks());let s=ht(n.x)+r.offset.x,i=ht(n.y)+r.offset.y,a=s-r.x,c=i-r.y;Math.hypot(a,c)>.05&&(this.idle=0,this.hardening=0,this.contactScale=Jo),delete r.opening;let l=Math.max(1,Math.ceil(Math.hypot(a,c)/18)),d={x:r.x,y:r.y};for(let u=1;u<=l;u++)r.x=d.x+a*u/l,r.y=d.y+c*u/l,r.pin={x:r.x,y:r.y},this.contacts(!0);r.vx=r.vy=0,this.wake()}release(t){if(this.dragging===t){let n=this.bodies.get(t);if(n&&this.mode==="elastic"){this.recovery={id:t,point:{x:n.x,y:n.y},elapsed:0};let o=this.groupIndex.get(t);for(let r of this.links)if(this.groupIndex.get(r.source)===o){let s=this.bodies.get(r.source),i=this.bodies.get(r.target),a=this.originals.get(Vn(r.source,r.target))??r.restVector,c=i.x-s.x-a.x,l=i.y-s.y-a.y,d=.2*Math.min(1,Math.hypot(a.x,a.y)/(Math.hypot(c,l)||1));r.restVector={x:a.x+c*d,y:a.y+l*d},r.restLength=Math.hypot(r.restVector.x,r.restVector.y)}}else this.capture(),n&&(this.recovery={id:t,point:{x:n.x,y:n.y},elapsed:0});this.dragging=void 0,this.idle=0}this.unpin(t),this.orderLinks(),this.wake()}ropeState(t,n){let o=this.links.find(i=>i.source===t&&i.target===n),r=this.bodies.get(t),s=this.bodies.get(n);return{softness:1-this.hardening/gt,stretch:o&&r&&s?Math.max(0,Math.hypot(s.x-r.x,s.y-r.y)-o.restLength):0}}positions(){return Object.fromEntries([...this.bodies.values()].map(t=>[t.id,{x:t.x-t.offset.x,y:t.y-t.offset.y}]))}orderLinks(){this.ordered=[];let t=new Set,n=this.dragging??this.recovery?.id??[...this.bodies.values()].find(s=>s.pin)?.id,o=[...n?[n]:[],...this.bodies.keys()],r=new Map;for(let s of this.links)for(let i of[s.source,s.target])r.has(i)||r.set(i,[]),r.get(i).push(s);for(let s of o)if(!t.has(s)){let i=[s];t.add(s);for(let a=0;a<i.length;a++)for(let c of r.get(i[a])??[]){let l=i[a],d=c.source===l?c.target:c.source;t.has(d)||(t.add(d),i.push(d),this.ordered.push({link:c,from:l,to:d,sign:c.source===l?1:-1,rate:c.source===l?7:10}))}}}contacts(t=!1){let n=[...this.bodies.values()],o=106*er+8,r=new Map;for(let a of n){let c=Math.floor(a.x/o)+":"+Math.floor(a.y/o);r.has(c)||r.set(c,[]),r.get(c).push(a)}let s=new Set;if(this.mode!=="free")for(let a of n)(a.pin||a.id===this.recovery?.id)&&s.add(this.groupIndex.get(a.id));let i=0;for(let a=0;a<n.length;a++){let c=n[a],l=Math.floor(c.x/o),d=Math.floor(c.y/o);for(let u=l-1;u<=l+1;u++)for(let f=d-1;f<=d+1;f++)for(let p of r.get(u+":"+f)??[]){if(c.id>=p.id||c.pin&&p.pin)continue;let h=this.groupIndex.get(c.id),g=this.groupIndex.get(p.id),x=p.x-c.x,y=p.y-c.y,v=Math.hypot(x,y),m=(c.radius+p.radius+(h===g?2:4))*this.contactScale;if(v>=m)continue;let w=m-v;i=Math.max(i,w);let S=v>1e-6?x/v:Math.cos(a*2.39996),E=v>1e-6?y/v:Math.sin(a*2.39996),C=h!==g&&this.mode!=="free",z=C?s.has(h):!!c.pin||c.id===this.recovery?.id,P=C?s.has(g):!!p.pin||p.id===this.recovery?.id;if(z&&P)continue;let V=z||P?1:.5,L=(F,H,b)=>{for(let N of C?this.groups[H]:[F])N.x+=S*w*V*b,N.y+=E*w*V*b,!t&&!this.reduced&&!this.dragging&&w>2&&(N.vx+=S*b*Math.min(8,w*.1),N.vy+=E*b*Math.min(8,w*.1))};z||L(c,h,-1),P||L(p,g,1)}}return i}step(t){if(!this.active)return!1;let n=Math.min(Math.max(t,0),1/30),o=Math.max(1,Math.ceil(n*120)),r=n/o,s=this.positions();this.idle+=n,this.reduced?this.hardening=gt:(!this.dragging||this.idle>.12)&&(this.hardening=Math.min(gt,this.hardening+n)),this.contactScale=Jo+(er-Jo)*(this.hardening/gt),this.recovery&&(this.recovery.elapsed+=n);for(let c=0;c<o;c++){for(let u of this.bodies.values()){if(u.pin){u.x=u.pin.x,u.y=u.pin.y,u.vx=u.vy=0;continue}this.reduced&&(u.vx=u.vy=0),u.vx*=Math.exp(-12*r),u.vy*=Math.exp(-12*r),u.x+=u.vx*r,u.y+=u.vy*r,u.id===this.recovery?.id&&(u.x=this.recovery.point.x,u.y=this.recovery.point.y,u.vx=u.vy=0)}let l=this.mode!=="free"&&(!!this.dragging||!!this.recovery);for(let u of this.ordered){let{link:f,from:p,to:h,sign:g,rate:x}=u,y=this.bodies.get(p),v=this.bodies.get(h);if(this.mode==="free"&&(this.dragging||this.recovery)||y.opening||v.opening)continue;let m=Math.hypot(v.x-y.x,v.y-y.y);if(!l){let S=Math.max(280,f.restLength);if(m<=S||!m)continue;let E=(m-S)/m*(1-Math.exp(-5*r)),C=(v.x-y.x)*E,z=(v.y-y.y)*E;y.pin||(y.x+=C*.5,y.y+=z*.5),v.pin||(v.x-=C*.5,v.y-=z*.5);continue}if(this.dragging&&this.groupIndex.get(p)!==this.groupIndex.get(this.dragging)||v.pin||v.id===this.recovery?.id)continue;f.stiffness=.3+.7*this.hardening/gt;let w=1-Math.exp(-(this.reduced?35:x*(.55+f.stiffness))*r);v.x+=(y.x+f.restVector.x*g-v.x)*w,v.y+=(y.y+f.restVector.y*g-v.y)*w}for(let u of this.bodies.values())if(u.opening){let f=u.opening,p=this.bodies.get(f.parent);if(!p){delete u.opening;continue}f.elapsed+=r;let h=Math.min(1,f.elapsed/.24),g=f.start+(1-f.start)*(1-(1-h)**3);u.x=p.x+f.dx*g,u.y=p.y+f.dy*g,h===1&&delete u.opening}let d=0;for(let u=0;u<4;u++)d=Math.max(d,this.contacts());if(!l&&!this.dragging&&d>.1)for(let u of this.links){let f=this.bodies.get(u.source),p=this.bodies.get(u.target);u.restLength=Math.max(u.restLength,Math.hypot(p.x-f.x,p.y-f.y))}for(let u of this.bodies.values())u.pin||(u.x=ht(u.x-u.offset.x)+u.offset.x,u.y=ht(u.y-u.offset.y)+u.offset.y)}this.recovery&&(this.reduced||this.recovery.elapsed>2.4)&&(this.capture(),this.recovery=void 0,this.mode="elastic",this.orderLinks());let i=Math.max(0,...[...this.bodies.values()].map(c=>Math.hypot(c.x-c.offset.x-s[c.id].x,c.y-c.offset.y-s[c.id].y))),a=Math.max(0,...[...this.bodies.values()].map(c=>Math.hypot(c.vx,c.vy)));if(this.quiet=this.hardening>=gt&&!this.recovery&&![...this.bodies.values()].some(c=>c.opening)&&i<.035&&a<.2?this.quiet+n:0,this.quiet>.22){this.active=!1;for(let c of this.bodies.values())c.vx=c.vy=0}return this.active}};function Pl(e,t,n){let[o,r]=(0,pe.useState)([]),[s,i]=(0,pe.useState)({}),a=(0,pe.useRef)(new tr),c=(0,pe.useRef)(),l=(0,pe.useRef)(0),d=(0,pe.useRef)(n),u=(0,pe.useRef)(),f=(0,pe.useRef)(),p=(0,pe.useRef)(!1),h=(0,pe.useRef)(new WeakSet);d.current=n;let g=(0,pe.useCallback)(()=>{let S=a.current.positions();for(let E of Object.values(S))h.current.add(E);d.current(S)},[]),x=(0,pe.useCallback)(()=>{let S=a.current.positions();i(Object.fromEntries(a.current.links.map(E=>[JSON.stringify([E.source,E.target]),a.current.ropeState(E.source,E.target)]))),r(E=>E.map(C=>{let z=S[C.id];return z&&(z.x!==C.position.x||z.y!==C.position.y)?{...C,position:z}:C}))},[]),y=(0,pe.useCallback)(()=>{if(c.current!==void 0)return;l.current=performance.now();let S=E=>{a.current.step((E-l.current)/1e3),l.current=E,x(),a.current.active?c.current=requestAnimationFrame(S):(c.current=void 0,g())};c.current=requestAnimationFrame(S)},[x,g]);(0,pe.useEffect)(()=>{a.current.reduced=t},[t]),(0,pe.useEffect)(()=>{let S=a.current.sync(e.nodes,e.edges,p.current,h.current);p.current=!1;let E=a.current.positions();r(C=>{let z=new Map(C.map(P=>[P.id,P]));return e.nodes.map(P=>({...z.get(P.id),...P,position:E[P.id]??P.position}))}),S&&y()},[e,y]),(0,pe.useEffect)(()=>()=>{c.current!==void 0&&cancelAnimationFrame(c.current)},[]);let v=(0,pe.useCallback)(S=>{if(f.current&&f.current!==u.current&&a.current.unpin(f.current),f.current=S,S&&!u.current){let E=a.current.positions()[S];E&&a.current.pin(S,E)}a.current.active&&y()},[y]),m=(0,pe.useCallback)((S,E,C="elastic")=>{v(),u.current=S,a.current.drag(S,E,C),x(),y()},[v,x,y]),w=(0,pe.useCallback)(S=>{a.current.release(S),u.current=void 0,g(),y()},[g,y]);return(0,pe.useEffect)(()=>{let S=C=>{let z=u.current;if(!z||C.key!=="Control")return;let P=a.current.positions()[z];P&&m(z,P,C.type==="keydown"?"free":"elastic")},E=()=>{u.current&&w(u.current)};return window.addEventListener("keydown",S),window.addEventListener("keyup",S),window.addEventListener("blur",E),window.addEventListener("pointercancel",E),()=>{window.removeEventListener("keydown",S),window.removeEventListener("keyup",S),window.removeEventListener("blur",E),window.removeEventListener("pointercancel",E)}},[m,w]),{nodes:o,ropes:s,setNodes:r,drag:m,release:w,hover:v,world:a.current,forceNextSync:()=>{p.current=!0}}}var zl=Ge(require("react"),1);function Al({id:e,source:t,target:n,style:o,data:r}){let s=ei(t),i=ei(n);if(!s||!i)return null;let a=x=>{let y=pt(x.data.kind),v=x.internals.positionAbsolute;return{x:v.x+y.offset.x,y:v.y+y.offset.y,radius:y.radius}},c=vl(a(s),a(i)),l=c.target.x-c.source.x,d=c.target.y-c.source.y,u=Math.hypot(l,d),f=Number(r?.softness??0),p=Math.min(48,u*.15)*f,h=(c.source.x+c.target.x)/2-(u?d/u:0)*p,g=(c.source.y+c.target.y)/2+(u?l/u:0)*p;return zl.default.createElement(Qt,{id:e,path:`M ${c.source.x},${c.source.y} Q ${h},${g} ${c.target.x},${c.target.y}`,style:o})}var Ze=Ge(require("react"),1);function Dl(e){return[...new Intl.Segmenter(void 0,{granularity:"grapheme"}).segment(e)].map(t=>t.segment)}function Ol({value:e,onSave:t}){let[n,o]=(0,Ze.useState)(e);return(0,Ze.useEffect)(()=>o(e),[e]),Ze.default.createElement("form",{className:"wg-summary-editor",onSubmit:r=>{r.preventDefault(),t(n.trim())}},Ze.default.createElement("label",null,"\u624B\u52A8\u77ED\u6982\u62EC",Ze.default.createElement("textarea",{"aria-label":"\u624B\u52A8\u77ED\u6982\u62EC",value:n,onChange:r=>o(r.target.value),maxLength:4e3,placeholder:"\u5EFA\u8BAE 12\u201324 \u5B57\uFF1B\u7559\u7A7A\u4F7F\u7528\u63D2\u4EF6\u6458\u8981\u6216\u539F\u6807\u9898"})),Ze.default.createElement("p",{className:"wg-small-note"},Dl(n).length," \u4E2A\u5B57\u7B26 \xB7 \u4EC5\u4FDD\u5B58\u5728\u5F53\u524D\u6D4F\u89C8\u5668"),Ze.default.createElement("button",null,"\u4FDD\u5B58\u6982\u62EC"))}var Ee=Ge(require("react"),1);function Tl({repository:e,snapshot:t,prepareImport:n,onImport:o,onError:r}){let[s,i]=(0,Ee.useState)(!1),[a,c]=(0,Ee.useState)(!1),[l,d]=(0,Ee.useState)();return Ee.default.createElement("div",{className:"wg-backup"},Ee.default.createElement("button",{onClick:()=>i(!s),"aria-expanded":s},"\u5907\u4EFD\u4E0E\u6062\u590D"),s&&Ee.default.createElement("div",{className:"wg-backup-panel",role:"region","aria-label":"\u5907\u4EFD\u4E0E\u6062\u590D"},Ee.default.createElement("p",null,"\u5907\u4EFD\u5305\u542B\u6982\u62EC\u3001\u7F6E\u9876\u3001\u4E3B\u9898\u3001\u4F7F\u7528\u8BB0\u5F55\u3001\u7B5B\u9009\u548C\u5F53\u524D\u5E03\u5C40\u3002"),Ee.default.createElement("button",{onClick:()=>{let u=URL.createObjectURL(new Blob([JSON.stringify(t(),null,2)],{type:"application/json"})),f=document.createElement("a");f.href=u,f.download="workspace-graph-backup.json",f.click(),setTimeout(()=>URL.revokeObjectURL(u),1e3)}},"\u5BFC\u51FA\u56FE\u8C31\u5907\u4EFD"),Ee.default.createElement("label",{className:"wg-backup-file"},"\u5BFC\u5165\u5907\u4EFD\uFF08JSON\uFF0C\u6700\u591A 5 MB\uFF09",Ee.default.createElement("input",{type:"file",accept:".json,application/json","aria-label":"\u9009\u62E9\u56FE\u8C31\u5907\u4EFD",disabled:a,onChange:async u=>{let f=u.target.files?.[0];if(u.target.value="",d(void 0),!!f){c(!0);try{if(f.size>5*1024*1024)throw new Error("\u5907\u4EFD\u8D85\u8FC7 5 MB");let p=await f.text(),h=e.previewBackup(p),g=await n();d({raw:p,doc:h,expected:g})}catch(p){r("\u65E0\u6CD5\u8BFB\u53D6\u5907\u4EFD\uFF1A"+String(p))}finally{c(!1)}}}})),l&&Ee.default.createElement("div",{role:"status"},Ee.default.createElement("p",null,"\u5C06\u66FF\u6362\u672C\u5730\u8BBE\u7F6E\uFF1A",Object.keys(l.doc.settings?.manualSummaries??{}).length," ","\u6761\u6982\u62EC\u3001",l.doc.settings?.pinned?.length??0," ","\u4E2A\u7F6E\u9876\u3002\u5EFA\u8BAE\u5148\u5BFC\u51FA\u5F53\u524D\u5907\u4EFD\u3002\u5BFC\u5165\u7684\u4F4D\u7F6E\u4EC5\u5728\u672C\u6B21\u8FD0\u884C\u4FDD\u7559\u3002"),Ee.default.createElement("button",{disabled:a,onClick:async()=>{c(!0);try{await o(l.raw,l.expected),d(void 0)}catch(u){r("\u5BFC\u5165\u672A\u5B8C\u6210\uFF1A"+String(u))}finally{c(!1)}}},"\u786E\u8BA4\u5BFC\u5165\u5907\u4EFD"),Ee.default.createElement("button",{disabled:a,onClick:()=>d(void 0)},"\u53D6\u6D88\u5BFC\u5165"))))}var Pe=Ge(require("react"),1);function Ll({rows:e,title:t,onLocate:n}){let[o,r]=(0,Pe.useState)(50),i=(0,Pe.useMemo)(()=>e.slice(0,o),[e,o]),a={running:"\u8FD0\u884C\u4E2D",waiting:"\u7B49\u5F85\u56DE\u5E94",unread:"\u65B0\u7ED3\u679C",idle:"\u7A7A\u95F2",unknown:"\u672A\u77E5"};return Pe.default.createElement("section",{className:"wg-navigation","aria-label":"\u4F1A\u8BDD\u5BFC\u822A"},Pe.default.createElement("h2",null,t," ",Pe.default.createElement("span",null,e.length," \u4E2A\u4F1A\u8BDD")),!e.length&&Pe.default.createElement("p",null,"\u6CA1\u6709\u5339\u914D\u4F1A\u8BDD\uFF0C\u53EF\u8C03\u6574\u65F6\u95F4\u3001\u72B6\u6001\u6216\u641C\u7D22\u6761\u4EF6\u3002"),Pe.default.createElement("div",{className:"wg-result-list"},i.map(c=>Pe.default.createElement("button",{key:c.id,"aria-label":"\u5B9A\u4F4D "+c.data.title,onClick:()=>n(c.data.entityId)},Pe.default.createElement("strong",null,c.data.pinned?"\u2605 ":"",c.data.title),Pe.default.createElement("span",null,a[c.data.status],c.data.current?" \xB7 \u5F53\u524D":""),c.data.path&&Pe.default.createElement("small",null,c.data.path)))),e.length>o&&Pe.default.createElement("button",{onClick:()=>r(o+50)},"\u518D\u663E\u793A 50 \u6761\u7ED3\u679C"))}var Fn={running:"\u8FD0\u884C\u4E2D",waiting:"\u7B49\u5F85\u56DE\u5E94",unread:"\u65B0\u7ED3\u679C",idle:"\u7A7A\u95F2",unknown:"\u672A\u77E5"},ri={running:"#6aabff",waiting:"#ffc56c",unread:"#5fe0b4",idle:"#9aaac5",unknown:"#748099"};function pm({data:e,selected:t}){let n=e.kind==="workspace";return _.default.createElement("div",{className:"wg-bubble "+(n?"is-workspace":"is-session")+" is-status-"+e.status+(t?" is-selected":"")+(e.collapsed===!1?" is-expanded":"")+(e.current?" is-current":"")+(e.working?" is-working":"")+(e.archived?" is-archived":""),style:{"--bubble-color":ri[e.status]},title:e.title+(e.path?" \xB7 "+e.path:"")},_.default.createElement(et,{type:"target",position:U.Top,isConnectable:!1}),_.default.createElement("div",{className:"wg-orb"},_.default.createElement("span",{className:"wg-orb-symbol"},n?"\u25C8":"\u2726"),n&&_.default.createElement("span",{className:"wg-orb-count"},e.total," \u4E2A\u4F1A\u8BDD"),n&&!!e.childWorkspaceCount&&_.default.createElement("span",{className:"wg-orb-count"},e.childWorkspaceCount," \u4E2A\u5B50\u5DE5\u4F5C\u533A")),_.default.createElement("div",{className:"wg-node-title"},e.title),_.default.createElement("div",{className:"wg-node-badges"},e.current&&_.default.createElement("span",null,"\u5F53\u524D"),e.working&&_.default.createElement("strong",null,"\u25B6 \u5DE5\u4F5C\u4E2D"),e.parentWorkspaceId&&_.default.createElement("span",null,"\u5B50\u5DE5\u4F5C\u533A"),e.parentSessionId&&_.default.createElement("span",null,"\u5206\u652F"),e.context&&_.default.createElement("span",null,"\u6765\u6E90"),e.outsideFilters&&_.default.createElement("span",null,e.current||e.working||e.status==="waiting"?"\u7B5B\u9009\u5916\u6D3B\u52A8":"\u4E34\u65F6\u5B9A\u4F4D")),!n&&_.default.createElement("div",{className:"wg-activity"},e.pinned?"\u2605 ":"",e.recency&&Go[e.recency]," \xB7"," ",e.frequency&&Uo[e.frequency]),_.default.createElement("div",{className:"wg-node-meta"},_.default.createElement("i",null),n?e.collapsed?"\u5DF2\u6536\u8D77":"\u5DE5\u4F5C\u533A":e.archived?"\u5DF2\u5F52\u6863":Fn[e.status]),_.default.createElement(et,{type:"source",position:U.Bottom,isConnectable:!1}),!n&&_.default.createElement(_.default.Fragment,null,_.default.createElement(et,{id:"branch-source",type:"source",position:U.Top,isConnectable:!1}),_.default.createElement(et,{id:"branch-target",type:"target",position:U.Bottom,isConnectable:!1})))}var gm={bubble:_.default.memo(pm)},hm={rope:_.default.memo(Al)};function mm(e){return(0,_.useState)(()=>{try{return{layout:e.load(),error:""}}catch(t){return{layout:tn(),error:"\u65E0\u6CD5\u8BFB\u53D6\u5DF2\u4FDD\u5B58\u5E03\u5C40\uFF1A"+String(t)}}})[0]}function $l(e){return _.default.createElement(Jr,null,_.default.createElement(ym,{...e}))}function ym({catalog:e,actions:t,repository:n,demo:o,access:r}){let s=mm(n),[i,a]=(0,_.useState)(s.layout),c=(0,_.useRef)(i),[l,d]=(0,_.useState)(s.error),[u,f]=(0,_.useState)(!1),[p,h]=(0,_.useState)(""),[g,x]=(0,_.useState)(()=>({...Jt,...s.layout.views.all?.filters})),[y,v]=(0,_.useState)(),[m,w]=(0,_.useState)(()=>new Set),[S,E]=(0,_.useState)({}),[C,z]=(0,_.useState)(!0),[P,V]=(0,_.useState)(),[L,F]=(0,_.useState)(),[H,b]=(0,_.useState)(!1),[N,k]=(0,_.useState)(),[I,D]=(0,_.useState)(!1),A=(0,_.useRef)(),[R,B]=(0,_.useState)(),[X,Q]=(0,_.useState)(()=>window.matchMedia("(prefers-reduced-motion: reduce)").matches),Z=!!i.settings?.reducedMotion||X,[K,ne]=(0,_.useState)(Date.now),Y=Ln(),$=(0,_.useRef)(null),q=(0,_.useRef)(!1),J=(0,_.useCallback)(()=>{let M=$.current;if(!M||!Y.getNodes().length)return;let W=M.getBoundingClientRect(),ee=M.querySelector(".wg-dock")?.getBoundingClientRect(),ce=W.width>850?(ee?.width??0)+45:20,xe=W.width<=850?(ee?.height??0)+35:35,Rn=Math.max(180,W.width-ce-35),Wn=Math.max(120,W.height-xe-40),ot=Y.getNodesBounds(Y.getNodes()),wt=Math.max(.1,Math.min(1,Rn/(ot.width+100),Wn/(ot.height+100)));Y.setViewport({x:ce+(Rn-ot.width*wt)/2-ot.x*wt,y:20+(Wn-ot.height*wt)/2-ot.y*wt,zoom:wt})},[Y]),te=(0,_.useRef)(!0),G=(0,_.useRef)(Promise.resolve()),j=(0,_.useRef)(!!s.error),oe=(0,_.useRef)(0),ie=(0,_.useRef)(0),se=(0,_.useRef)(),ge=(0,_.useRef)(),be=(0,_.useRef)(g);be.current=g;let fe=(0,_.useMemo)(()=>jo(e,g,i,S,m,K,L),[e,g,i,S,m,K,L]),Ne=(0,_.useMemo)(()=>jo(e,Xo,{...tn(),settings:i.settings},{},new Set,K).matches,[e,i.settings,K]),Be=(0,_.useMemo)(()=>Object.fromEntries(["waiting","running","unread"].map(M=>[M,Ne.filter(W=>W.data.status===M).length])),[Ne]),yt=(0,_.useMemo)(()=>N?Ne.filter(M=>M.data.status===N):fe.matches,[N,Ne,fe.matches]),ze=(0,_.useCallback)(M=>{c.current=M,a(M)},[]),le=(0,_.useCallback)((M,W=!1)=>{j.current||(oe.current++,W&&ie.current++,G.current=G.current.then(async()=>{if(!te.current||j.current)return;let ee=()=>{if(!te.current||j.current)return;let ce=c.current.revision,xe=W?n.initializePositions(M.positions??{}):n.savePatch(M,ce);ze(xe),h(M.settings?"\u8BBE\u7F6E\u5DF2\u4FDD\u5B58":"\u5E03\u5C40\u5728\u672C\u6B21\u8FD0\u884C\u4FDD\u7559")};navigator.locks?await navigator.locks.request(n.key,ee):ee()}).catch(ee=>{j.current=!0,te.current&&d("\u5E03\u5C40\u672A\u4FDD\u5B58\uFF1A"+String(ee))}).finally(()=>{oe.current--,W&&ie.current--}))},[n,ze]),he=Pl(fe,Z,M=>{let W=c.current.positions;Object.entries(M).some(([ce,xe])=>!W[ce]||Math.hypot(xe.x-W[ce].x,xe.y-W[ce].y)>.1)&&le({positions:Yo(e,W,M)})}),{nodes:ke,setNodes:De}=he,Te=(0,_.useRef)();(0,_.useEffect)(()=>{let M=ke.find(W=>W.id===Te.current);M&&(Te.current=void 0,Y.fitView({nodes:[M],padding:.8,maxZoom:1}))},[ke,Y]);let nn=M=>{A.current??=Y.getViewport(),Te.current="session:"+M,F(M),v("session:"+M);let W=ke.find(ee=>ee.id==="session:"+M);W&&(Te.current=void 0,Y.fitView({nodes:[W],padding:.8,maxZoom:1}))},on=(0,_.useMemo)(()=>fe.edges.map(M=>({...M,type:"rope",data:he.ropes[JSON.stringify([M.source,M.target])],style:{stroke:"#47719a",strokeWidth:1.25,opacity:.56}})),[fe.edges,he.ropes]);(0,_.useEffect)(()=>{if(e.loading||j.current)return;let M=c.current.settings?.usage??{},W=e.sessions.map(ee=>ee.id);W.some(ee=>!Object.hasOwn(M,ee))&&le({settings:{usage:_l(M,W)}})},[e.sessions,e.loading,i.settings?.usage,le]),(0,_.useEffect)(()=>{let M=setInterval(()=>ne(Date.now()),6e4);return()=>clearInterval(M)},[]),(0,_.useEffect)(()=>{let M=window.matchMedia("(prefers-reduced-motion: reduce)"),W=()=>Q(M.matches);return M.addEventListener("change",W),()=>M.removeEventListener("change",W)},[]),(0,_.useEffect)(()=>(te.current=!0,()=>{te.current=!1,clearTimeout(ge.current),clearTimeout(se.current)}),[]),(0,_.useEffect)(()=>{De(M=>M.map(W=>({...W,selected:W.id===y})))},[y,De]),(0,_.useEffect)(()=>{let M=W=>{if(W.key===n.key)try{let ee=n.load();ze(ee),h("\u8BBE\u7F6E\u5DF2\u4ECE\u53E6\u4E00\u7A97\u53E3\u540C\u6B65")}catch(ee){j.current=!0,d("\u65E0\u6CD5\u540C\u6B65\u5E03\u5C40\uFF1A"+String(ee))}};return window.addEventListener("storage",M),()=>window.removeEventListener("storage",M)},[n,ze]),(0,_.useEffect)(()=>{if(e.loading)return;let M=c.current.views[g.workspace]?.viewport,W=setTimeout(()=>{if(M)Y.setViewport(M);else{let ee=e.currentSessionId??e.currentSessionIds?.[0],ce=!q.current&&ee?Y.getNodes().find(xe=>xe.id==="session:"+ee):void 0;if(ce){let{offset:xe}=pt("session");Y.setCenter(ce.position.x+xe.x,ce.position.y+xe.y,{zoom:1})}else J()}q.current=!0},60);return()=>clearTimeout(W)},[g.workspace,e.loading,Y,J]),(0,_.useEffect)(()=>{if(e.loading||j.current)return;let M=Object.entries(Zo(e,c.current.positions)).filter(([W])=>!c.current.positions[W]);M.length&&le({positions:Object.fromEntries(M)},!0)},[e.loading,fe,le]),(0,_.useEffect)(()=>{if(!p)return;let M=setTimeout(()=>h(""),2400);return()=>clearTimeout(M)},[p]);let rn=async M=>{f(!0),j.current||d("");try{if(clearTimeout(ge.current),le({views:{[be.current.workspace]:{viewport:Y.getViewport()}}}),await G.current,!te.current)return;await M()}catch(W){d("\u64CD\u4F5C\u672A\u5B8C\u6210\uFF1A"+String(W))}finally{te.current&&f(!1)}},nt=M=>{let W={...be.current,...M};x(W),M.query===void 0&&le({views:{all:{filters:W}}})};(0,_.useEffect)(()=>(se.current=setTimeout(()=>le({views:{all:{filters:be.current}}}),250),()=>clearTimeout(se.current)),[g.query,le]);let sn=M=>{F(void 0),k(void 0),v(void 0),x({...M}),le({views:{all:{filters:{...M}}}})},nr=M=>{clearTimeout(ge.current);let W=be.current.workspace;le({views:{[W]:{viewport:Y.getViewport()},all:{...W==="all"?{viewport:Y.getViewport()}:{},filters:{...be.current,workspace:M}}}}),x(ee=>({...ee,workspace:M})),v(void 0)},re=fe.nodes.find(M=>M.id===y),or=()=>{he.forceNextSync();let M=jo(e,g,tn(),S,m),W=Object.fromEntries(ke.map(ee=>[ee.id,ee.position]));V(W),le({positions:Object.fromEntries(M.nodes.map(ee=>[ee.id,ee.position]))}),setTimeout(()=>Y.fitView({padding:.12,maxZoom:1}),70)},an=M=>rn(async()=>{if(M.data.kind==="workspace"){M.data.virtual||await t.openWorkspace(M.data.entityId);return}if(M.data.archived)throw new Error("\u8BF7\u5148\u6062\u590D\u8FD9\u4E2A\u5F52\u6863\u4F1A\u8BDD");let W=M.data.entityId;le({settings:{usage:{...c.current.settings?.usage,[W]:Sl(c.current.settings?.usage?.[W])}}}),await G.current,te.current&&await t.openSession(W)}),Tt=g.query||!!g.statuses?.length||g.recency&&g.recency!=="all"||g.frequency&&g.frequency!=="all"||g.status!=="all"||g.kind!=="all"||g.workspace!=="all"||g.archived,xt=Nl(i.settings?.theme??tt);return _.default.createElement("section",{className:"wg-root"+(i.settings?.reducedMotion?" wg-reduced":""),style:{"--wg-workspace":xt.workspace,"--wg-expanded":xt.expanded,"--wg-session":xt.session,"--wg-session-text":xt.sessionText,"--wg-accent":xt.accent},"aria-label":"\u5DE5\u4F5C\u533A\u56FE\u8C31"},_.default.createElement("header",{className:"wg-header"},_.default.createElement("div",{className:"wg-brand"},_.default.createElement("span",{className:"wg-logo"},"\u25C8"),_.default.createElement("div",null,_.default.createElement("h1",null,"\u5DE5\u4F5C\u533A\u56FE\u8C31",_.default.createElement("span",null,"WORKSPACE ATLAS")),_.default.createElement("p",null,e.workspaces.length," \u4E2A\u5DE5\u4F5C\u533A \xB7 ",fe.total," \u4E2A\u4F1A\u8BDD",o?" \xB7 \u6F14\u793A\u6570\u636E":""))),_.default.createElement("div",{className:"wg-top-actions"},_.default.createElement("button",{"aria-pressed":H,onClick:()=>b(!H)},H?"\u56FE\u8C31\u89C6\u56FE":"\u5217\u8868\u89C6\u56FE"),_.default.createElement(Tl,{repository:n,snapshot:()=>({...c.current,views:{...c.current.views,all:{...c.current.views.all,filters:be.current}},positions:{...c.current.positions,...Object.fromEntries(ke.map(M=>[M.id,M.position]))}}),prepareImport:async()=>(clearTimeout(se.current),le({views:{all:{filters:be.current}}}),await G.current,n.storage.getItem(n.key)),onError:d,onImport:async(M,W)=>{await G.current;let ee=()=>{let ce=n.importBackup(M,W);he.forceNextSync(),j.current=!1,ze(ce),d(""),x({...Jt,...ce.views.all?.filters}),F(void 0),v(void 0),h("\u5907\u4EFD\u5DF2\u5BFC\u5165");let xe=ce.views[ce.views.all?.filters?.workspace??"all"]?.viewport;xe&&Y.setViewport(xe)};navigator.locks?await navigator.locks.request(n.key,ee):ee()}}),_.default.createElement("label",{className:"wg-search"},_.default.createElement("span",null,"\u2315"),_.default.createElement("input",{"aria-label":"\u641C\u7D22\u5DE5\u4F5C\u533A\u548C\u4F1A\u8BDD",placeholder:"\u641C\u7D22\u5DE5\u4F5C\u533A\u6216\u4F1A\u8BDD\u2026",value:g.query,onChange:M=>{k(void 0),nt({query:M.target.value})}})),_.default.createElement("button",{onClick:J},"\u9002\u5E94\u753B\u5E03"),_.default.createElement("button",{onClick:or},"\u91CD\u7F6E\u5E03\u5C40"))),(l||e.error)&&_.default.createElement("div",{className:"wg-alert",role:"alert"},_.default.createElement("span",null,l||e.error),j.current&&_.default.createElement(_.default.Fragment,null,_.default.createElement("button",{onClick:()=>location.reload()},"\u91CD\u65B0\u8F7D\u5165"),_.default.createElement("button",{onClick:()=>{try{B({raw:n.storage.getItem(n.key)})}catch(M){d(String(M))}}},"\u6E05\u9664\u5168\u90E8\u672C\u5730\u6570\u636E"),_.default.createElement("button",{onClick:()=>{try{let M=n.storage.getItem(n.key),W=URL.createObjectURL(new Blob([M??""],{type:"text/plain"})),ee=document.createElement("a");ee.href=W,ee.download="workspace-graph-layout-backup.txt",ee.click(),setTimeout(()=>URL.revokeObjectURL(W),1e3)}catch(M){d(String(M))}}},"\u5BFC\u51FA\u5DF2\u4FDD\u5B58\u539F\u6587")),_.default.createElement("button",{onClick:()=>{let M=new Blob([JSON.stringify({...c.current,positions:{...c.current.positions,...Object.fromEntries(ke.map(ce=>[ce.id,ce.position]))}},null,2)],{type:"application/json"}),W=URL.createObjectURL(M),ee=document.createElement("a");ee.href=W,ee.download="workspace-graph-layout.json",ee.click(),setTimeout(()=>URL.revokeObjectURL(W),1e3)}},"\u5BFC\u51FA\u5F53\u524D\u5E03\u5C40")),R&&_.default.createElement("div",{className:"wg-alert",role:"alert"},_.default.createElement("span",null,"\u8FD9\u4F1A\u6E05\u9664\u5168\u90E8\u56FE\u8C31\u672C\u5730\u6570\u636E\uFF0C\u5305\u62EC\u624B\u52A8\u6982\u62EC\u3001\u7F6E\u9876\u3001\u4E3B\u9898\u3001\u4F7F\u7528\u8BB0\u5F55\u3001\u7B5B\u9009\u548C\u5E03\u5C40\u3002\u8BF7\u5148\u5BFC\u51FA\u5907\u4EFD\u3002"),_.default.createElement("button",{onClick:()=>{try{let M=n.reset(R.raw);j.current=!1,ze(M),d(""),x(Jt),B(void 0)}catch(M){d("\u65E0\u6CD5\u91CD\u7F6E\uFF1A"+String(M))}}},"\u786E\u8BA4\u6E05\u9664\u5168\u90E8\u6570\u636E"),_.default.createElement("button",{onClick:()=>B(void 0)},"\u53D6\u6D88")),o&&_.default.createElement("div",{className:"wg-demo-label"},"\u4EA4\u4E92\u6F14\u793A \xB7 \u6570\u636E\u4EC5\u7528\u4E8E\u9884\u89C8"),_.default.createElement("div",{className:"wg-canvas"+(I?" wg-compact":"")+(H?" wg-list-view":"")+(re?" wg-has-details":""),ref:$,onKeyDown:M=>{if(M.key!=="Enter"&&M.key!==" ")return;let W=M.target.closest(".react-flow__node")?.getAttribute("data-id"),ee=ke.find(ce=>ce.id===W);ee?.data.kind==="workspace"&&(M.preventDefault(),v(ee.id),w(ce=>{let xe=new Set(ce);return xe.has(ee.data.entityId)?xe.delete(ee.data.entityId):xe.add(ee.data.entityId),xe}))}},_.default.createElement(hl,{nodes:ke,edges:on,nodeTypes:gm,edgeTypes:hm,onNodesChange:M=>De(W=>Kr(M,W)),onNodeDragStart:(M,W)=>{he.drag(W.id,W.position,M.ctrlKey?"free":"elastic")},onNodeDrag:(M,W)=>he.drag(W.id,W.position,M.ctrlKey?"free":"elastic"),onNodeDragStop:(M,W)=>{he.drag(W.id,W.position,M.ctrlKey?"free":"elastic"),he.release(W.id)},autoPanOnNodeFocus:!1,autoPanOnNodeDrag:!1,zoomOnDoubleClick:!1,nodeDragThreshold:5,onNodeClick:(M,W)=>{v(W.id),W.data.kind==="workspace"&&w(ee=>{let ce=new Set(ee);return ce.has(W.data.entityId)?ce.delete(W.data.entityId):ce.add(W.data.entityId),ce})},onNodeDoubleClick:(M,W)=>{an(W)},onPaneClick:()=>v(void 0),onMoveEnd:(M,W)=>{D(W.zoom<.55),clearTimeout(ge.current);let ee=be.current.workspace;ge.current=setTimeout(()=>le({views:{[ee]:{viewport:W}}}),180)},minZoom:.1,maxZoom:3,nodesConnectable:!1,edgesReconnectable:!1,deleteKeyCode:null,selectionOnDrag:!1,multiSelectionKeyCode:null,selectionKeyCode:null,proOptions:{hideAttribution:!1},defaultViewport:i.views[g.workspace]?.viewport,onViewportChange:M=>D(M.zoom<.55)},_.default.createElement(yl,{variant:Xe.Dots,gap:26,size:1,color:"#284061"}),_.default.createElement(wl,{position:"bottom-right",showInteractive:!1})),_.default.createElement("div",{className:"wg-attention","aria-label":"\u5168\u5C40\u4F1A\u8BDD\u72B6\u6001"},_.default.createElement("div",{className:"wg-canvas-hint"},"\u62D6\u52A8\u67D4\u6027\u7275\u5F15 \xB7 Ctrl \u81EA\u7531\u62D6\u52A8 \xB7 \u6EDA\u8F6E\u7F29\u653E \xB7 \u53CC\u51FB\u6253\u5F00"),["waiting","running","unread"].map(M=>_.default.createElement("button",{key:M,"aria-pressed":N===M,onClick:()=>k(N===M?void 0:M)},Fn[M]," ",Be[M]??0)),N&&_.default.createElement("button",{onClick:()=>k(void 0)},"\u8FD4\u56DE\u5168\u90E8\u4F1A\u8BDD"),A.current&&_.default.createElement("button",{onClick:()=>{Y.setViewport(A.current),A.current=void 0,F(void 0),v(void 0)}},"\u8FD4\u56DE\u5B9A\u4F4D\u524D\u89C6\u89D2")),(H||g.query.trim()||N)&&_.default.createElement(Ll,{key:N??g.query,rows:yt,title:N?"\u5168\u5C40"+Fn[N]:g.query.trim()?"\u641C\u7D22\u7ED3\u679C":"\u5339\u914D\u4F1A\u8BDD",onLocate:nn}),e.loading&&_.default.createElement("div",{className:"wg-empty",role:"status"},_.default.createElement("span",{className:"wg-empty-orb"},"\u25C8"),_.default.createElement("h2",null,"\u6B63\u5728\u8FDE\u63A5\u5DE5\u4F5C\u533A"),_.default.createElement("p",null,"\u8BFB\u53D6 Harness \u7684\u5DE5\u4F5C\u533A\u4E0E\u4F1A\u8BDD\u2026")),!e.loading&&Tt&&fe.matched===0&&_.default.createElement("div",{className:"wg-no-match",role:"status"},"\u6CA1\u6709\u5339\u914D\u7684\u4F1A\u8BDD\uFF1B\u5DE5\u4F5C\u533A\u4E0E\u5F53\u524D\u4F1A\u8BDD\u4ECD\u4FDD\u7559\u3002"),!e.loading&&!fe.nodes.length&&_.default.createElement("div",{className:"wg-empty"},_.default.createElement("span",{className:"wg-empty-orb"},"\u2315"),_.default.createElement("h2",null,Tt?"\u6CA1\u6709\u5339\u914D\u7684\u8282\u70B9":"\u4ECE\u4E00\u4E2A\u5DE5\u4F5C\u533A\u5F00\u59CB"),_.default.createElement("p",null,Tt?"\u8C03\u6574\u5DE6\u4E0B\u89D2\u7684\u9009\u62E9\u6216\u6E05\u9664\u641C\u7D22\u3002":"\u5728 Harness \u4FA7\u680F\u6DFB\u52A0\u5DE5\u4F5C\u533A\u540E\uFF0C\u8FD9\u91CC\u4F1A\u81EA\u52A8\u663E\u793A\u3002"),Tt&&_.default.createElement("button",{onClick:()=>{sn(Xo)}},"\u6E05\u9664\u7B5B\u9009")),_.default.createElement("div",{className:"wg-dock "+(C?"":"is-folded")},_.default.createElement("button",{className:"wg-dock-heading",onClick:()=>z(!C),"aria-expanded":C},_.default.createElement("span",null,"\u2637\u3000\u89C6\u56FE\u4E0E\u7B5B\u9009"),_.default.createElement("span",null,C?"\u2212":"+")),C&&_.default.createElement(_.default.Fragment,null,_.default.createElement("label",{className:"wg-field"},_.default.createElement("span",null,"\u5DE5\u4F5C\u533A"),_.default.createElement("select",{"aria-label":"\u9009\u62E9\u5DE5\u4F5C\u533A",value:g.workspace,onChange:M=>nr(M.target.value)},_.default.createElement("option",{value:"all"},"\u5168\u90E8\u5DE5\u4F5C\u533A"),e.workspaces.map(M=>_.default.createElement("option",{key:M.id,value:M.id},M.title," \xB7"," ",M.path.split(/[\/]/).filter(Boolean).slice(-2).join("/"))),_.default.createElement("option",{value:"__ungrouped__"},"\u672A\u5206\u7EC4"))),_.default.createElement("div",{className:"wg-filter-row"},_.default.createElement("span",null,"\u72B6\u6001"),_.default.createElement("div",{className:"wg-chips"},["all","running","waiting","unread","idle","unknown"].map(M=>_.default.createElement("button",{key:M,className:(M==="all"?!(g.statuses??(g.status==="all"?[]:[g.status])).length:(g.statuses??[g.status]).includes(M))?"active":"","aria-pressed":M==="all"?!(g.statuses??(g.status==="all"?[]:[g.status])).length:(g.statuses??[g.status]).includes(M),onClick:()=>{let W=g.statuses??(g.status==="all"?[]:[g.status]);nt({status:"all",statuses:M==="all"?[]:W.includes(M)?W.filter(ee=>ee!==M):[...W,M]})}},M!=="all"&&_.default.createElement("i",{style:{background:ri[M]}}),M==="all"?"\u5168\u90E8":Fn[M])))),_.default.createElement("div",{className:"wg-filter-row"},_.default.createElement("span",null,"\u663E\u793A"),_.default.createElement("div",{className:"wg-chips"},["all","workspace","session"].map(M=>_.default.createElement("button",{key:M,className:g.kind===M?"active":"","aria-pressed":g.kind===M,onClick:()=>nt({kind:M})},M==="all"?"\u5168\u90E8":M==="workspace"?"\u5DE5\u4F5C\u533A":"\u4F1A\u8BDD")),_.default.createElement("label",{className:"wg-check"},_.default.createElement("input",{type:"checkbox",checked:g.archived,onChange:M=>nt({archived:M.target.checked})}),"\u5F52\u6863"))),_.default.createElement(Il,{color:i.settings?.theme??tt,reduced:!!i.settings?.reducedMotion,onColor:M=>le({settings:{theme:M}}),onReduced:M=>le({settings:{reducedMotion:M}})}),_.default.createElement("div",{className:"wg-dock-foot"},_.default.createElement("label",null,"\u65F6\u95F4"," ",_.default.createElement("select",{"aria-label":"\u65F6\u95F4\u5206\u7C7B",value:g.recency??"all",onChange:M=>nt({recency:M.target.value})},_.default.createElement("option",{value:"all"},"\u5168\u90E8\u65F6\u95F4"),Object.entries(Go).map(([M,W])=>_.default.createElement("option",{value:M,key:M},W)))),_.default.createElement("label",null,"\u9891\u7387"," ",_.default.createElement("select",{"aria-label":"\u9891\u7387\u5206\u7C7B",value:g.frequency??"all",onChange:M=>nt({frequency:M.target.value})},_.default.createElement("option",{value:"all"},"\u5168\u90E8\u9891\u7387"),Object.entries(Uo).map(([M,W])=>_.default.createElement("option",{value:M,key:M},W)))),_.default.createElement("span",{className:"wg-small-note"},"\u5E38\u7528\u6309\u56FE\u8C31\u4E3B\u52A8\u6253\u5F00\u8BA1\u6570\uFF1B30 \u5929\u5185 5 \u6B21\uFF0C\u95F4\u9694 30 \u5206\u949F\u3002\u5386\u53F2\u8BB0\u5F55\u4ECE\u672C\u7248\u672C\u5F00\u59CB\u7D2F\u8BA1\u3002"),_.default.createElement("span",null,fe.nodes.length," \u4E2A\u53EF\u89C1\u8282\u70B9",fe.hidden>0?" \xB7 "+fe.hidden+" \u4E2A\u4F1A\u8BDD\u672A\u5C55\u5F00":""),_.default.createElement("button",{onClick:()=>{sn(Xo)}},"\u6E05\u9664\u7B5B\u9009"),_.default.createElement("button",{onClick:()=>{w(new Set),E({}),sn(Jt)}},"\u6062\u590D\u9ED8\u8BA4\u89C6\u56FE")))),re&&_.default.createElement("aside",{className:"wg-details","aria-label":"\u8282\u70B9\u8BE6\u60C5"},_.default.createElement("div",{className:"wg-detail-heading"},_.default.createElement("span",null,re.data.kind==="workspace"?"\u5DE5\u4F5C\u533A":"\u4F1A\u8BDD"),_.default.createElement("button",{"aria-label":"\u5173\u95ED\u8BE6\u60C5",onClick:()=>v(void 0)},"\xD7")),_.default.createElement("h2",null,re.data.title),_.default.createElement("div",{className:"wg-status",style:{color:ri[re.data.status]}},"\u25CF ",Fn[re.data.status],re.data.archived?" \xB7 \u5DF2\u5F52\u6863":""),_.default.createElement("dl",null,re.data.kind==="session"&&_.default.createElement(_.default.Fragment,null,_.default.createElement("dt",null,"\u5206\u7C7B"),_.default.createElement("dd",null,re.data.recency&&Go[re.data.recency]," ","\xB7"," ",re.data.frequency&&Uo[re.data.frequency]),_.default.createElement("dt",null,"\u56FE\u8C31\u4E3B\u52A8\u6253\u5F00\uFF08\u8FD1 30 \u5929\uFF09"),_.default.createElement("dd",null,i.settings?.usage?.[re.data.entityId]?.visits.filter(M=>M>=Date.now()-30*864e5).length??"\u8BB0\u5F55\u79EF\u7D2F\u4E2D")),_.default.createElement("dt",null,"\u8DEF\u5F84"),_.default.createElement("dd",null,re.data.path||"\u672A\u8BB0\u5F55\u76EE\u5F55"),_.default.createElement("dt",null,"\u6807\u8BC6"),_.default.createElement("dd",null,re.data.entityId),re.data.updatedAt&&_.default.createElement(_.default.Fragment,null,_.default.createElement("dt",null,"\u6700\u8FD1\u66F4\u65B0"),_.default.createElement("dd",null,new Date(re.data.updatedAt).toLocaleString()))),re.data.kind==="session"&&_.default.createElement("button",{onClick:()=>{let M=c.current.settings?.pinned??[];le({settings:{pinned:M.includes(re.data.entityId)?M.filter(W=>W!==re.data.entityId):[...M,re.data.entityId]}})}},re.data.pinned?"\u53D6\u6D88\u7F6E\u9876":"\u7F6E\u9876\u4F1A\u8BDD"),re.data.kind==="session"&&_.default.createElement(Ol,{key:"summary:"+re.id,value:i.settings?.manualSummaries?.[re.data.entityId]??"",onSave:M=>le({settings:{manualSummaries:{...c.current.settings?.manualSummaries,[re.data.entityId]:M}}})}),re.data.kind==="workspace"?_.default.createElement(xm,{key:re.id,node:re,actions:t,access:r,busy:u,perform:rn,open:()=>{an(re)},collapse:()=>w(M=>{let W=new Set(M);return W.has(re.data.entityId)?W.delete(re.data.entityId):W.add(re.data.entityId),W}),more:()=>E(M=>({...M,[re.data.entityId]:(M[re.data.entityId]??20)+20}))}):_.default.createElement(wm,{key:re.id,node:re,actions:t,access:r,busy:u,perform:rn,open:()=>{an(re)}})),_.default.createElement("div",{className:"wg-save-status",role:"status"},p),P&&_.default.createElement("div",{className:"wg-undo"},"\u5DF2\u91CD\u6392\u5F53\u524D\u89C6\u56FE",_.default.createElement("button",{onClick:()=>{he.forceNextSync(),le({positions:P}),V(void 0)}},"\u64A4\u9500"),_.default.createElement("button",{onClick:()=>V(void 0),"aria-label":"\u5173\u95ED\u64A4\u9500\u63D0\u793A"},"\xD7"))))}function xm({node:e,actions:t,access:n,busy:o,perform:r,open:s,collapse:i,more:a}){let[c,l]=(0,_.useState)(!1),[d,u]=(0,_.useState)(e.data.title),f=n?.useCreate()??!0,p=n?.useWorkspace(e.data.entityId,"workspace/rename")??!0;return _.default.createElement("div",{className:"wg-detail-actions"},!e.data.virtual&&_.default.createElement(_.default.Fragment,null,_.default.createElement("button",{className:"wg-primary",disabled:o||!f,onClick:s},"\u6253\u5F00\u5DE5\u4F5C\u533A \u2197"),_.default.createElement("button",{disabled:o||!f,onClick:()=>{r(()=>t.newSession(e.data.entityId))}},"\u65B0\u5EFA\u4F1A\u8BDD"),p&&_.default.createElement("button",{disabled:o,onClick:()=>l(!c)},"\u91CD\u547D\u540D\u5DE5\u4F5C\u533A")),c&&_.default.createElement("form",{onSubmit:h=>{h.preventDefault(),d.trim()&&r(async()=>{await t.renameWorkspace(e.data.entityId,d.trim()),l(!1)})}},_.default.createElement("input",{"aria-label":"\u5DE5\u4F5C\u533A\u65B0\u540D\u79F0",value:d,onChange:h=>u(h.target.value)}),_.default.createElement("button",{disabled:o||!d.trim()},"\u4FDD\u5B58\u540D\u79F0")),_.default.createElement("button",{onClick:i},e.data.collapsed?"\u5C55\u5F00\u4F1A\u8BDD":"\u6536\u8D77\u4F1A\u8BDD"),!e.data.collapsed&&_.default.createElement("button",{onClick:a},"\u518D\u663E\u793A 20 \u4E2A\u4F1A\u8BDD"))}function wm({node:e,actions:t,access:n,busy:o,perform:r,open:s}){let i=n?.useSession(e.data.entityId,"workspace/archiveSession")??!0,a=n?.useSession(e.data.entityId,"workspace/unarchiveSession")??!0;return _.default.createElement("div",{className:"wg-detail-actions"},e.data.archived?_.default.createElement("button",{className:"wg-primary",disabled:o||!a,onClick:()=>{r(()=>t.restore(e.data.entityId))}},"\u6062\u590D\u4F1A\u8BDD"):_.default.createElement(_.default.Fragment,null,_.default.createElement("button",{className:"wg-primary",disabled:o,onClick:s},"\u6253\u5F00\u4F1A\u8BDD \u2197"),_.default.createElement("button",{disabled:o||!i,onClick:()=>{r(()=>t.archive(e.data.entityId))}},"\u5F52\u6863\u4F1A\u8BDD")),_.default.createElement("p",{className:"wg-small-note"},"\u4F4D\u7F6E\u5728\u672C\u6B21\u8FD0\u884C\u4FDD\u7559\uFF0C\u91CD\u542F\u6062\u590D\u9ED8\u8BA4\u3002\u6D3B\u52A8\u4F1A\u8BDD\u4FDD\u7559\u663E\u793A\u3002\u62D6\u52A8\u4E0D\u4F1A\u6539\u53D8\u4F1A\u8BDD\u6240\u5C5E\u3002"))}function Hl(e,t,n){let o=e,r=t,s=n,i=Object.values(r?.byId??{}).filter(c=>(c.retainedBy?.mainView??0)>0).map(c=>c.id);return{currentSessionId:i[0],currentSessionIds:i,loading:o?.phase!=="ready"||r?.phase!=="ready",error:o?.error?.message,workspaces:(o?.items??[]).map(c=>({id:c.workspaceId,title:c.title,path:c.path,sessionIds:c.sessionIds})),archivedSessionIds:[...o?.archivedSessionIds??[]],sessions:[...new Set([...r?.ids??[],...i])].flatMap(c=>{let l=r?.byId[c];if(!l)return[];let d=s?.get(c);return[{id:c,title:l.title||l.displayTitle||"\u672A\u547D\u540D\u4F1A\u8BDD",cwd:l.cwd,parentId:l.parentId,updatedAt:l.updatedAt,running:r?.phase==="ready"?d?d.running:l.running:void 0,pending:!!d?.pendingInteraction,unread:d?.completionUnread,blank:l.blank,origin:l.origin}]})}}var Bl=`.wg-root {\r
+  height: 100%;\r
+  min-height: 380px;\r
+  position: relative;\r
+  display: flex;\r
+  flex-direction: column;\r
+  overflow: hidden;\r
+  background: #080f1e;\r
+  color: #e6edf9;\r
+  font:\r
+    14px/1.5 -apple-system,\r
+    BlinkMacSystemFont,\r
+    "Segoe UI",\r
+    "Microsoft YaHei",\r
+    sans-serif;\r
+  isolation: isolate;\r
+  --wg-line: rgba(154, 186, 229, 0.14);\r
+}\r
+.wg-root * {\r
+  box-sizing: border-box;\r
+}\r
+.wg-root button,\r
+.wg-root input,\r
+.wg-root select {\r
+  font: inherit;\r
+}\r
+.wg-root button {\r
+  cursor: pointer;\r
+  border: 1px solid var(--wg-line);\r
+  background: #16243b;\r
+  color: #dce8fa;\r
+  border-radius: 9px;\r
+  padding: 7px 12px;\r
+  transition:\r
+    background 0.15s,\r
+    border-color 0.15s;\r
+}\r
+.wg-root button:hover {\r
+  background: #20344f;\r
+  border-color: #5380b2;\r
+}\r
+.wg-root button:disabled {\r
+  opacity: 0.4;\r
+  cursor: not-allowed;\r
+}\r
+.wg-root button:focus-visible,\r
+.wg-root input:focus-visible,\r
+.wg-root select:focus-visible {\r
+  outline: 2px solid #8bb7ff;\r
+  outline-offset: 3px;\r
+}\r
+.wg-root input,\r
+.wg-root select {\r
+  color: #e3ebf7;\r
+  background: #101b2e;\r
+  border: 1px solid var(--wg-line);\r
+  border-radius: 8px;\r
+  padding: 8px 10px;\r
+}\r
+.wg-header {\r
+  flex-shrink: 0;\r
+  z-index: 5;\r
+  min-height: 98px;\r
+  padding: 23px 30px;\r
+  display: flex;\r
+  align-items: center;\r
+  justify-content: space-between;\r
+  gap: 20px;\r
+  border-bottom: 1px solid var(--wg-line);\r
+  background: #0c1425;\r
+}\r
+.wg-brand {\r
+  display: flex;\r
+  align-items: center;\r
+  gap: 13px;\r
+  white-space: nowrap;\r
+}\r
+.wg-logo {\r
+  display: grid;\r
+  place-items: center;\r
+  width: 42px;\r
+  height: 42px;\r
+  border: 1px solid #365b8a;\r
+  border-radius: 13px;\r
+  color: #a9c8ff;\r
+  background: linear-gradient(140deg, #1f385c, #18283f);\r
+  font-size: 27px;\r
+}\r
+.wg-header h1 {\r
+  font-size: 19px;\r
+  margin: 0;\r
+  font-weight: 650;\r
+  letter-spacing: 1px;\r
+}\r
+.wg-header h1 span {\r
+  font-size: 9px;\r
+  letter-spacing: 2.2px;\r
+  display: block;\r
+  color: #7089b0;\r
+  margin-top: 2px;\r
+}\r
+.wg-header p {\r
+  font-size: 11px;\r
+  margin: 4px 0 0;\r
+  color: #8e9db6;\r
+}\r
+.wg-top-actions {\r
+  display: flex;\r
+  align-items: center;\r
+  gap: 9px;\r
+}\r
+.wg-top-actions button {\r
+  font-size: 12px;\r
+  white-space: nowrap;\r
+  background: #121e32;\r
+}\r
+.wg-search {\r
+  display: flex;\r
+  align-items: center;\r
+  gap: 8px;\r
+  color: #7897c1;\r
+  background: #101c30;\r
+  border: 1px solid var(--wg-line);\r
+  border-radius: 9px;\r
+  padding: 0 11px;\r
+}\r
+.wg-search span {\r
+  font-size: 23px;\r
+  line-height: 1;\r
+}\r
+.wg-search input {\r
+  width: 200px;\r
+  border: 0;\r
+  background: none;\r
+  padding: 8px 0;\r
+  font-size: 12px;\r
+}\r
+.wg-search input::placeholder {\r
+  color: #6e819f;\r
+}\r
+.wg-canvas {\r
+  position: relative;\r
+  flex: 1;\r
+  min-height: 0;\r
+  background: radial-gradient(\r
+    ellipse at 37% 40%,\r
+    #10233e 0%,\r
+    #0b172b 40%,\r
+    #080f1e 85%\r
+  );\r
+}\r
+.wg-root .react-flow__node-bubble {\r
+  border: none;\r
+  background: none;\r
+  width: 144px;\r
+  box-shadow: none;\r
+}\r
+.wg-root .react-flow__node:focus-visible {\r
+  outline: 2px solid #8bb7ff;\r
+  border-radius: 30px;\r
+}\r
+.wg-bubble {\r
+  position: relative;\r
+  isolation: isolate;\r
+  width: 144px;\r
+  text-align: center;\r
+  --bubble-color: #6aabff;\r
+  user-select: none;\r
+}\r
+.wg-orb {\r
+  isolation: isolate;\r
+  position: relative;\r
+  display: flex;\r
+  flex-direction: column;\r
+  align-items: center;\r
+  justify-content: center;\r
+  gap: 2px;\r
+  width: 74px;\r
+  height: 74px;\r
+  margin: 0 auto 12px;\r
+  border-radius: 50%;\r
+  background: radial-gradient(circle at 30% 22%, #283c59, #16263c 65%);\r
+  border: 1px solid #547194;\r
+  box-shadow:\r
+    0 0 0 7px rgba(94, 139, 196, 0.025),\r
+    0 8px 20px #0004;\r
+  transition:\r
+    box-shadow 0.2s,\r
+    border-color 0.2s;\r
+}\r
+.wg-orb-symbol {\r
+  font-size: 24px;\r
+  color: #adc9ed;\r
+  font-weight: 300;\r
+}\r
+.is-workspace .wg-orb {\r
+  width: 106px;\r
+  height: 106px;\r
+  margin-bottom: 14px;\r
+  border: 1px solid #6b96c7;\r
+  background: radial-gradient(circle at 32% 20%, #355478, #1a304f 70%);\r
+  box-shadow:\r
+    0 0 0 9px #6aabff05,\r
+    0 0 0 19px #6aabff03,\r
+    0 8px 22px #0004;\r
+}\r
+.is-workspace .wg-orb-symbol {\r
+  font-size: 31px;\r
+  line-height: 1.1;\r
+}\r
+.wg-orb-count {\r
+  font-size: 10px;\r
+  letter-spacing: 0.3px;\r
+  color: #97b1d1;\r
+}\r
+.wg-node-title {\r
+  font-size: 15px;\r
+  color: #e4edfb;\r
+  white-space: nowrap;\r
+  overflow: hidden;\r
+  text-overflow: ellipsis;\r
+  padding: 0 2px;\r
+  max-width: 144px;\r
+}\r
+.is-workspace .wg-node-title {\r
+  font-size: 17px;\r
+  font-weight: 600;\r
+}\r
+.wg-node-meta {\r
+  display: flex;\r
+  justify-content: center;\r
+  align-items: center;\r
+  gap: 5px;\r
+  font-size: 10px;\r
+  color: #8396b2;\r
+  margin-top: 5px;\r
+  letter-spacing: 0.6px;\r
+}\r
+.wg-node-meta i {\r
+  width: 5px;\r
+  height: 5px;\r
+  border-radius: 50%;\r
+  background: var(--bubble-color);\r
+}\r
+.wg-bubble.is-selected .wg-orb {\r
+  border-color: #9cc7ff;\r
+  box-shadow:\r
+    0 0 0 4px #82b6ff20,\r
+    0 0 34px #599bff33;\r
+}\r
+.wg-bubble:hover .wg-orb {\r
+  border-color: #a8c6ee;\r
+}\r
+.wg-bubble.is-archived {\r
+  opacity: 0.55;\r
+}\r
+.wg-root .react-flow__handle {\r
+  opacity: 0;\r
+  pointer-events: none;\r
+}\r
+.wg-root .react-flow__controls {\r
+  box-shadow: none;\r
+  border: 1px solid var(--wg-line);\r
+  border-radius: 10px;\r
+  overflow: hidden;\r
+  bottom: 25px;\r
+  right: 24px;\r
+}\r
+.wg-root .react-flow__controls button {\r
+  border: 0;\r
+  border-bottom: 1px solid #25374e;\r
+  background: #122038;\r
+  border-radius: 0;\r
+  color: #bbcee8;\r
+  width: 32px;\r
+  height: 32px;\r
+  padding: 8px;\r
+}\r
+.wg-root .react-flow__controls svg {\r
+  fill: currentColor;\r
+}\r
+.wg-root .react-flow__attribution {\r
+  background: transparent;\r
+  color: #6983a7;\r
+  font-size: 9px;\r
+}\r
+.wg-root .react-flow__attribution a {\r
+  color: inherit;\r
+}\r
+.wg-dock {\r
+  position: absolute;\r
+  bottom: 28px;\r
+  left: 28px;\r
+  width: 410px;\r
+  border: 1px solid #314b6b88;\r
+  border-radius: 14px;\r
+  background: #101d33eb;\r
+  backdrop-filter: blur(14px);\r
+  box-shadow: 0 12px 40px #0004;\r
+  z-index: 4;\r
+  padding: 0 18px 13px;\r
+}\r
+.wg-dock.is-folded {\r
+  width: 190px;\r
+  padding-bottom: 0;\r
+}\r
+.wg-dock-heading {\r
+  display: flex;\r
+  justify-content: space-between;\r
+  width: 100%;\r
+  padding: 14px 0 !important;\r
+  border: 0 !important;\r
+  background: none !important;\r
+  text-align: left;\r
+  font-size: 12px !important;\r
+  letter-spacing: 0.7px;\r
+}\r
+.wg-dock-heading span:last-child {\r
+  color: #7b9ac3;\r
+}\r
+.wg-field {\r
+  display: flex;\r
+  align-items: center;\r
+  gap: 16px;\r
+  margin: 3px 0 15px;\r
+  font-size: 11px;\r
+  color: #8fa1bc;\r
+}\r
+.wg-field select {\r
+  flex: 1;\r
+  min-width: 0;\r
+  padding: 7px 10px;\r
+  font-size: 12px;\r
+  background: #192940;\r
+}\r
+.wg-filter-row {\r
+  display: flex;\r
+  align-items: flex-start;\r
+  gap: 16px;\r
+  margin: 12px 0;\r
+  font-size: 11px;\r
+  color: #8fa1bc;\r
+}\r
+.wg-filter-row > span {\r
+  padding-top: 5px;\r
+  white-space: nowrap;\r
+}\r
+.wg-chips {\r
+  display: flex;\r
+  gap: 6px;\r
+  flex-wrap: wrap;\r
+  align-items: center;\r
+}\r
+.wg-chips button {\r
+  font-size: 10px;\r
+  padding: 4px 9px;\r
+  border-radius: 6px;\r
+  color: #91a6c4;\r
+  background: #17273e;\r
+  border-color: transparent;\r
+  display: flex;\r
+  align-items: center;\r
+  gap: 5px;\r
+}\r
+.wg-chips button.active {\r
+  background: #28486f;\r
+  color: #e5f0ff;\r
+  border-color: #416da0;\r
+}\r
+.wg-chips i {\r
+  display: inline-block;\r
+  width: 5px;\r
+  height: 5px;\r
+  border-radius: 50%;\r
+}\r
+.wg-check {\r
+  display: flex;\r
+  align-items: center;\r
+  gap: 3px;\r
+  cursor: pointer;\r
+  font-size: 11px;\r
+}\r
+.wg-check input {\r
+  accent-color: #7caef9;\r
+}\r
+.wg-dock-foot {\r
+  display: flex;\r
+  align-items: center;\r
+  justify-content: space-between;\r
+  border-top: 1px solid var(--wg-line);\r
+  padding-top: 10px;\r
+  margin-top: 14px;\r
+  color: #7286a4;\r
+  font-size: 10px;\r
+}\r
+.wg-dock-foot button {\r
+  border: 0;\r
+  padding: 0;\r
+  font-size: 10px;\r
+  color: #9bbbe6;\r
+  background: none;\r
+}\r
+.wg-details {\r
+  position: absolute;\r
+  right: 24px;\r
+  top: 24px;\r
+  width: 268px;\r
+  max-height: calc(100% - 135px);\r
+  overflow: auto;\r
+  border: 1px solid #314b6b88;\r
+  border-radius: 14px;\r
+  background: #101c30f5;\r
+  backdrop-filter: blur(12px);\r
+  padding: 18px 20px;\r
+  box-shadow: 0 12px 40px #0005;\r
+  z-index: 5;\r
+}\r
+.wg-detail-heading {\r
+  display: flex;\r
+  align-items: center;\r
+  justify-content: space-between;\r
+  color: #8fa8c8;\r
+  font-size: 11px;\r
+  letter-spacing: 1px;\r
+}\r
+.wg-detail-heading button {\r
+  background: none;\r
+  border: 0;\r
+  padding: 0 4px;\r
+  font-size: 21px;\r
+  color: #8da1be;\r
+}\r
+.wg-details h2 {\r
+  font-size: 18px;\r
+  margin: 15px 0 8px;\r
+  overflow-wrap: anywhere;\r
+}\r
+.wg-status {\r
+  font-size: 11px;\r
+}\r
+.wg-details dl {\r
+  margin: 20px 0;\r
+  font-size: 11px;\r
+}\r
+.wg-details dt {\r
+  color: #6e87a8;\r
+  margin-top: 12px;\r
+  font-size: 10px;\r
+}\r
+.wg-details dd {\r
+  margin: 4px 0;\r
+  color: #b5c6df;\r
+  overflow-wrap: anywhere;\r
+}\r
+.wg-detail-actions {\r
+  display: flex;\r
+  flex-direction: column;\r
+  gap: 8px;\r
+}\r
+.wg-detail-actions button {\r
+  font-size: 12px;\r
+  text-align: left;\r
+  padding: 8px 12px;\r
+}\r
+.wg-root .wg-primary {\r
+  background: #315987;\r
+  border-color: #416d9f;\r
+  color: #ecf4ff;\r
+}\r
+.wg-small-note {\r
+  font-size: 10px;\r
+  line-height: 1.8;\r
+  color: #758cae;\r
+  margin: 7px 0 0;\r
+}\r
+.wg-detail-actions input {\r
+  width: 100%;\r
+  margin-bottom: 7px;\r
+  font-size: 12px;\r
+}\r
+.wg-alert {\r
+  padding: 10px 20px;\r
+  background: #482e25;\r
+  color: #ffd2b3;\r
+  z-index: 8;\r
+  font-size: 12px;\r
+  display: flex;\r
+  align-items: center;\r
+  gap: 12px;\r
+  flex-wrap: wrap;\r
+}\r
+.wg-alert span {\r
+  flex: 1;\r
+}\r
+.wg-alert button {\r
+  font-size: 11px;\r
+  background: #5f3b2c;\r
+  border-color: #ae775a;\r
+}\r
+.wg-empty {\r
+  position: absolute;\r
+  left: 50%;\r
+  top: 40%;\r
+  transform: translate(-50%, -50%);\r
+  text-align: center;\r
+  pointer-events: none;\r
+  width: 80%;\r
+  color: #92a7c7;\r
+}\r
+.wg-empty h2 {\r
+  color: #d1dff1;\r
+  font-size: 20px;\r
+  font-weight: 500;\r
+  margin: 12px 0 8px;\r
+}\r
+.wg-empty p {\r
+  font-size: 12px;\r
+}\r
+.wg-empty button {\r
+  pointer-events: auto;\r
+  margin-top: 10px;\r
+}\r
+.wg-empty-orb {\r
+  font-size: 44px;\r
+  color: #658bb9;\r
+}\r
+.wg-canvas-hint {\r
+  order: 1;\r
+  flex-basis: 100%;\r
+  text-align: left;\r
+  font-size: 10px;\r
+  color: #5f7899;\r
+  pointer-events: none;\r
+  letter-spacing: 1px;\r
+}\r
+.wg-save-status {\r
+  position: absolute;\r
+  bottom: 14px;\r
+  left: 50%;\r
+  transform: translateX(-50%);\r
+  color: #82a3c5;\r
+  font-size: 10px;\r
+  pointer-events: none;\r
+}\r
+.wg-demo-label {\r
+  z-index: 3;\r
+  position: absolute;\r
+  top: 111px;\r
+  right: 27px;\r
+  color: #9bafce;\r
+  font-size: 10px;\r
+  background: #192d48;\r
+  border: 1px solid #355174;\r
+  padding: 4px 10px;\r
+  border-radius: 20px;\r
+}\r
+.wg-undo {\r
+  position: absolute;\r
+  bottom: 28px;\r
+  left: 50%;\r
+  transform: translateX(-50%);\r
+  padding: 10px 14px;\r
+  border: 1px solid #3e5c85;\r
+  border-radius: 10px;\r
+  background: #182b46;\r
+  z-index: 6;\r
+  font-size: 11px;\r
+  white-space: nowrap;\r
+}\r
+.wg-undo button {\r
+  margin-left: 10px;\r
+  font-size: 11px;\r
+  padding: 2px 8px;\r
+}\r
+@media (max-width: 1050px) {\r
+  .wg-header {\r
+    padding: 18px;\r
+    min-height: 90px;\r
+  }\r
+  .wg-header h1 {\r
+    font-size: 16px;\r
+  }\r
+  .wg-search input {\r
+    width: 130px;\r
+  }\r
+  .wg-top-actions {\r
+    gap: 6px;\r
+  }\r
+  .wg-top-actions button {\r
+    padding: 6px 8px;\r
+    font-size: 11px;\r
+  }\r
+  .wg-details {\r
+    width: 235px;\r
+    right: 16px;\r
+  }\r
+  .wg-dock {\r
+    left: 18px;\r
+    bottom: 22px;\r
+    width: 370px;\r
+  }\r
+  .wg-canvas-hint {\r
+    left: 18px;\r
+  }\r
+}\r
+@media (max-width: 700px) {\r
+  .wg-header {\r
+    flex-wrap: wrap;\r
+    gap: 12px;\r
+    padding: 14px 16px;\r
+  }\r
+  .wg-top-actions {\r
+    width: 100%;\r
+  }\r
+  .wg-search {\r
+    flex: 1;\r
+  }\r
+  .wg-search input {\r
+    width: 100%;\r
+    min-width: 50px;\r
+  }\r
+  .wg-dock {\r
+    width: calc(100% - 36px);\r
+    bottom: 20px;\r
+  }\r
+  .wg-details {\r
+    top: 16px;\r
+    max-height: 42%;\r
+    width: 220px;\r
+  }\r
+  .wg-canvas-hint {\r
+    display: none;\r
+  }\r
+  .wg-demo-label {\r
+    display: none;\r
+  }\r
+  .wg-root .react-flow__controls {\r
+    bottom: 260px;\r
+    right: 16px;\r
+  }\r
+  .wg-header h1 span {\r
+    display: inline;\r
+    margin-left: 10px;\r
+  }\r
+  .wg-logo {\r
+    height: 35px;\r
+    width: 35px;\r
+  }\r
+  .wg-dock-heading {\r
+    padding: 10px 0 !important;\r
+  }\r
+}\r
+@media (prefers-reduced-motion: reduce) {\r
+  .wg-root * {\r
+    transition: none !important;\r
+  }\r
+}\r
+.wg-root .is-workspace .wg-orb {\r
+  background: var(--wg-workspace);\r
+  color: #fff;\r
+  border: 2px solid var(--wg-accent);\r
+}\r
+.wg-root .is-workspace.is-expanded .wg-orb {\r
+  background: var(--wg-expanded);\r
+  border-style: double;\r
+  border-width: 4px;\r
+}\r
+.wg-root .is-workspace .wg-orb-symbol,\r
+.wg-root .is-workspace .wg-orb-count {\r
+  color: #fff;\r
+}\r
+.wg-root .is-session .wg-orb {\r
+  background: var(--wg-session);\r
+  border: 2px solid var(--wg-accent);\r
+}\r
+.wg-root .is-session .wg-orb-symbol {\r
+  color: var(--wg-session-text);\r
+}\r
+.wg-root .is-current .wg-orb {\r
+  outline: 3px solid #fff;\r
+  outline-offset: 6px;\r
+}\r
+.wg-root .wg-bubble {\r
+  --wg-glow-color: var(--bubble-color);\r
+}\r
+.wg-root .wg-bubble.is-current {\r
+  --wg-glow-color: #a8ccff;\r
+}\r
+/* A separate layer keeps the glow behind the orb, leaving text and edges crisp. */\r
+.wg-root\r
+  .wg-bubble:is(\r
+    .is-current,\r
+    .is-status-running,\r
+    .is-status-waiting,\r
+    .is-status-unread\r
+  )\r
+  .wg-orb::before {\r
+  content: "";\r
+  position: absolute;\r
+  inset: -5px;\r
+  z-index: -1;\r
+  border-radius: 50%;\r
+  pointer-events: none;\r
+  opacity: 1;\r
+  box-shadow:\r
+    0 0 0 2px color-mix(in srgb, var(--wg-glow-color) 70%, transparent),\r
+    0 0 18px 6px color-mix(in srgb, var(--wg-glow-color) 68%, transparent),\r
+    0 0 40px 14px color-mix(in srgb, var(--wg-glow-color) 36%, transparent);\r
+}\r
+.wg-root .wg-bubble.is-current .wg-orb::before {\r
+  inset: -8px;\r
+  box-shadow:\r
+    0 0 0 2px color-mix(in srgb, var(--wg-glow-color) 85%, transparent),\r
+    0 0 22px 8px color-mix(in srgb, var(--wg-glow-color) 78%, transparent),\r
+    0 0 48px 18px color-mix(in srgb, var(--wg-glow-color) 42%, transparent);\r
+}\r
+.wg-root .wg-bubble:is(.is-status-running, .is-status-waiting) .wg-orb::before {\r
+  animation: wg-glow-breathe 3.6s ease-in-out infinite;\r
+}\r
+.wg-root .is-working .wg-orb {\r
+  border: 3px dashed #ffdd85;\r
+  box-shadow: 0 0 0 3px #ffdd8520;\r
+}\r
+.wg-node-badges {\r
+  display: flex;\r
+  justify-content: center;\r
+  flex-wrap: wrap;\r
+  gap: 4px;\r
+  font-size: 12px;\r
+  color: #fff;\r
+}\r
+.wg-node-badges span,\r
+.wg-node-badges strong {\r
+  padding: 1px 5px;\r
+  border-radius: 5px;\r
+  background: #263d5b;\r
+}\r
+.wg-node-badges strong {\r
+  color: #ffe6a3;\r
+  background: #473914;\r
+}\r
+.wg-root .wg-node-meta,\r
+.wg-root .wg-small-note,\r
+.wg-root .wg-filter-row,\r
+.wg-root .wg-dock-foot {\r
+  font-size: 12px;\r
+  color: #bdcce0;\r
+}\r
+.wg-root .wg-chips button {\r
+  font-size: 12px;\r
+  color: #c1d2e9;\r
+}\r
+.wg-dock {\r
+  max-height: calc(100% - 70px);\r
+  overflow: auto;\r
+}\r
+.wg-theme {\r
+  margin: 12px 0;\r
+  font-size: 12px;\r
+  color: #bdcce0;\r
+}\r
+.wg-theme summary {\r
+  cursor: pointer;\r
+  padding: 6px 0;\r
+}\r
+.wg-theme-controls {\r
+  display: flex;\r
+  flex-wrap: wrap;\r
+  gap: 8px;\r
+  align-items: center;\r
+  padding-top: 8px;\r
+}\r
+.wg-theme-controls input[type="color"] {\r
+  padding: 2px;\r
+  width: 40px;\r
+  height: 30px;\r
+  vertical-align: middle;\r
+}\r
+.wg-theme-controls input[aria-label="\u4E3B\u9898 HEX"] {\r
+  width: 100px;\r
+}\r
+.wg-theme-controls button {\r
+  padding: 4px 8px;\r
+  font-size: 12px;\r
+}\r
+.wg-no-match {\r
+  position: absolute;\r
+  left: 24px;\r
+  top: 48px;\r
+  background: #182b46;\r
+  padding: 8px 12px;\r
+  border-radius: 8px;\r
+  font-size: 12px;\r
+  pointer-events: none;\r
+}\r
+.wg-activity {\r
+  font-size: 12px;\r
+  color: #bdcce0;\r
+  margin-top: 3px;\r
+}\r
+.wg-summary-overlay {\r
+  position: absolute;\r
+  width: 0;\r
+  height: 0;\r
+  z-index: 12;\r
+  pointer-events: none;\r
+}\r
+.wg-ring-hit {\r
+  position: absolute;\r
+  overflow: visible;\r
+  pointer-events: none;\r
+}\r
+.wg-ring-hit circle {\r
+  pointer-events: stroke;\r
+  cursor: help;\r
+}\r
+.wg-ring-orbit {\r
+  position: absolute;\r
+  width: 0;\r
+  height: 0;\r
+  animation: wg-orbit var(--wg-orbit-duration) linear infinite;\r
+}\r
+.wg-ring-slot {\r
+  position: absolute;\r
+  width: 0;\r
+  height: 0;\r
+}\r
+.wg-ring-glyph {\r
+  display: flex;\r
+  align-items: center;\r
+  justify-content: center;\r
+  width: 18px;\r
+  height: 22px;\r
+  margin-left: -9px;\r
+  margin-top: -11px;\r
+  font-size: 12px;\r
+  line-height: 22px;\r
+  background: #0c1425;\r
+  color: #fff;\r
+  border-radius: 5px;\r
+  animation: wg-counter var(--wg-orbit-duration) linear infinite;\r
+}\r
+.wg-summary-readable {\r
+  position: absolute;\r
+  left: -125px;\r
+  width: 250px;\r
+  max-height: 120px;\r
+  overflow: auto;\r
+  border: 1px solid #86a5cd;\r
+  border-radius: 10px;\r
+  background: #101c30;\r
+  padding: 10px 14px;\r
+  pointer-events: auto;\r
+  user-select: text;\r
+  font-size: 12px;\r
+  color: #fff;\r
+}\r
+.wg-summary-readable span {\r
+  color: #becde2;\r
+}\r
+.wg-summary-readable p {\r
+  margin: 4px 0 0;\r
+  overflow-wrap: anywhere;\r
+}\r
+.wg-summary-editor {\r
+  margin: 14px 0;\r
+  font-size: 12px;\r
+}\r
+.wg-summary-editor textarea {\r
+  display: block;\r
+  width: 100%;\r
+  min-height: 70px;\r
+  background: #101b2e;\r
+  color: #fff;\r
+  border: 1px solid #6683aa;\r
+  padding: 8px;\r
+  margin: 6px 0;\r
+  border-radius: 8px;\r
+  font: inherit;\r
+  resize: vertical;\r
+}\r
+.wg-demo-tools {\r
+  position: fixed;\r
+  z-index: 20;\r
+  top: 2px;\r
+  left: 50%;\r
+  transform: translateX(-50%);\r
+  font-size: 11px;\r
+  background: #122038;\r
+  color: #fff;\r
+  border-radius: 5px;\r
+  padding: 2px 8px;\r
+  display: flex;\r
+  gap: 10px;\r
+}\r
+.wg-summary-overlay.is-static .wg-ring-orbit,\r
+.wg-summary-overlay.is-static .wg-ring-glyph {\r
+  animation: none;\r
+}\r
+@keyframes wg-orbit {\r
+  to {\r
+    transform: rotate(360deg);\r
+  }\r
+}\r
+@keyframes wg-counter {\r
+  to {\r
+    transform: rotate(-360deg);\r
+  }\r
+}\r
+.wg-root .wg-dock-foot {\r
+  flex-wrap: wrap;\r
+  gap: 10px;\r
+}\r
+.wg-dock-foot label {\r
+  display: flex;\r
+  align-items: center;\r
+  gap: 7px;\r
+}\r
+.wg-dock-foot .wg-small-note {\r
+  flex-basis: 100%;\r
+}\r
+@keyframes wg-glow-breathe {\r
+  0%,\r
+  100% {\r
+    opacity: 0.82;\r
+  }\r
+  50% {\r
+    opacity: 1;\r
+  }\r
+}\r
+.wg-reduced *,\r
+.wg-reduced *::before {\r
+  animation: none !important;\r
+  transition: none !important;\r
+}\r
+@media (prefers-reduced-motion: reduce) {\r
+  .wg-root *,\r
+  .wg-root *::before {\r
+    animation: none !important;\r
+  }\r
+}\r
+.wg-backup {\r
+  position: relative;\r
+}\r
+.wg-backup-panel {\r
+  position: absolute;\r
+  top: calc(100% + 8px);\r
+  right: 0;\r
+  width: min(360px, 85vw);\r
+  max-height: 70vh;\r
+  overflow: auto;\r
+  padding: 16px;\r
+  background: #101c30;\r
+  border: 1px solid #486b93;\r
+  border-radius: 12px;\r
+  box-shadow: 0 12px 40px #0008;\r
+  z-index: 12;\r
+  white-space: normal;\r
+}\r
+.wg-backup-panel p {\r
+  margin: 0 0 12px;\r
+}\r
+.wg-backup-file {\r
+  display: block;\r
+  margin-top: 16px;\r
+}\r
+.wg-backup-file input {\r
+  display: block;\r
+  width: 100%;\r
+  margin-top: 8px;\r
+}\r
+.wg-attention {\r
+  pointer-events: none;\r
+  position: absolute;\r
+  top: 12px;\r
+  left: 24px;\r
+  display: flex;\r
+  flex-wrap: wrap;\r
+  gap: 6px;\r
+  max-width: calc(100% - 48px);\r
+  z-index: 4;\r
+}\r
+.wg-attention button {\r
+  pointer-events: auto;\r
+}\r
+.wg-attention button[aria-pressed="true"] {\r
+  border-color: #8bb7ff;\r
+  background: #263e5d;\r
+}\r
+.wg-navigation {\r
+  position: absolute;\r
+  top: 96px;\r
+  right: 24px;\r
+  width: 310px;\r
+  max-height: calc(100% - 145px);\r
+  overflow: auto;\r
+  padding: 14px;\r
+  border: 1px solid #486b9388;\r
+  border-radius: 12px;\r
+  background: #101c30f5;\r
+  z-index: 4;\r
+}\r
+.wg-has-details .wg-navigation {\r
+  right: 310px;\r
+}\r
+.wg-navigation h2 {\r
+  margin: 0 0 12px;\r
+  font-size: 15px;\r
+}\r
+.wg-navigation h2 span {\r
+  font-size: 12px;\r
+  color: #9eb3cd;\r
+}\r
+.wg-result-list {\r
+  display: grid;\r
+  gap: 8px;\r
+  margin-bottom: 12px;\r
+}\r
+.wg-result-list button {\r
+  text-align: left;\r
+  display: grid;\r
+  gap: 4px;\r
+  width: 100%;\r
+  overflow-wrap: anywhere;\r
+}\r
+.wg-result-list span,\r
+.wg-result-list small {\r
+  font-size: 12px;\r
+  color: #a9bdd6;\r
+}\r
+.wg-list-view .wg-navigation {\r
+  left: 24px;\r
+  right: 24px;\r
+  width: auto;\r
+  bottom: 80px;\r
+  max-height: none;\r
+}\r
+.wg-list-view.wg-has-details .wg-navigation {\r
+  right: 310px;\r
+}\r
+.wg-list-view .wg-result-list {\r
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));\r
+}\r
+.wg-list-view .wg-dock {\r
+  display: none;\r
+}\r
+.wg-list-view .react-flow {\r
+  visibility: hidden;\r
+}\r
+.wg-compact .wg-activity,\r
+.wg-compact .wg-orb-count,\r
+.wg-compact .wg-node-badges {\r
+  display: none;\r
+}\r
+.wg-compact .wg-node-title {\r
+  font-size: 16px;\r
+}\r
+.wg-top-actions {\r
+  flex-wrap: wrap;\r
+  justify-content: flex-end;\r
+}\r
+@media (max-width: 850px) {\r
+  .wg-attention {\r
+    left: 12px;\r
+    top: 8px;\r
+  }\r
+  .wg-attention button {\r
+    padding: 4px 8px;\r
+    font-size: 12px;\r
+  }\r
+  .wg-navigation,\r
+  .wg-has-details .wg-navigation {\r
+    top: 86px;\r
+    right: 12px;\r
+    width: min(310px, calc(100% - 24px));\r
+    max-height: 40%;\r
+  }\r
+  .wg-list-view .wg-navigation,\r
+  .wg-list-view.wg-has-details .wg-navigation {\r
+    left: 12px;\r
+    right: 12px;\r
+    bottom: 40px;\r
+    width: auto;\r
+    max-height: none;\r
+  }\r
+  .wg-list-view.wg-has-details .wg-navigation {\r
+    bottom: 52%;\r
+  }\r
+  .wg-list-view.wg-has-details .wg-details {\r
+    top: 50%;\r
+    bottom: 40px;\r
+    max-height: none;\r
+    left: 12px;\r
+    right: 12px;\r
+    width: auto;\r
+  }\r
+}\r
 `;var Vl=`/* this gets exported as style.css and can be used for the default theming */
 /* these are the necessary styles for React/Svelte Flow, they get used by base.css and style.css */
 .react-flow {
