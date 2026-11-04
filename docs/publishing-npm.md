@@ -2,9 +2,9 @@
 
 ## 现状（2026-11-04）
 
-- npm 上 `dsh-workspace-graph` 的 `latest` 是 **0.1.2**；`0.2.0` 只发过 GitHub Release，没有发 npm。
-- 本机 `~/.npmrc` 里保存的 `//registry.npmjs.org/:_authToken` **已失效**（`npm whoami` 返回 E401）。无论是继续用 token 还是换方案，都要先在 npmjs.com 重新生成凭证。
-- 账号开启了 2FA，所以交互式 `npm publish` 会要求 OTP。
+- npm 上 `dsh-workspace-graph` 的 `latest` 是 **0.2.0**，由 GitHub Actions 受信任发布（OIDC）发布，带 SLSA provenance，npm 上的 `npmUser` 显示为 `GitHub Actions`。
+- 仓库已登记受信任发布者：工作流 [`publish.yml`](../.github/workflows/publish.yml)、仓库 `qrxf/dsh-workspace-graph`，权限为 publish + stage publish。
+- 日常发版不再需要本地 token，也不会弹 OTP；账号 2FA 只用于网页登录和一次性敏感操作。
 
 ## 先澄清一个前提
 
@@ -19,15 +19,14 @@ npm 不会因为“关掉账号 2FA”就变成免 2FA 发布：
 
 发布时由 GitHub Actions 用 OIDC 向 npm 换取短期凭证，**不需要 token，也不需要 OTP**。仓库里已经加好 [`.github/workflows/publish.yml`](../.github/workflows/publish.yml)，并在发布时附带 provenance 证明。
 
-一次性配置（需要你在 npmjs.com 上做，会要求一次 2FA）：
+一次性配置（本仓库已于 2026-11-04 完成，无需重复）：
 
-1. 打开 `https://www.npmjs.com/package/dsh-workspace-graph/access`。
-2. 在 **Trusted publishing** 里添加 GitHub Actions：
-   - 组织/用户：`qrxf`
-   - 仓库：`dsh-workspace-graph`
-   - 工作流文件名：`publish.yml`
-   - 环境：留空
-3. 保存。之后不需要再动 2FA 设置。
+```sh
+npm login
+npm trust github dsh-workspace-graph --file publish.yml --repo qrxf/dsh-workspace-graph --allow-publish
+```
+
+命令会打开浏览器，让你做一次 2FA 确认。也可以在 npmjs.com 包设置里手动添加同样信息（组织/用户 `qrxf`、仓库 `dsh-workspace-graph`、工作流 `publish.yml`、环境留空）。配好之后发布不再需要 token 或 OTP。
 
 日常发布：
 
@@ -41,7 +40,7 @@ git push --follow-tags
 两个细节：
 
 - 工作流实际发布的是 `package.json` 里的 `version`，tag 只负责触发，所以 tag 名要和版本号一致。
-- 工作流也支持在 Actions 页面手动 `Run workflow`（用于补发当前分支的版本）。目前 `package.json` 是 0.2.0、npm 上还没有 0.2.0，登记好受信任发布后手动跑一次即可补上。
+- 工作流也支持在 Actions 页面手动 `Run workflow`（用于补发当前分支的版本，0.2.0 就是这样补发的）。
 
 ## 方案 B（本地发布，不弹 OTP）
 
