@@ -16,7 +16,12 @@ try {
   const errors = [];
   page.on("pageerror", (e) => errors.push(String(e)));
   await page.goto(server.resolvedUrls.local[0] + "?memory=1");
-  await page.locator(".wg-memory-edge").first().waitFor();
+  await page.locator(".wg-memory-edge").first().waitFor({ state: "attached" });
+  await page.getByRole("button", { name: "适应画布", exact: true }).click();
+  await page
+    .locator(".wg-memory-edge path.react-flow__edge-path")
+    .first()
+    .waitFor();
   assert.equal(
     await page.locator(".wg-memory-edge").count(),
     2,
@@ -100,6 +105,29 @@ try {
   console.log(
     "PASS directed memory overlay, details/body, refresh, selection isolation and live drag endpoints",
   );
+} catch (error) {
+  const page = browser?.contexts()[0]?.pages()[0];
+  if (page)
+    console.log(
+      "memory browser diagnostic",
+      await page
+        .evaluate(() => ({
+          nodes: [...document.querySelectorAll(".react-flow__node")].map(
+            (node) => node.getAttribute("data-id"),
+          ),
+          edges: [...document.querySelectorAll(".wg-memory-edge")].map(
+            (edge) => ({
+              id: edge.getAttribute("data-id"),
+              path: edge.querySelector("path")?.getAttribute("d"),
+              width: edge.getBoundingClientRect().width,
+              height: edge.getBoundingClientRect().height,
+            }),
+          ),
+          text: document.body.innerText.slice(0, 1500),
+        }))
+        .catch(() => "page unavailable"),
+    );
+  throw error;
 } finally {
   await browser?.close();
   await server.close();
