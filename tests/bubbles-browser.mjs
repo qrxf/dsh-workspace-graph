@@ -300,9 +300,10 @@ try {
     "{broken",
   );
   await other
-    .getByRole("button", { name: "重置本地布局", exact: true })
+    .getByRole("button", { name: "清除全部本地数据", exact: true })
     .click();
-  await other.getByRole("button", { name: "确认重置", exact: true }).click();
+  assert.match(await other.getByRole("alert").last().innerText(), /手动概括、置顶、主题、使用记录/);
+  await other.getByRole("button", { name: "确认清除全部数据", exact: true }).click();
   await other.waitForFunction(
     (k) => JSON.parse(localStorage.getItem(k)).schemaVersion === 1,
     key,

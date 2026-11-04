@@ -1,10 +1,77 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "@xyflow/react/dist/style.css";
 import "./styles.css";
 import { GraphPage } from "./GraphPage.tsx";
 import { LayoutRepository } from "./layout.ts";
 import type { GraphCatalog, GraphActions } from "./types.ts";
+import type { MemoryProvider } from "./memory.ts";
+const memoryMode = new URLSearchParams(location.search).get("memory");
+const demoMemory: MemoryProvider | undefined =
+  memoryMode !== null
+    ? {
+        snapshot: async () =>
+          memoryMode === "missing"
+            ? {
+                status: "missing",
+                message: "尚无记忆数据库",
+                items: [],
+                links: [],
+              }
+            : memoryMode === "error"
+              ? Promise.reject(new Error("fixture offline"))
+              : {
+                  status: "available",
+                  items: [
+                    {
+                      workspaceId: "product",
+                      id: "shared",
+                      title: "共享研究结论",
+                      description: "研究工作区提供的示例记忆",
+                      type: "reference",
+                      scope: "global",
+                      sourceWorkspaceId: "research",
+                      useCount: 3,
+                      lastUsedAt: "2026-11-03T12:00:00Z",
+                    },
+                    {
+                      workspaceId: "research",
+                      id: "feedback",
+                      title: "产品反馈",
+                      description: "产品工作区提供的示例记忆",
+                      type: "feedback",
+                      scope: "global",
+                      sourceWorkspaceId: "product",
+                      useCount: 1,
+                      lastUsedAt: null,
+                    },
+                  ],
+                  links: [
+                    {
+                      readerId: "product",
+                      sourceId: "research",
+                      count: 3,
+                      lastReadAt: "2026-11-03T12:00:00Z",
+                      memoryIds: ["shared"],
+                    },
+                    {
+                      readerId: "research",
+                      sourceId: "product",
+                      count: 1,
+                      lastReadAt: "",
+                      memoryIds: ["feedback"],
+                    },
+                  ],
+                },
+        body: async (_workspaceId, id) => {
+          if (memoryMode === "slow")
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+          return id === "shared"
+            ? "示例记忆正文：研究结论供产品工作区使用。"
+            : "示例产品反馈正文。";
+        },
+      }
+    : undefined;
 export const demoCatalog: GraphCatalog = {
   currentSessionId: "s1",
   loading: false,
@@ -144,7 +211,7 @@ const initialCatalog: GraphCatalog = new URLSearchParams(location.search).has(
   "hierarchy",
 )
   ? hierarchyCatalog
-  : [10, 50, 100].includes(density)
+  : [10, 50, 100, 1000, 5000].includes(density)
     ? {
         loading: false,
         currentSessionId: "density-0",
@@ -169,7 +236,19 @@ const initialCatalog: GraphCatalog = new URLSearchParams(location.search).has(
       }
     : demoCatalog;
 function Demo() {
-  const [catalog, setCatalog] = useState(initialCatalog);
+  const [catalog, setCatalog] = useState(() =>
+    new URLSearchParams(location.search).has("loading")
+      ? { ...initialCatalog, loading: true }
+      : initialCatalog,
+  );
+  useEffect(() => {
+    if (!new URLSearchParams(location.search).has("loading")) return;
+    const timer = setTimeout(
+      () => setCatalog((c) => ({ ...c, loading: false })),
+      300,
+    );
+    return () => clearTimeout(timer);
+  }, []);
   const [visible, setVisible] = useState(true);
   const actions: GraphActions = {
     openSession: (id) => {
@@ -261,6 +340,7 @@ function Demo() {
       </div>
       {visible && (
         <GraphPage
+          memoryProvider={demoMemory}
           catalog={catalog}
           actions={actions}
           repository={repository}

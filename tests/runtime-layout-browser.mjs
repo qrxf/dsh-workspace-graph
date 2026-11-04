@@ -8,7 +8,11 @@ try {
   await g.page
     .getByRole("button", { name: "演示：并行当前会话", exact: true })
     .click();
-  for (const id of ["s1", "s4"])
+  for (const id of ["s1", "s4"]) {
+    await g
+      .node("session:" + id)
+      .locator(".is-current")
+      .waitFor();
     assert.equal(
       await g
         .node("session:" + id)
@@ -16,6 +20,7 @@ try {
         .count(),
       1,
     );
+  }
   for (const id of ["s2", "s5", "s7"]) await g.node("session:" + id).waitFor();
   await g.stable();
   await g.fit();

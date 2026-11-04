@@ -62,8 +62,8 @@ THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 --------------------
 
-d3-color 3.1.0 (ISC)
-Copyright 2010-2022 Mike Bostock
+d3-color 3.1.1 (ISC)
+Copyright 2010-2026 Mike Bostock
 
 Permission to use, copy, modify, and/or distribute this software for any purpose
 with or without fee is hereby granted, provided that the above copyright notice
@@ -80,8 +80,8 @@ THIS SOFTWARE.
 
 --------------------
 
-d3-dispatch 3.0.1 (ISC)
-Copyright 2010-2021 Mike Bostock
+d3-dispatch 3.0.2 (ISC)
+Copyright 2010-2026 Mike Bostock
 
 Permission to use, copy, modify, and/or distribute this software for any purpose
 with or without fee is hereby granted, provided that the above copyright notice
@@ -98,8 +98,8 @@ THIS SOFTWARE.
 
 --------------------
 
-d3-drag 3.0.0 (ISC)
-Copyright 2010-2021 Mike Bostock
+d3-drag 3.0.1 (ISC)
+Copyright 2010-2026 Mike Bostock
 
 Permission to use, copy, modify, and/or distribute this software for any purpose
 with or without fee is hereby granted, provided that the above copyright notice
@@ -116,8 +116,8 @@ THIS SOFTWARE.
 
 --------------------
 
-d3-ease 3.0.1 (BSD-3-Clause)
-Copyright 2010-2021 Mike Bostock
+d3-ease 3.0.2 (BSD-3-Clause)
+Copyright 2010-2026 Mike Bostock
 Copyright 2001 Robert Penner
 All rights reserved.
 
@@ -149,8 +149,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------
 
-d3-interpolate 3.0.1 (ISC)
-Copyright 2010-2021 Mike Bostock
+d3-interpolate 3.0.2 (ISC)
+Copyright 2010-2026 Mike Bostock
 
 Permission to use, copy, modify, and/or distribute this software for any purpose
 with or without fee is hereby granted, provided that the above copyright notice
@@ -167,8 +167,8 @@ THIS SOFTWARE.
 
 --------------------
 
-d3-selection 3.0.0 (ISC)
-Copyright 2010-2021 Mike Bostock
+d3-selection 3.0.1 (ISC)
+Copyright 2010-2026 Mike Bostock
 
 Permission to use, copy, modify, and/or distribute this software for any purpose
 with or without fee is hereby granted, provided that the above copyright notice
@@ -185,8 +185,8 @@ THIS SOFTWARE.
 
 --------------------
 
-d3-timer 3.0.1 (ISC)
-Copyright 2010-2021 Mike Bostock
+d3-timer 3.0.2 (ISC)
+Copyright 2010-2026 Mike Bostock
 
 Permission to use, copy, modify, and/or distribute this software for any purpose
 with or without fee is hereby granted, provided that the above copyright notice
@@ -203,8 +203,8 @@ THIS SOFTWARE.
 
 --------------------
 
-d3-transition 3.0.1 (ISC)
-Copyright 2010-2021 Mike Bostock
+d3-transition 3.0.2 (ISC)
+Copyright 2010-2026 Mike Bostock
 
 Permission to use, copy, modify, and/or distribute this software for any purpose
 with or without fee is hereby granted, provided that the above copyright notice
@@ -221,8 +221,8 @@ THIS SOFTWARE.
 
 --------------------
 
-d3-zoom 3.0.0 (ISC)
-Copyright 2010-2021 Mike Bostock
+d3-zoom 3.0.1 (ISC)
+Copyright 2010-2026 Mike Bostock
 
 Permission to use, copy, modify, and/or distribute this software for any purpose
 with or without fee is hereby granted, provided that the above copyright notice

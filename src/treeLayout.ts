@@ -5,11 +5,16 @@ import {
   carryHiddenPositions,
 } from "./hierarchy.ts";
 import { bubbleGeometry } from "./geometry.ts";
+// Native adapter and demo publish immutable catalog snapshots. Never cache
+// runtime positions: dragging changes those independently of the catalog.
+const defaultsCache = new WeakMap<GraphCatalog, Record<string, Point>>();
 
 /** Stable radial forest. Coordinates are generated from the complete catalog. */
 export function defaultTreePositions(
   catalog: GraphCatalog,
 ): Record<string, Point> {
+  const cached = defaultsCache.get(catalog);
+  if (cached) return cached;
   const parents = new Map<string, string>(),
     kinds = new Map<string, "workspace" | "session">();
   const owner = new Map<string, string>();
@@ -97,6 +102,9 @@ export function defaultTreePositions(
     }
     cursor += maxX - minX + 360;
   }
+  for (const point of Object.values(result)) Object.freeze(point);
+  Object.freeze(result);
+  defaultsCache.set(catalog, result);
   return result;
 }
 

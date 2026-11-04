@@ -26,6 +26,8 @@ await writeFile(
 );
 await build({
   entryPoints: ["src/host.ts"],
+  bundle: true,
+  external: ["@deepseek-ai/*"],
   outfile: "dist/host.js",
   format: "esm",
   platform: "node",
@@ -35,7 +37,9 @@ await writeFile(
   "dist/build-meta.json",
   JSON.stringify(
     {
-      targetDSH: "0.2.1-rc.2",
+      targetDSH: "0.2.1-rc.5",
+      memory: "read-only continual-evolve SQLite via native Connection RPC",
+      transports: ["web", "electron-ipc"],
       react: "external",
       graph: "@xyflow/react 12.12.0",
       bytes: Buffer.byteLength(code),

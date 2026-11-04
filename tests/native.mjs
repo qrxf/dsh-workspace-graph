@@ -4,10 +4,12 @@ import path from "node:path";
 import os from "node:os";
 import { chromium } from "playwright";
 import assert from "node:assert/strict";
+import { DatabaseSync } from "node:sqlite";
 const cli = process.env.DSH_CLI;
 if (!cli) throw new Error("Set DSH_CLI to the installed DSH bin.js path");
 const root = process.cwd();
-await mkdir("artifacts", { recursive: true });
+const pluginRoot = process.env.WG_PACKAGE_ROOT || root;
+await mkdir("artifacts/layout-interaction", { recursive: true });
 const home = await mkdtemp(
   path.join(root, "artifacts", "workspace-graph-dsh-"),
 );
@@ -15,6 +17,28 @@ const projectA = path.join(home, "sample-a"),
   projectB = path.join(projectA, "Codex");
 await mkdir(projectA);
 await mkdir(projectB);
+await mkdir(path.join(home, "evolve"));
+const memoryDb = new DatabaseSync(path.join(home, "evolve", "memory.db"));
+memoryDb.exec(`CREATE TABLE memories (workspace_id TEXT,id TEXT,title TEXT,description TEXT,type TEXT,body TEXT,status TEXT,origin_workspace TEXT,source_session TEXT,updated_at TEXT);
+CREATE TABLE memory_usage (workspace_id TEXT,memory_id TEXT,use_count INTEGER,last_used_at TEXT);`);
+memoryDb
+  .prepare("INSERT INTO memories VALUES (?,?,?,?,?,?,?,?,?,?)")
+  .run(
+    "",
+    "native-memory",
+    "原生共享记忆",
+    "隔离集成测试",
+    "reference",
+    "native fixture body",
+    "active",
+    projectB,
+    null,
+    new Date().toISOString(),
+  );
+memoryDb
+  .prepare("INSERT INTO memory_usage VALUES (?,?,?,?)")
+  .run(projectA, "native-memory", 2, new Date().toISOString());
+memoryDb.close();
 await mkdir(path.join(home, "storages"));
 const now = new Date().toISOString();
 await writeFile(
@@ -99,7 +123,7 @@ return {inject,apply};}});
 await writeFile(
   patch,
   "- insert:\n    - id: workspace-graph\n      name: " +
-    JSON.stringify(path.join(root, "dist/host.js")) +
+    JSON.stringify(path.join(pluginRoot, "dist/host.js")) +
     "\n    - id: native-graph-probe\n      name: " +
     JSON.stringify(path.join(probe, "host.js")) +
     "\n",
@@ -129,7 +153,7 @@ try {
               log.replace(/token=[^\s]+/g, "token=[redacted]"),
           ),
         ),
-      60000,
+      Number(process.env.DSH_BOOT_TIMEOUT_MS) || 60000,
     );
     const onData = (data) => {
       log += data.toString();
@@ -187,6 +211,14 @@ try {
   await page.getByRole("button", { name: "工作区图谱", exact: true }).click();
   await page.getByRole("region", { name: "工作区图谱" }).waitFor();
   console.log("native: graph mounted");
+  await page.locator(".wg-memory-edge").waitFor();
+  await page.locator('[data-id="workspace:test-a"] .wg-orb').click();
+  await page.getByRole("button", { name: "查看正文：原生共享记忆" }).click();
+  await page.getByText("native fixture body", { exact: true }).waitFor();
+  await page.getByRole("button", { name: "关闭详情" }).click();
+  console.log(
+    "native: authenticated memory snapshot, directed edge and on-demand body verified",
+  );
   await page.waitForFunction(() => !!window.__graphNativeProbe);
   const parallel = await page.evaluate(() =>
     window.__graphNativeProbe.prepare(),
@@ -223,7 +255,11 @@ try {
     .evaluateAll((paths) =>
       paths.flatMap((el) => {
         const edge = el.closest("[data-id]"),
-          [source, target] = edge.dataset.id.split("->");
+          [source, target] = edge.dataset.id.startsWith("memory:")
+            ? JSON.parse(edge.dataset.id.slice(7)).map(
+                (id) => "workspace:" + id,
+              )
+            : edge.dataset.id.split("->");
         return [source, target].map((id, i) => {
           const orb = document
             .querySelector(`.react-flow__node[data-id="${id}"] .wg-orb`)
@@ -321,6 +357,13 @@ try {
   await page
     .getByRole("button", { name: "工作区图谱", exact: true })
     .waitFor({ timeout: 30000 });
+  // A fresh isolated profile may reopen the host login dialog after reload.
+  // Wait for auth UI to finish opening before dismissing its modal mask.
+  await page.getByRole("button", { name: "登录", exact: true }).waitFor();
+  await page.keyboard.press("Escape");
+  const reloadDismiss = page.getByRole("button", { name: /关闭|Close/i });
+  if (await reloadDismiss.count()) await reloadDismiss.first().click();
+  await page.keyboard.press("Escape");
   if (!(await page.locator(".wg-root").count()))
     await page.getByRole("button", { name: "工作区图谱", exact: true }).click();
   await page.locator('[data-id="workspace:test-b"]').waitFor();

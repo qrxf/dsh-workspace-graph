@@ -292,9 +292,21 @@ export class PhysicsWorld {
             const a = this.bodies.get(l.source)!,
               child = this.bodies.get(l.target)!,
               old = this.originals.get(key(l.source, l.target)) ?? l.restVector;
+            // A fast drag can leave the whole ring behind the hub. That lag is
+            // translation, not an arbitrarily large deformation to keep forever.
+            // Preserve the 80/20 blend for normal moves, bounded to 20% of the
+            // original edge length so a large jump cannot invert the tree.
+            const dx = child.x - a.x - old.x,
+              dy = child.y - a.y - old.y,
+              blend =
+                0.2 *
+                Math.min(
+                  1,
+                  Math.hypot(old.x, old.y) / (Math.hypot(dx, dy) || 1),
+                );
             l.restVector = {
-              x: old.x * 0.8 + (child.x - a.x) * 0.2,
-              y: old.y * 0.8 + (child.y - a.y) * 0.2,
+              x: old.x + dx * blend,
+              y: old.y + dy * blend,
             };
             l.restLength = Math.hypot(l.restVector.x, l.restVector.y);
           }
