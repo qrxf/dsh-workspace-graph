@@ -103,6 +103,10 @@ npm run test:native
 
 测试覆盖：所属关系、状态优先级、过滤后的坐标保留、归档显示、分批展开、损坏存储、保存冲突、拖拽后刷新、筛选、搜索和恢复会话。完整验证记录见 [docs/verification.md](docs/verification.md)。
 
+## 发布
+
+推 `v*` 标签会触发 [npm 发布工作流](.github/workflows/publish.yml)，用 GitHub Actions 的 OIDC 受信任发布完成 `npm publish --provenance`，不需要本地 token，也不会弹 2FA。首次使用需要在 npmjs.com 的包设置里登记该仓库和工作流；本地免 OTP 的 token 方案、以及发布方式对插件市场的影响见 [npm 发布说明](docs/publishing-npm.md)。
+
 ## 结构
 
 ~~~text
