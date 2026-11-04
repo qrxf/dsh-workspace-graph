@@ -358,7 +358,8 @@ try {
     .getByRole("button", { name: "工作区图谱", exact: true })
     .waitFor({ timeout: 30000 });
   // A fresh isolated profile may reopen the host login dialog after reload.
-  // Dismiss it before trying to operate the sidebar beneath its modal mask.
+  // Wait for auth UI to finish opening before dismissing its modal mask.
+  await page.getByRole("button", { name: "登录", exact: true }).waitFor();
   await page.keyboard.press("Escape");
   const reloadDismiss = page.getByRole("button", { name: /关闭|Close/i });
   if (await reloadDismiss.count()) await reloadDismiss.first().click();
