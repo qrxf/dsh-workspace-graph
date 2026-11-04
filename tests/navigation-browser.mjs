@@ -31,11 +31,16 @@ try {
   assert.equal(await p.getByLabel("时间分类").inputValue(), "all");
   await g.fit();
   await g.node("workspace:product").locator(".wg-orb").click();
+  await g.node("workspace:product").locator(".is-expanded").waitFor();
   assert.equal(
     await g.node("workspace:product").locator(".is-expanded").count(),
     1,
   );
   await p.getByRole("button", { name: "恢复默认视图", exact: true }).click();
+  await g
+    .node("workspace:product")
+    .locator(".is-expanded")
+    .waitFor({ state: "hidden" });
   assert.equal(await p.getByLabel("时间分类").inputValue(), "recent");
   assert.equal(
     await g.node("workspace:product").locator(".is-expanded").count(),
