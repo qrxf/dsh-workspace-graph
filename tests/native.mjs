@@ -357,6 +357,12 @@ try {
   await page
     .getByRole("button", { name: "工作区图谱", exact: true })
     .waitFor({ timeout: 30000 });
+  // A fresh isolated profile may reopen the host login dialog after reload.
+  // Dismiss it before trying to operate the sidebar beneath its modal mask.
+  await page.keyboard.press("Escape");
+  const reloadDismiss = page.getByRole("button", { name: /关闭|Close/i });
+  if (await reloadDismiss.count()) await reloadDismiss.first().click();
+  await page.keyboard.press("Escape");
   if (!(await page.locator(".wg-root").count()))
     await page.getByRole("button", { name: "工作区图谱", exact: true }).click();
   await page.locator('[data-id="workspace:test-b"]').waitFor();
