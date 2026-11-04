@@ -9,7 +9,7 @@ const cli = process.env.DSH_CLI;
 if (!cli) throw new Error("Set DSH_CLI to the installed DSH bin.js path");
 const root = process.cwd();
 const pluginRoot = process.env.WG_PACKAGE_ROOT || root;
-await mkdir("artifacts", { recursive: true });
+await mkdir("artifacts/layout-interaction", { recursive: true });
 const home = await mkdtemp(
   path.join(root, "artifacts", "workspace-graph-dsh-"),
 );
