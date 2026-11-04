@@ -4,7 +4,14 @@ import type { EdgeProps, Node } from "@xyflow/react";
 import type { BubbleData } from "./types.ts";
 import { bubbleGeometry, circleEndpoints } from "./geometry.ts";
 
-export function RopeEdge({ id, source, target, style, data }: EdgeProps) {
+export function RopeEdge({
+  id,
+  source,
+  target,
+  style,
+  data,
+  markerEnd,
+}: EdgeProps) {
   const a = useInternalNode<Node<BubbleData>>(source),
     b = useInternalNode<Node<BubbleData>>(target);
   if (!a || !b) return null;
@@ -26,6 +33,7 @@ export function RopeEdge({ id, source, target, style, data }: EdgeProps) {
       id={id}
       path={`M ${p.source.x},${p.source.y} Q ${cx},${cy} ${p.target.x},${p.target.y}`}
       style={style}
+      markerEnd={markerEnd}
     />
   );
 }

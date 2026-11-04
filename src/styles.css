@@ -683,7 +683,10 @@
 .wg-root .wg-bubble {
   --wg-glow-color: var(--bubble-color);
 }
-.wg-root .wg-bubble.is-current {
+.wg-root
+  .wg-bubble.is-current:not(
+    :is(.is-status-running, .is-status-waiting, .is-status-unread)
+  ) {
   --wg-glow-color: #a8ccff;
 }
 /* A separate layer keeps the glow behind the orb, leaving text and edges crisp. */
@@ -717,9 +720,66 @@
 .wg-root .wg-bubble:is(.is-status-running, .is-status-waiting) .wg-orb::before {
   animation: wg-glow-breathe 3.6s ease-in-out infinite;
 }
+.wg-root .wg-bubble:is(.is-status-running, .is-status-waiting) .wg-orb::before {
+  inset: -8px;
+  background: radial-gradient(
+    circle,
+    transparent 48%,
+    color-mix(in srgb, var(--wg-glow-color) 70%, white) 70%,
+    transparent 74%
+  );
+  box-shadow:
+    0 0 4px 4px color-mix(in srgb, var(--wg-glow-color) 45%, white),
+    0 0 18px 12px var(--wg-glow-color),
+    0 0 38px 22px color-mix(in srgb, var(--wg-glow-color) 90%, transparent),
+    0 0 64px 32px color-mix(in srgb, var(--wg-glow-color) 65%, transparent);
+}
 .wg-root .is-working .wg-orb {
   border: 3px dashed #ffdd85;
   box-shadow: 0 0 0 3px #ffdd8520;
+}
+.wg-memory-legend {
+  color: #ddb5ff;
+}
+.wg-memory-details {
+  border-top: 1px solid #795a99;
+  margin-top: 18px;
+  padding-top: 12px;
+}
+.wg-memory-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.wg-memory-heading h3 {
+  margin: 0;
+}
+.wg-memory-item {
+  padding: 12px 0;
+  border-top: 1px solid #33455f;
+}
+.wg-memory-item p {
+  margin: 6px 0;
+  overflow-wrap: anywhere;
+}
+.wg-memory-item small {
+  display: block;
+  color: #b9c7dc;
+  margin: 6px 0;
+}
+.wg-memory-body {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 320px;
+  overflow: auto;
+  background: #091321;
+  padding: 10px;
+  border-radius: 8px;
+  font: inherit;
+}
+.wg-memory-relation {
+  color: #ddb5ff;
 }
 .wg-node-badges {
   display: flex;
@@ -922,7 +982,7 @@
 @keyframes wg-glow-breathe {
   0%,
   100% {
-    opacity: 0.82;
+    opacity: 0.94;
   }
   50% {
     opacity: 1;

@@ -1,6 +1,11 @@
 {
-  "targetDSH": "0.2.1-rc.2",
+  "targetDSH": "0.2.1-rc.5",
+  "memory": "read-only continual-evolve SQLite via native Connection RPC",
+  "transports": [
+    "web",
+    "electron-ipc"
+  ],
   "react": "external",
   "graph": "@xyflow/react 12.12.0",
-  "bytes": 283261
+  "bytes": 293003
 }

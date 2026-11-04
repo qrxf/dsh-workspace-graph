@@ -13,6 +13,7 @@ import {
   Controls,
   Handle,
   Position,
+  MarkerType,
   applyNodeChanges,
   useReactFlow,
 } from "@xyflow/react";
@@ -48,6 +49,10 @@ import type { SummaryProvider } from "./summary.ts";
 import { SummaryEditor } from "./SummaryEditor.tsx";
 import { BackupControls } from "./BackupControls.tsx";
 import { NavigationPanel } from "./NavigationPanel.tsx";
+import { MemoryDetails } from "./MemoryDetails.tsx";
+import { projectMemoryLinks } from "./memory.ts";
+import type { MemoryProvider } from "./memory.ts";
+import { useMemory } from "./useMemory.ts";
 
 export const statusLabels: Record<Status, string> = {
   running: "运行中",
@@ -146,6 +151,7 @@ function Bubble({ data, selected }: NodeProps<Node<BubbleData>>) {
 const nodeTypes = { bubble: React.memo(Bubble) };
 const edgeTypes = { rope: React.memo(RopeEdge) };
 export interface GraphPageProps {
+  memoryProvider?: MemoryProvider;
   summaryProvider?: SummaryProvider;
   catalog: GraphCatalog;
   actions: GraphActions;
@@ -178,11 +184,13 @@ export function GraphPage(props: GraphPageProps) {
 }
 function GraphInner({
   catalog,
+  memoryProvider,
   actions,
   repository,
   demo,
   access,
 }: GraphPageProps) {
+  const memory = useMemory(memoryProvider);
   const initial = useInitialLayout(repository);
   const [layout, setLayout] = useState(initial.layout),
     layoutRef = useRef(layout);
@@ -345,14 +353,35 @@ function GraphInner({
     }
   };
   const edges = useMemo(
-    () =>
-      projection.edges.map((e) => ({
+    () => [
+      ...projection.edges.map((e) => ({
         ...e,
         type: "rope",
         data: physics.ropes[JSON.stringify([e.source, e.target])],
         style: { stroke: "#47719a", strokeWidth: 1.25, opacity: 0.56 },
       })),
-    [projection.edges, physics.ropes],
+      ...projectMemoryLinks(memory.snapshot, projection.nodes).map((link) => ({
+        id: "memory:" + JSON.stringify([link.readerId, link.sourceId]),
+        source: "workspace:" + link.readerId,
+        target: "workspace:" + link.sourceId,
+        type: "rope",
+        className: "wg-memory-edge",
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          color: "#d6a2ff",
+          width: 18,
+          height: 18,
+        },
+        data: { memory: true, softness: 1, label: `读取记忆 ${link.count} 次` },
+        style: {
+          stroke: "#d6a2ff",
+          strokeWidth: 2.5,
+          opacity: 0.95,
+          strokeDasharray: "8 6",
+        },
+      })),
+    ],
+    [projection.edges, projection.nodes, physics.ropes, memory.snapshot],
   );
   useEffect(() => {
     if (catalog.loading || blocked.current) return;
@@ -569,6 +598,13 @@ function GraphInner({
             <p>
               {catalog.workspaces.length} 个工作区 · {projection.total} 个会话
               {demo ? " · 演示数据" : ""}
+              {memoryProvider && (
+                <span className="wg-memory-legend">
+                  {" "}
+                  · 紫色虚线：读取方 → 记忆来源方（
+                  {memory.snapshot?.links.length ?? 0}）
+                </span>
+              )}
             </p>
           </div>
         </div>
@@ -1166,6 +1202,17 @@ function GraphInner({
                 </>
               )}
             </dl>
+            {selected.data.kind === "workspace" && (
+              <MemoryDetails
+                key={"memory:" + selected.id}
+                workspaceId={selected.data.entityId}
+                workspaces={catalog.workspaces}
+                provider={memoryProvider}
+                snapshot={memory.snapshot}
+                loading={memory.loading}
+                refresh={memory.refresh}
+              />
+            )}
             {selected.data.kind === "session" && (
               <button
                 onClick={() => {

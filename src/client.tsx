@@ -13,11 +13,14 @@ import { GraphPage } from "./GraphPage.tsx";
 import { toCatalog } from "./adapter.ts";
 import { LayoutRepository } from "./layout.ts";
 import type { GraphActions } from "./types.ts";
+import type { MemoryProvider, MemorySnapshot } from "./memory.ts";
+import { MEMORY_CHANNEL, MEMORY_NAMESPACE } from "./memory-rpc.ts";
 import css from "./styles.css";
 import flowCss from "@xyflow/react/dist/style.css";
 const PANEL = "workspace-graph";
 const identity = <T,>(snapshot: T): T => snapshot;
 interface Injected {
+  memoryProvider: MemoryProvider;
   actions: GraphActions;
   repository: LayoutRepository;
 }
@@ -32,6 +35,7 @@ function NativePanel(props: PropsRuntime<"main"> & Injected) {
   return (
     <GraphPage
       catalog={catalog}
+      memoryProvider={props.memoryProvider}
       actions={props.actions}
       repository={props.repository}
       access={{
@@ -69,8 +73,46 @@ export const inject = [
   "uiSession",
   "workspaces",
   "sessions",
+  "connection",
 ];
 export function apply(ctx: Context) {
+  const connection = (
+    ctx as unknown as {
+      connection: {
+        rpc: {
+          call(
+            channel: string,
+            endpoint: string,
+            payload: unknown,
+            signal?: AbortSignal,
+          ): Promise<{
+            ok: boolean;
+            value?: unknown;
+            error?: { message: string };
+          }>;
+        };
+      };
+    }
+  ).connection;
+  const callMemory = async <T,>(
+    endpoint: string,
+    payload: unknown,
+    signal?: AbortSignal,
+  ): Promise<T> => {
+    const result = await connection.rpc.call(
+      MEMORY_CHANNEL,
+      MEMORY_NAMESPACE + "/" + endpoint,
+      { args: payload },
+      signal,
+    );
+    if (!result.ok) throw new Error(result.error?.message ?? "记忆连接不可用");
+    return result.value as T;
+  };
+  const memoryProvider: MemoryProvider = {
+    snapshot: (signal) => callMemory<MemorySnapshot>("snapshot", {}, signal),
+    body: (workspaceId, id, signal) =>
+      callMemory<string>("body", { workspaceId, id }, signal),
+  };
   // The browser origin and native UUIDs isolate layout identity. No credentials, history or API calls are stored.
   let storage: Pick<Storage, "getItem" | "setItem">;
   try {
@@ -106,7 +148,11 @@ export function apply(ctx: Context) {
   });
   ctx.slots.inject("main", () =>
     ctx.slots.register(
-      { name: "main", key: PANEL, inject: () => ({ actions, repository }) },
+      {
+        name: "main",
+        key: PANEL,
+        inject: () => ({ actions, repository, memoryProvider }),
+      },
       NativePanel,
     ),
   );

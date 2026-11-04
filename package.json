@@ -1,6 +1,6 @@
 {
   "name": "dsh-workspace-graph",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Draggable workspace and session graph for DeepSeek Harness / 可拖拽的工作区图谱",
   "type": "module",
   "license": "MIT",
@@ -14,7 +14,9 @@
     "cordis.patch.yml",
     "README.md",
     "LICENSE",
-    "docs/screenshots"
+    "docs/screenshots",
+    "docs/release-v0.2.0.md",
+    "docs/verification-2026-11-03.md"
   ],
   "dsh": {
     "bundle": {
@@ -25,7 +27,8 @@
       "inject": [
         "@deepseek-ai/dsh-client-ui-workspace",
         "@deepseek-ai/dsh-client-ui-sidebar",
-        "@deepseek-ai/dsh-client-ui-session"
+        "@deepseek-ai/dsh-client-ui-session",
+        "@deepseek-ai/dsh-client-connection"
       ]
     }
   },
@@ -38,6 +41,9 @@
     "test:flex": "node tests/flex-drag-browser.mjs",
     "prepack": "npm run build",
     "test:native": "node tests/native.mjs",
+    "test:memory": "node tests/memory-browser.mjs",
+    "test:transport": "node tests/native-transport.mjs",
+    "test:package": "node scripts/test-package.mjs",
     "test:performance": "node tests/performance-browser.mjs",
     "test:catalog": "node tests/catalog-performance.mjs",
     "test:interactions": "node scripts/test-interactions.mjs",
@@ -45,7 +51,7 @@
   },
   "engines": {
     "node": ">=22.19.0",
-    "dsh": ">=0.2.1-rc.2"
+    "dsh": ">=0.2.1-rc.4 <0.3.0"
   },
   "repository": {
     "type": "git",
@@ -57,18 +63,21 @@
     "workspace",
     "graph"
   ],
+  "dependencies": {
+    "@deepseek-ai/dsh-typert-protocol": "0.2.1-rc.5"
+  },
   "devDependencies": {
     "@deepseek-ai/cordis": "~4.0.5",
-    "@deepseek-ai/dsh-api-remote-access": "^0.2.1-rc.2",
-    "@deepseek-ai/dsh-api-session-controller": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-api-workspace-controller": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-client-ui-layout": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-client-ui-renderer": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-client-ui-session": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-client-ui-sidebar": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-client-ui-slots": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-client-ui-workspace": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-session": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-api-remote-access": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-api-session-controller": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-api-workspace-controller": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-client-ui-layout": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-client-ui-renderer": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-client-ui-session": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-client-ui-sidebar": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-client-ui-slots": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-client-ui-workspace": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-session": "0.2.1-rc.5",
     "@types/node": "^24.0.0",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
@@ -79,6 +88,9 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "typescript": "^5.9.3",
-    "vite": "^7.1.0"
+    "vite": "^7.1.0",
+    "@deepseek-ai/dsh-client-connection": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-api-gateway": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-typert-registry": "0.2.1-rc.5"
   }
 }

@@ -40,6 +40,30 @@ try {
     }
   }
   await page.setViewportSize({ width: 1440, height: 1000 });
+  const active = await page
+    .locator(".wg-orb")
+    .first()
+    .evaluate((el) => {
+      el.parentElement.className =
+        "wg-bubble is-session is-current is-status-waiting";
+      el.parentElement.style.setProperty("--bubble-color", "#ffc56c");
+      const glow = getComputedStyle(el, "::before");
+      return {
+        color: getComputedStyle(el.parentElement)
+          .getPropertyValue("--wg-glow-color")
+          .trim(),
+        shadow: glow.boxShadow,
+      };
+    });
+  assert.equal(
+    active.color,
+    "#ffc56c",
+    "current waiting node must glow in its status color",
+  );
+  assert.ok(
+    active.shadow.includes("64px"),
+    "active glow must reach a clearly visible outer halo",
+  );
   for (const state of [
     "current",
     "status-running",

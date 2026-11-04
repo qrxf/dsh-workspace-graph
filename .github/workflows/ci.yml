@@ -15,10 +15,14 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - run: npm run test:transport
       - run: git diff --exit-code -- dist
       - run: npx playwright install --with-deps chromium
       - run: node tests/visual-emphasis-browser.mjs
+      - run: node tests/memory-browser.mjs
       - run: npm run test:browser
       - run: npm run test:interactions
       - run: npm run test:catalog
       - run: npm pack --ignore-scripts --dry-run
+      - run: npm pack --ignore-scripts
+      - run: npm run test:package

@@ -8,6 +8,9 @@ permissions:
 jobs:
   native:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dsh: ["0.2.1-rc.4", "0.2.1-rc.5"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -17,7 +20,7 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npx playwright install --with-deps chromium
-      - run: npm install --prefix artifacts/native-cli --no-save @deepseek-ai/dsh@0.2.1-rc.2
+      - run: npm install --prefix artifacts/native-cli --no-save @deepseek-ai/dsh@${{ matrix.dsh }}
       - name: Verify isolated native host
         run: |
           export DSH_CLI="$PWD/artifacts/native-cli/node_modules/@deepseek-ai/dsh/lib/bin.js"
@@ -26,5 +29,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: native-diagnostics
+          name: native-diagnostics-${{ matrix.dsh }}
           path: artifacts/*.png

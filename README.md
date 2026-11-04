@@ -1,4 +1,4 @@
-# 工作区图谱 · Workspace Atlas
+# 工作区图谱 · Workspace Atlas 0.2.0
 
 DeepSeek Harness 原生插件，用可拖动的气泡管理工作区与会话。左下角选择工作区和筛选条件，右侧查看详情并执行原生操作。
 
@@ -6,15 +6,19 @@ DeepSeek Harness 原生插件，用可拖动的气泡管理工作区与会话。
 
 ## 安装
 
-已验证的目标版本：DeepSeek Harness **0.2.1-rc.2**，Web 界面。Harness 仍处于预览阶段，其他版本可能需要适配。安装到实际使用的 profile；以下示例使用 web：
+已验证 DeepSeek Harness **0.2.1-rc.4 / 0.2.1-rc.5** 的隔离 Web 宿主，开发依赖固定为当前 npm `latest` **rc.5**（2026-11-03 核对）。桌面使用同一个客户端入口，记忆读取走宿主 `/api` Remote 与 Connection，支持 Electron 的 IPC 通道；不依赖 localhost 地址或 Web 记忆卡片接口。无 HTTP 服务的原生进程内通道测试已通过，真实 Electron 窗口尚未实测。
+
+安装到实际使用的 profile；Web 与桌面的插件版本分别管理。以下示例使用 web：
 
 ~~~powershell
-npx @deepseek-ai/dsh plugin --profile web add github:qrxf/dsh-workspace-graph
+npx @deepseek-ai/dsh@0.2.1-rc.5 plugin --profile web add github:qrxf/dsh-workspace-graph#v0.2.0
 ~~~
 
 安装后，在 Harness 侧栏点击 **工作区图谱**。如果当前配置未开启插件热重载，重启对应的 Harness 实例。
 
-仓库包含构建产物，安装不需要自行编译。插件本身没有运行时 npm 依赖，也不需要额外的 API 密钥。
+桌面安装将命令中的 `--profile web` 改为 `--profile desktop`；若使用自定义 profile，填写其实际名称。不要仅升级 Web 后就假定桌面也已升级。宿主最低支持 rc.4；独立的 alpha 发行通道不在本轮兼容承诺内。
+
+仓库包含构建产物，安装不需要自行编译。宿主侧的官方 `dsh-typert-protocol` 运行依赖随安装解析，不需要额外的 API 密钥。
 
 ## 使用
 
@@ -25,7 +29,7 @@ npx @deepseek-ai/dsh plugin --profile web add github:qrxf/dsh-workspace-graph
 - 普通拖动沿父子连线柔性牵引，远端会有滞后；按住 Ctrl 可单独自由拖动气泡，仍会碰撞并推动接触的气泡。支持拖动中切换 Ctrl。碰撞尺寸在原有基础上增加 25%，画面圆球大小不变。指针停止约 120ms 或松手后，绳子约 1.2 秒逐渐变硬；普通拖动大致恢复原来的相对树形并保留一部分变形和整体位移，Ctrl 的自由重排成为新布局。
 - 工作区和会话按真实层级生成向四周分散的树状布局，小气泡从父圆周外侧向外展开；拖动与展开都保留碰撞。连线连接气泡圆周，并随位置实时更新。点击、展开、悬停保持视角不变，顶部“适应画布”给筛选面板留出空间。
 - 并行运行、等待回应和宿主当前会话保留可见，越过折叠、分页和筛选限制；“当前”和“工作中”分别标注。当前标记来自本窗口宿主的 mainView 保留集合，不能据此推断其他窗口中的当前焦点。
-- 当前气泡显示冰蓝色外光晕；运行中、等待回应和新结果按状态色发光。光晕位于圆球外侧，文字保持清晰；运行和等待仅让光晕缓慢呼吸，开启“减少动态效果”后保留静态发光。
+- 运行中以蓝色、等待回应以金色显示非常明亮的多层光晕，呼吸低谷仍保持高亮；新结果以绿色发光。“当前”白色外圈保留，当前会话正在工作时仍使用对应状态色，空闲时使用冰蓝色。光晕位于圆球外侧，文字保持清晰；开启“减少动态效果”后保留静态发光。
 - 展开“主题与动态效果”可选颜色、输入 HEX、恢复默认并减少动态效果，也遵循系统减少动态偏好。深工作区、展开更深、浅会话与运行标识相互独立。
 - 会话详情可本地置顶和编辑短概括；已移除悬停/聚焦时的环绕文字与自动移镜。
 - 嵌套工作区按宿主目录路径连接到最近的父工作区，并显示“子工作区”标记。分支会话使用宿主 `parentId` 连接来源圆周，优先向树的外侧分布；筛选或分页隐藏来源时，会保留必要的来源链作为上下文。拖动不改变真实归属。
@@ -37,7 +41,20 @@ npx @deepseek-ai/dsh plugin --profile web add github:qrxf/dsh-workspace-graph
 - 默认隐藏空白会话、子代理会话和归档会话，实际当前会话除外。工作区展开后先显示 20 个会话，可在详情中继续展开。
 - 运行中会话的归档遵循 Harness 限制；本插件不自动停止正在进行的工作。
 
-拖拽只改变图谱位置，不移动文件、不改变工作目录或会话所属。默认不读取会话正文，不调用模型；可选摘要提供方契约见 [调查与接入边界](docs/summary-provider-research.md)，本次没有真实自动概括插件接入。
+拖拽只改变图谱位置，不移动文件、不改变工作目录或会话所属。不读取会话正文，不调用模型；可选摘要提供方契约见 [调查与接入边界](docs/summary-provider-research.md)，没有真实自动概括插件接入。记忆详情按下节规则按需读取。
+
+## 工作区记忆与读取关系
+
+0.2.0 对接 **dsh-continual-evolve 0.19.3** 的中央 SQLite 数据库，只负责展示，记忆创建、提取、修改与遗忘仍由原插件处理。
+
+- **紫色有向虚线：读取方 → 记忆来源方**。同一方向的多条记忆合并；双方互相读取时显示两个方向。线连接工作区圆周并随拖动更新，不参与树布局、绳索牵引或真实归属。
+- 工作区详情显示项目记忆与可见的全局共享记忆、来源、类型、正文读取次数和最近读取时间；点击“查看正文”才加载正文。“刷新记忆”可手动更新，图谱打开期间也会每 15 秒更新元数据。
+- 连线依据 `memory_usage` 的**按 ID 正文读取记录**，结合全局记忆的 `origin_workspace` 或确切的来源会话所属工作区。仅仅拥有记忆、命中检索或收到索引注入不会连线；未知来源、自身读取和同 ID 本地记忆遮蔽全局的情况也不会产生跨工作区线。
+- 原插件没有完整的逐次读取来源快照。图谱按**现有记忆来源＋累计读取记录**解析，不能还原已删除记忆或来源变更前的完整历史。被筛选隐藏的端点不会被强制展开，因此可见线数可能少于总关系数。
+- 宿主从 `$DSH_HOME/evolve/memory.db` 读取；未设置时为 `~/.dsh/evolve/memory.db`。客户端不能指定数据库或文件路径。使用 SQLite `readOnly` 与 `query_only`，不创建数据库、不迁移结构、不修改记忆或读取计数。
+- 记忆接口仅允许当前宿主的 **owner**，受限远程身份不会获得记忆内容。详情和正文不保存到浏览器本地存储或图谱备份。缺少数据库、SQLite 支持或兼容结构时显示提示，基础图谱继续使用。
+
+不需要为图谱另行安装或复制记忆插件；若希望产生新的记忆和读取记录，需要在使用的宿主/profile 中启用原记忆插件。同一 DSH_HOME 下的 Web/桌面可读取同一中央记忆库；不同 DSH_HOME 的数据独立。
 
 默认使用“近期”筛选，也可切换到全部时间；已有明确保存的筛选继续保留。“近期”按宿主持久消息活动时间不超过 7 天计算。“常用”按最近 30 天从本图谱主动打开至少 5 次计算，同会话间隔不足 30 分钟不重复计数。缺少既往访问历史时从本版本开始观察；记录不足显示“使用记录积累中”，不会把悬停、刷新或自动恢复计为打开。原生侧栏的打开来源尚无可靠人工操作事件，因此不计入这个图谱本地指标。
 
@@ -82,7 +99,7 @@ npm run test:browser
 npm run test:native
 ~~~
 
-`npm run test:interactions` 顺序运行导航、千级目录、首次居中、密集环松手、圆周连线、Ctrl/柔性拖动、运行布局、隐藏层级与生命周期回归；`npm run test:catalog` 测量 1,000／5,000 条会话的投影。CI 自动执行两者，版本标签或手动触发运行固定 DSH 0.2.1-rc.2 的隔离原生验证。慢速冷启动可设置 `DSH_BOOT_TIMEOUT_MS=180000`。本轮记录见 [导航与恢复验证](docs/verification-2026-10-27.md)。
+`npm run test:interactions` 顺序运行导航、千级目录、首次居中、密集环松手、圆周连线、Ctrl/柔性拖动、运行布局、隐藏层级与生命周期回归；`npm run test:catalog` 测量 1,000／5,000 条会话的投影。CI 自动执行两者以及 `npm run test:memory`；版本标签或手动触发运行 DSH rc.4 / rc.5 的隔离原生验证矩阵。`npm run test:transport` 在构建后验证无 HTTP 服务的原生 Connection/Gateway 通道。慢速冷启动可设置 `DSH_BOOT_TIMEOUT_MS=180000`。本轮记录见 [0.2.0 验证](docs/verification-2026-11-03.md)，此前记录见 [导航与恢复验证](docs/verification-2026-10-27.md)。
 
 测试覆盖：所属关系、状态优先级、过滤后的坐标保留、归档显示、分批展开、损坏存储、保存冲突、拖拽后刷新、筛选、搜索和恢复会话。完整验证记录见 [docs/verification.md](docs/verification.md)。
 
@@ -95,14 +112,17 @@ src/model.ts         图谱投影、所属关系与筛选
 src/layout.ts        浏览器布局存储、校验与冲突处理
 src/GraphPage.tsx    画布、筛选面板与详情
 src/styles.css      深蓝气泡界面
-src/host.ts          无 Host 侧行为的入口
+src/host.ts          owner-only 原生记忆 Remote 服务
+src/memory-store.ts  continual-evolve SQLite 只读适配
+src/memory.ts        记忆契约与展示连线投影
+src/MemoryDetails.tsx 按需加载的记忆详情
 scripts/build.mjs   ModuleLoader 客户端打包
 ~~~
 
-React、ReactDOM 使用宿主提供的实例；React Flow 随客户端打包。没有增加模型工具、自动任务或文件系统操作。禁用插件时注册项与样式随生命周期移除。
+React、ReactDOM 使用宿主提供的实例；React Flow 随客户端打包，宿主 Remote 协议为明确声明的官方运行依赖。没有增加模型工具、模型调用或自动任务；文件系统接触限于读取既有记忆数据库。禁用插件时服务注册项、刷新计时器与样式随生命周期移除。
 
 ## License
 
 MIT。随客户端打包的第三方许可见 dist/THIRD_PARTY_LICENSES.txt。
 
-A native draggable workspace/session graph for DeepSeek Harness. Browser-local layout persistence, bottom-left filters, search, and native navigation. Tested target: DSH 0.2.1-rc.2. No extra model calls or API key required.
+A native draggable workspace/session graph for DeepSeek Harness, with bright status-colored halos, evidence-based directed memory links and on-demand read-only memory details. Tested Web hosts: DSH 0.2.1-rc.4 and rc.5. Native in-process transport verified; an actual Electron window has not been smoke-tested. No extra model calls or API key required.
